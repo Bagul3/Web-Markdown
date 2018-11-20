@@ -35,9 +35,18 @@ namespace DataService
             {
                 var price = 0.0;
                 var sellPrice = Convert.ToDouble(o.SellB);
+                var actualPrice = 0.0;
 
-                price = adjustmentPrice > 0 ? Math.Ceiling(sellPrice - adjustmentPrice) : Math.Ceiling(sellPrice);
-                var actualPrice = adjustmentPercentage > 0 ? price - (Convert.ToDouble(Convert.ToDouble(adjustmentPercentage) / 100) * price) : price;
+                if (adjustmentPercentage != 0)
+                {
+                    actualPrice = adjustmentPercentage > 0
+                        ? Convert.ToDouble(o.Sell) - (Convert.ToDouble(Convert.ToDouble(adjustmentPercentage) / 100) * Convert.ToDouble(o.Sell))
+                        : Convert.ToDouble(o.Sell);
+                }
+                else
+                {
+                    actualPrice = adjustmentPrice > 0 ? Math.Ceiling(sellPrice - adjustmentPrice) : Math.Ceiling(sellPrice);
+                }
 
                 if (actualPrice.ToString().Split('.').Length > 2 && Convert.ToInt16(actualPrice.ToString().Split('.')[1]) > 0)
                 {
@@ -226,7 +235,8 @@ namespace DataService
                             skuRecords.Add(new SpecailOrders()
                             {
                                 Ref = newStyle,
-                                SellB = dr["Sell"].ToString()
+                                Sell = dr["Sell"].ToString(),
+                                SellB = dr["SellB"].ToString()
                             });
                         }
                     }
@@ -237,7 +247,8 @@ namespace DataService
                     skuRecords.Add(new SpecailOrders()
                     {
                         Ref = dr["NewStyle"].ToString(),
-                        SellB = dr["Sell"].ToString()
+                        SellB = dr["SellB"].ToString(),
+                        Sell = dr["Sell"].ToString()
                     });
                 }
             }

@@ -672,8 +672,13 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             File.AppendAllText(System.Configuration.ConfigurationManager.AppSettings["SalesPriceOutput"] + stamp + ".csv", csv.ToString());
             foreach (var specailOrder in SpecailOrders)
             {
+                if (count >= 100)
+                {
+                    count = 1;
+                }
+                count++;
                 _specailOrdersService.GenerateCSVAsync(specailOrder, StartDate.ToString("yyyy-MM-dd"), EndDate.ToString("yyyy-MM-dd"), stamp, AdjustPrice, AdjustPricePercentage);
-                worker.ReportProgress(count++);
+                worker.ReportProgress(count);
             }
             worker.ReportProgress(100);
             AdjustPrice = 0;

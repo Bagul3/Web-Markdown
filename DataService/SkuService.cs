@@ -112,7 +112,10 @@ namespace DataService
                     Style = dr["STYPE"].ToString(),
                     StockType = dr["MasterStocktype"].ToString(),
                     Category = dr["MasterSubDept"].ToString(),
-                    Season = dr["User1"].ToString()
+                    Season = dr["User1"].ToString(),
+                    SupRef = dr["SUPPREF"].ToString(),
+                    Desc = dr["T2_HEAD.DESC"].ToString(),
+                    Name = dr["SHORT"].ToString()
                 }
                 );
         }

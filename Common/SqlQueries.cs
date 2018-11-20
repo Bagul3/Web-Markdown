@@ -48,14 +48,14 @@ WHERE (((Left([T2_LOOK]![KEY],3))='CAT'))
 									ORDER BY ([T2_BRA].[REF] + [F7]) DESC;";
 
         public static string SingleSkuSmaller =>
-            @"SELECT ([T2_BRA].[REF] + [F7]) AS NEWSTYLE, T2_SIZES.S01, T2_HEAD.SELL, T2_SIZES.S02, T2_SIZES.S03, T2_SIZES.S04, T2_SIZES.S05, T2_SIZES.S06, T2_SIZES.S07, T2_SIZES.S08, T2_SIZES.S09, T2_SIZES.S10, T2_SIZES.S11, T2_SIZES.S12, T2_SIZES.S13
+            @"SELECT ([T2_BRA].[REF] + [F7]) AS NEWSTYLE, T2_SIZES.S01, T2_HEAD.SELL, T2_HEAD.SELLB, T2_SIZES.S02, T2_SIZES.S03, T2_SIZES.S04, T2_SIZES.S05, T2_SIZES.S06, T2_SIZES.S07, T2_SIZES.S08, T2_SIZES.S09, T2_SIZES.S10, T2_SIZES.S11, T2_SIZES.S12, T2_SIZES.S13
 									FROM ((((T2_BRA INNER JOIN T2_HEAD ON T2_BRA.REF = T2_HEAD.REF) INNER JOIN (SELECT Right(T2_LOOK.[KEY],3) AS NewCol, T2_LOOK.F1 AS MasterColour, Left(T2_LOOK.[KEY],3) AS Col, T2_LOOK.F7
 								FROM T2_LOOK
 								WHERE (Left(T2_LOOK.[KEY],3))='COL') as Colour ON T2_BRA.COLOUR = Colour.NewCol) INNER JOIN 
 									 T2_SIZES ON T2_HEAD.SIZERANGE = T2_SIZES.SIZERANGE))
                                     WHERE [T2_BRA].[REF] = ?
 									GROUP BY ([T2_BRA].[REF] + [F7]), Colour.MasterColour, Colour.F7,
-									 T2_HEAD.SHORT, T2_HEAD.[DESC], T2_HEAD.[GROUP], T2_HEAD.STYPE, T2_HEAD.SIZERANGE, T2_HEAD.SELL,
+									 T2_HEAD.SHORT, T2_HEAD.[DESC], T2_HEAD.[GROUP], T2_HEAD.STYPE, T2_HEAD.SIZERANGE, T2_HEAD.SELL, T2_HEAD.SELLB,
 									 T2_HEAD.REF, T2_SIZES.S01, T2_SIZES.S02, T2_SIZES.S03, T2_SIZES.S04, T2_SIZES.S05, 
 									 T2_SIZES.S06, T2_SIZES.S07, T2_SIZES.S08, T2_SIZES.S09, T2_SIZES.S10, T2_SIZES.S11, T2_SIZES.S12, T2_SIZES.S13
 									ORDER BY ([T2_BRA].[REF] + [F7]) DESC;";
@@ -123,7 +123,7 @@ WHERE (((Left([T2_LOOK]![KEY],3))='CAT'))
 									(SELECT Right(T2_LOOK.[KEY],3) AS SubDeptCode, T2_LOOK.F1 AS MasterSubDept
 										FROM T2_LOOK
 											WHERE (Left(T2_LOOK![KEY],3))='US2') AS SubDept ON T2_HEAD.USER2 = SubDept.SubDeptCode)
-                                   WHERE [T2_HEAD].SELL <> [T2_HEAD].SELLB AND [T2_HEAD].SELLB <> 0 AND [T2_HEAD].SELL <> 0 ";
+                                   WHERE T2_BRA.BRANCH in ('A','B','G')";
 
         public static string CoreStockQueryOrder => @"GROUP BY [T2_BRA].[REF], Suppliers.MasterSupplier, Dept.MasterDept, Colour.MasterColour, Colour.F7, T2_HEAD.USER1,
 									 T2_HEAD.SHORT, T2_HEAD.[DESC], T2_HEAD.[GROUP], T2_HEAD.STYPE, T2_HEAD.SUPPLIER, T2_HEAD.SUPPREF,
@@ -155,7 +155,7 @@ WHERE (((Left([T2_LOOK]![KEY],3))='CAT'))
 									(SELECT Right(T2_LOOK.[KEY],3) AS SubDeptCode, T2_LOOK.F1 AS MasterSubDept
 										FROM T2_LOOK
 											WHERE (Left(T2_LOOK.[KEY],3))='US2') AS SubDept ON T2_HEAD.USER2 = SubDept.SubDeptCode)
-                                   WHERE [T2_HEAD].SELL <> [T2_HEAD].SELLB AND [T2_HEAD].SELLB <> 0 AND [T2_HEAD].SELL <> 0 AND T2_BRA.BRANCH in ('A','G')
+                                   WHERE T2_BRA.BRANCH in ('A','G')
 									GROUP BY [T2_BRA].[REF], Suppliers.MasterSupplier, Dept.MasterDept, Colour.MasterColour, Colour.F7, T2_HEAD.USER1,
 									 T2_HEAD.SHORT, T2_HEAD.[DESC], T2_HEAD.[GROUP], T2_HEAD.STYPE, T2_HEAD.SUPPLIER, T2_HEAD.SUPPREF,
 									 T2_HEAD.BASESELL,
@@ -184,7 +184,6 @@ WHERE (((Left([T2_LOOK]![KEY],3))='CAT'))
 									(SELECT Right(T2_LOOK.[KEY],3) AS SubDeptCode, T2_LOOK.F1 AS MasterSubDept
 										FROM T2_LOOK
 											WHERE (Left(T2_LOOK.[KEY],3))='US2') AS SubDept ON T2_HEAD.USER2 = SubDept.SubDeptCode)
-                                   WHERE [T2_HEAD].SELL <> [T2_HEAD].SELLB AND [T2_HEAD].SELLB <> 0 AND [T2_HEAD].SELL <> 0
 									GROUP BY [T2_BRA].[REF], Suppliers.MasterSupplier, Dept.MasterDept, Colour.MasterColour, Colour.F7, T2_HEAD.USER1,
 									 T2_HEAD.SHORT, T2_HEAD.[DESC], T2_HEAD.[GROUP], T2_HEAD.STYPE, T2_HEAD.SUPPLIER, T2_HEAD.SUPPREF,
 									 T2_HEAD.BASESELL,
@@ -217,7 +216,6 @@ WHERE (((Left([T2_LOOK]![KEY],3))='CAT'))
 									(SELECT Right(T2_LOOK.[KEY],3) AS SubDeptCode, T2_LOOK.F1 AS MasterSubDept
 										FROM T2_LOOK
 											WHERE (Left(T2_LOOK.[KEY],3))='US2') AS SubDept ON T2_HEAD.USER2 = SubDept.SubDeptCode)
-                                   WHERE [T2_HEAD].SELL <> [T2_HEAD].SELLB AND [T2_HEAD].SELLB <> 0 AND [T2_HEAD].SELL <> 0
 									GROUP BY ([T2_BRA].[REF] + [F7]), Suppliers.MasterSupplier, Dept.MasterDept, Colour.MasterColour, Colour.F7,
 									 T2_HEAD.SHORT, T2_HEAD.[DESC], T2_HEAD.[GROUP], T2_HEAD.STYPE, T2_HEAD.SIZERANGE, T2_HEAD.SUPPLIER, T2_HEAD.SUPPREF,
 									  T2_HEAD.VAT, T2_HEAD.BASESELL,
@@ -251,7 +249,7 @@ WHERE (((Left([T2_LOOK]![KEY],3))='CAT')) ORDER BY Trim(Mid([T2_LOOK].[KEY],4,6)
 										FROM T2_LOOK
 											WHERE (Left(T2_LOOK.[KEY],3))='US2') AS SubDept ON T2_HEAD.USER2 = SubDept.SubDeptCode)
                                    WHERE USER1 <> 'S16' AND USER1 <> 'W16' AND USER1 <> 'S15' AND USER1 <> 'W15' AND USER1 <> 'S14' AND USER1 <> 'W14' AND USER1 <> 'S13'  AND USER1 <> 'W13'
-								   AND USER1 <> 'B16' AND USER1 <> 'B15' AND USER1 <> 'B14' AND USER1 <> 'B13' AND USER1 <> 'B12' AND USER1 <> 'B11' AND USER1 <> 'CON' AND USER1 <> 'S12' AND USER1 <> 'W12' 
+								   AND USER1 <> 'B16' AND USER1 <> 'B15' AND USER1 <> 'B14' AND USER1 <> 'B13' AND USER1 <> 'B12' AND USER1 <> 'B11' AND USER1 <> 'S12' AND USER1 <> 'W12' 
 								   AND USER1 <> 'S11' AND USER1 <> 'W11'
 									GROUP BY ([T2_BRA].[REF] + [F7]), Suppliers.MasterSupplier, Dept.MasterDept, Colour.MasterColour, Colour.F7, T2_HEAD.USER1, T2_HEAD.DESC,
 									 T2_HEAD.SHORT, T2_HEAD.[DESC], T2_HEAD.[GROUP], T2_HEAD.STYPE, T2_HEAD.SIZERANGE, T2_HEAD.SUPPLIER, T2_HEAD.SUPPREF,

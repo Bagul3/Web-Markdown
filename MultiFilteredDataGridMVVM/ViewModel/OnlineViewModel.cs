@@ -36,12 +36,15 @@ namespace MultiFilteredDataGridMVVM.ViewModel
         private string _selectedColour;
         private string _selectedStyle;
 
+        private string _selectedStockType;
+
         private ObservableCollection<string> _authors;
         private ObservableCollection<string> _countries;
         private ObservableCollection<string> _years;
 
         private ObservableCollection<string> _colour;
         private ObservableCollection<string> _style;
+        private ObservableCollection<string> _stockType;
 
         ObservableCollection<SpecailOrders> _things;
         ObservableCollection<SpecailOrders> _online;
@@ -51,7 +54,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
 
         private bool _canCanRemoveColourFilter;
         private bool _canCanRemoveStyleFilter;
-
+        private bool _canCanRemoveStockTypeFilter;
         #endregion
         public ICommand StartCommand { get; private set; }
         private BackgroundWorker worker;
@@ -216,6 +219,19 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             }
         }
 
+        public string SelectedStockType
+        {
+            get { return _selectedStockType; }
+            set
+            {
+                if (_selectedStockType == value)
+                    return;
+                _selectedStockType = value;
+                RaisePropertyChanged("SelectedStockType");
+                ApplyFilter(!string.IsNullOrEmpty(_selectedStockType) ? FilterField.StockType : FilterField.None);
+            }
+        }
+
         /// <summary>
         /// Gets or sets a list of authors which is used to populate the author filter
         /// drop down list.
@@ -286,6 +302,18 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             }
         }
 
+        public ObservableCollection<string> StockType
+        {
+            get { return _stockType; }
+            set
+            {
+                if (_stockType == value)
+                    return;
+                _stockType = value;
+                RaisePropertyChanged("StockType");
+            }
+        }
+
         /// <summary>
         /// Gets or sets a flag indicating if the Country filter, if applied, can be removed.
         /// </summary>
@@ -343,6 +371,16 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             }
         }
 
+        public bool CanRemoveStockTypeFilter
+        {
+            get { return _canCanRemoveStockTypeFilter; }
+            set
+            {
+                _canCanRemoveStockTypeFilter = value;
+                RaisePropertyChanged("CanRemoveStockTypeFilter");
+            }
+        }
+
         #endregion
 
         #region Commands
@@ -377,6 +415,11 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             get;
             private set;
         }
+        public ICommand RemoveStockTypeFilterCommand
+        {
+            get;
+            private set;
+        }
         public ICommand CsvCommand { get; private set; }
         #endregion
 
@@ -389,6 +432,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             RemoveYearFilterCommand = new RelayCommand(RemoveYearFilter, () => CanRemoveYearFilter);
             RemoveColourFilterCommand = new RelayCommand(RemoveColourFilter, () => CanRemoveColourFilter);
             RemoveStyleFilterCommand = new RelayCommand(RemoveStyleFilter, () => CanRemoveStyleFilter);
+            RemoveStockTypeFilterCommand = new RelayCommand(RemoveStockTypeFilter, () => CanRemoveStockTypeFilter);
         }
 
         private void DoWork(object sender, DoWorkEventArgs e)
@@ -471,6 +515,10 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                           select t.Style;
                  Style = new ObservableCollection<string>(q5.Distinct().OrderBy(x => x));
 
+                 var q6 = from t in online
+                     select t.StockType;
+                 StockType = new ObservableCollection<string>(q6.Distinct().OrderBy(x => x));
+
                  Things = new ObservableCollection<SpecailOrders>(online.OrderBy(x => x.Ref));
              }).ContinueWith((task) =>
             {
@@ -491,13 +539,12 @@ namespace MultiFilteredDataGridMVVM.ViewModel
         }
 
         public void CsvGenerateCommand()
-        {
-            Things.ToCsv();
+        { 
             if (File.Exists(System.Configuration.ConfigurationManager.AppSettings["CsvReport"]))
             {
                 File.Delete(System.Configuration.ConfigurationManager.AppSettings["CsvReport"]);
             }
-            File.AppendAllText(System.Configuration.ConfigurationManager.AppSettings["CsvReport"], Things.ToCsv());
+            File.AppendAllText(System.Configuration.ConfigurationManager.AppSettings["CsvReport"], CVS.Source.ToCsv());
             MessageBox.Show("CSV Generated");
         }
 
@@ -511,6 +558,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             RemoveCountryFilter();
             RemoveColourFilter();
             RemoveStyleFilter();
+            RemoveStockTypeFilter();
         }
         public void RemoveCountryFilter()
         {
@@ -546,6 +594,14 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             //X_Online.Filter -= new FilterEventHandler(FilterByYear);
             SelectedStyle = null;
             CanRemoveStyleFilter = false;
+        }
+
+        public void RemoveStockTypeFilter()
+        {
+            CVS.Filter -= new FilterEventHandler(FilterByStockType);
+            //X_Online.Filter -= new FilterEventHandler(FilterByYear);
+            SelectedStockType = null;
+            CanRemoveStockTypeFilter = false;
         }
 
         public double ProgressValue
@@ -684,6 +740,25 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             }
         }
 
+        public void AddStockTypeFilter()
+        {
+            // see Notes on Adding Filters:
+            if (CanRemoveStockTypeFilter)
+            {
+                CVS.Filter -= new FilterEventHandler(FilterByStockType);
+                CVS.Filter += new FilterEventHandler(FilterByStockType);
+
+                //X_Online.Filter -= new FilterEventHandler(FilterByYear);\\\\\\\\\\
+                //X_Online.Filter += new FilterEventHandler(FilterByYear);
+            }
+            else
+            {
+                CVS.Filter += new FilterEventHandler(FilterByStockType);
+                //X_Online.Filter += new FilterEventHandler(FilterByYear);
+                CanRemoveStockTypeFilter = true;
+            }
+        }
+
         /* Notes on Filter Methods:
          * When using multiple filters, do not explicitly set anything to true.  Rather,
          * only hide things which do not match the filter criteria
@@ -738,6 +813,16 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 e.Accepted = false;
         }
 
+        private void FilterByStockType(object sender, FilterEventArgs e)
+        {
+            // see Notes on Filter Methods:
+            var src = e.Item as SpecailOrders;
+            if (src == null)
+                e.Accepted = false;
+            else if (string.Compare(SelectedStockType, src.StockType) != 0)
+                e.Accepted = false;
+        }
+
         private enum FilterField
         {
             Author,
@@ -745,6 +830,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             Year,
             Colour,
             Style,
+            StockType,
             None
         }
         private void ApplyFilter(FilterField field)
@@ -765,6 +851,9 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                     break;
                 case FilterField.Style:
                     AddStyleFilter();
+                    break;
+                case FilterField.StockType:
+                    AddStockTypeFilter();
                     break;
                 default:
                     break;
