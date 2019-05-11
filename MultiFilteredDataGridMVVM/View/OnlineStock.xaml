@@ -31,19 +31,19 @@
                 <ColumnDefinition></ColumnDefinition>
             </Grid.ColumnDefinitions>
 
-            <ComboBox HorizontalAlignment="Left" Margin="8,0,0,6.04" Width="75" VerticalAlignment="Bottom" 
+            <ComboBox HorizontalAlignment="Left" Margin="8,0,0,6.04" Width="75" VerticalAlignment="Bottom" Background="White" Text="--Season--" Foreground="Black"
             ItemsSource="{Binding Years}" SelectedItem="{Binding SelectedYear, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
             <Button HorizontalAlignment="Left" Margin="87,27.48,0,4.52" Width="16" Height="16" 
             Command="{Binding RemoveYearFilterCommand, Mode=OneWay}">
                 <Image Width="10" Height="10" Style="{DynamicResource ImageStyleForButtons}"/>
             </Button>
-            <ComboBox Margin="110,0,0,6.333" HorizontalAlignment="Left" Width="120" VerticalAlignment="Bottom" 
+            <ComboBox Margin="110,0,0,6.333" HorizontalAlignment="Left" Width="120" VerticalAlignment="Bottom" Background="White" Foreground="Black"
             ItemsSource="{Binding Authors}" SelectedItem="{Binding SelectedAuthor}"/>
             <Button Margin="241,32,0,9.333" HorizontalAlignment="Left" Width="16" Height="16" 
             Command="{Binding RemoveAuthorFilterCommand, Mode=OneWay}">
                 <Image Width="10" Height="10" Style="{DynamicResource ImageStyleForButtons}"/>
             </Button>
-            <ComboBox HorizontalAlignment="Left" Margin="279,0,0,6.333" Width="120" VerticalAlignment="Bottom" 
+            <ComboBox HorizontalAlignment="Left" Margin="279,0,0,6.333" Width="120" VerticalAlignment="Bottom" Background="White"
             ItemsSource="{Binding Countries}" SelectedItem="{Binding SelectedCountry}"/>
             <Button HorizontalAlignment="Left" Margin="445,27.48,0,4.52" Width="16" Height="16" 
             Command="{Binding RemoveCountryFilterCommand, Mode=OneWay}">
@@ -51,7 +51,7 @@
             </Button>
             <Button x:Name="v" Content="Reset" HorizontalAlignment="Left" Margin="500.667,0,-13,6.333" Width="75" Grid.Column="1" VerticalAlignment="Bottom" 
             Command="{Binding ResetFiltersCommand, Mode=OneWay}"/>
-            <TextBlock HorizontalAlignment="Left" Margin="8,11.04,0,28.226" TextWrapping="Wrap" Text="Season" FontSize="13.333" d:LayoutOverrides="Height"/>
+            <TextBlock HorizontalAlignment="Left" Margin="8,11.04,0,28.226" Text="Season" TextWrapping="Wrap"  FontSize="13.333" d:LayoutOverrides="Height"/>
             <TextBlock HorizontalAlignment="Left" Margin="129,11.04,0,28.226" TextWrapping="Wrap" Text="Supplier" FontSize="13.333" d:LayoutOverrides="Height"/>
             <TextBlock HorizontalAlignment="Left" Margin="321,11.04,0,0" TextWrapping="Wrap" Text="Category" FontSize="13.333" VerticalAlignment="Top"/>
 
@@ -62,19 +62,19 @@
             <Button Grid.Row="2" Grid.Column="1" Content="Export CSV" Width="110" HorizontalAlignment="Right" Margin="0,0.667,115,0.333" Command="{Binding CsvCommand}" Height="Auto"/>
 
             <ProgressBar Value="{Binding ProgressValue}" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Height="Auto" Margin="15" />
-            <ComboBox HorizontalAlignment="Left" Margin="26.667,0,0,5.333" Width="120" VerticalAlignment="Bottom" 
+            <ComboBox HorizontalAlignment="Left" Margin="26.667,0,0,5.333" Width="120" VerticalAlignment="Bottom" Background="White"
             ItemsSource="{Binding Style}" SelectedItem="{Binding SelectedStyle, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Grid.Column="1"/>
             <Button HorizontalAlignment="Left" Margin="150.667,32,0,9.333" Width="16" Height="16" 
             Command="{Binding RemoveStyleFilterCommand, Mode=OneWay}" Grid.Column="1">
                 <Image Width="10" Height="10" Style="{DynamicResource ImageStyleForButtons}"/>
             </Button>
-            <ComboBox HorizontalAlignment="Left" Margin="196.667,0,0,5.333" Width="120" VerticalAlignment="Bottom" 
+            <ComboBox HorizontalAlignment="Left" Margin="196.667,0,0,5.333" Width="120" VerticalAlignment="Bottom" Background="White"
             ItemsSource="{Binding Colour}" SelectedItem="{Binding SelectedColour, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Grid.Column="1"/>
             <Button HorizontalAlignment="Left" Margin="320.667,32,0,9.333" Width="16" Height="16" 
             Command="{Binding RemoveColourFilterCommand, Mode=OneWay}" Grid.Column="1">
                 <Image Width="10" Height="10" Style="{DynamicResource ImageStyleForButtons}"/>
             </Button>
-            <ComboBox HorizontalAlignment="Left" Margin="348.667,0,0,5.333" Width="120" VerticalAlignment="Bottom" 
+            <ComboBox HorizontalAlignment="Left" Margin="348.667,0,0,5.333" Width="120" VerticalAlignment="Bottom" Background="White"
                       ItemsSource="{Binding StockType}" SelectedItem="{Binding SelectedStockType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Grid.Column="1"/>
             <Button HorizontalAlignment="Left" Margin="472.667,32,0,9.333" Width="16" Height="16" 
                     Command="{Binding RemoveStockTypeFilterCommand, Mode=OneWay}" Grid.Column="1">

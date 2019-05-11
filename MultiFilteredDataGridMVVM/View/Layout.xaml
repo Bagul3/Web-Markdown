@@ -14,6 +14,7 @@
         TextOptions.TextRenderingMode="Auto"
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="{DynamicResource MaterialDesignFont}"
+        WindowState="Maximized"
         Title="Cordners" Height="1000" Width="1500" ResizeMode="CanResize">
     <Window.Resources>
         <DataTemplate x:Name="redViewTemplate" DataType="{x:Type viewmodels:MainViewModel}">
@@ -39,8 +40,13 @@
             <StackPanel Width="166" Margin="0,0,0,-0.333">
                 <Button Content="Sales Price" Click="MainView_Clicked" Margin="1"/>
                 <Button Content="Import Products" Click="ImportProductsView_Clicked" Margin="1"/>
-                <Button Content="Missing Online" Click="SKUCheckerView_Clicked" Margin="1"/>
-                <Button Content="Online Stock" Click="OnlineCheckerView_Clicked" Margin="1"/>
+                <Button Content="Missing From Online" Click="SKUCheckerView_Clicked" Margin="1"/>
+                <Button Content="Stock on Site" Click="OnlineCheckerView_Clicked" Margin="1"/>
+                <Image Margin="0,500,10,0" RenderTransformOrigin="0.529,-4.02" VerticalAlignment="Bottom">
+                    <Image.Source>
+                        <BitmapImage DecodePixelWidth="300"  UriSource="/Resources/logo-_1_.bmp"/>
+                    </Image.Source>
+                </Image>                
             </StackPanel>
         </DockPanel>
         <ContentControl Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="4" Grid.RowSpan="5" Content="{Binding}"/>

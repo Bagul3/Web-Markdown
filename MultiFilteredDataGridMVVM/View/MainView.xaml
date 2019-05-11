@@ -18,11 +18,11 @@
     <UserControl.DataContext>
         <Binding Mode="OneWay" Path="MainVM" Source="{StaticResource MainViewModelLocatorDataSource}"/>
     </UserControl.DataContext>
-    
+
     <xctk:BusyIndicator IsBusy="{Binding IsBusy}">
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="57"/>
+                <RowDefinition Height="57" />
                 <RowDefinition Height="25"/>
                 <RowDefinition Height="5"/>
                 <RowDefinition Height="25"/>
@@ -32,7 +32,7 @@
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition></ColumnDefinition>
-                <ColumnDefinition Width="100"></ColumnDefinition>
+                <ColumnDefinition Width="125"></ColumnDefinition>
                 <ColumnDefinition></ColumnDefinition>
                 <!---->
         </Grid.ColumnDefinitions>
@@ -52,8 +52,8 @@
             <Image Width="10" Height="10" Style="{DynamicResource ImageStyleForButtons}"/>
         </Button>-->
 
-                <wpfElements:MultiSelectComboBox HorizontalAlignment="Left" Margin="90,0,0,6.333" Width="105" VerticalAlignment="Bottom" 
-                                             ItemsSource="{Binding Season, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SelectedItems="{Binding SelectedSeasons, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Height="28" Grid.ColumnSpan="2" Grid.Column="1"/>
+                <wpfElements:MultiSelectComboBox HorizontalAlignment="Left" Margin="15,0,0,7" Width="105" VerticalAlignment="Bottom" Text="-- Season --"
+                                             ItemsSource="{Binding Season, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SelectedItems="{Binding SelectedSeasons, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Height="28" Grid.Column="1"/>
                 <!--<Button HorizontalAlignment="Left" Margin="125,17,0,10.333" Width="29"  Grid.Column="2"
                         Command="{Binding RemoveColourFilterCommand, Mode=OneWay}" RenderTransformOrigin="11.825,0.6">
                         <Image Width="10" Height="10" Style="{DynamicResource ImageStyleForButtons}"/>
@@ -62,42 +62,42 @@
                 <!--                Command="{Binding RemoveStyleFilterCommand, Mode=OneWay}" RenderTransformOrigin="11.825,0.6">-->
                 <!--            <Image Width="10" Height="10" Style="{DynamicResource ImageStyleForButtons}"/>-->
                 <!--        </Button>-->
-                <TextBlock HorizontalAlignment="Left" Margin="20,3,0,36.333" TextWrapping="Wrap" Text="Supplier" FontSize="13.333"/>
-                <TextBlock HorizontalAlignment="Left" Margin="192,4,0,35.333" TextWrapping="Wrap" Text="Type" FontSize="13.333"/>
-                <TextBlock HorizontalAlignment="Left" Margin="359,3,0,35.333" TextWrapping="Wrap" Text="Departments" FontSize="13.333"/>
-                <TextBlock HorizontalAlignment="Left" Margin="90,1,0,0" TextWrapping="Wrap" Text="Season" FontSize="13.333" VerticalAlignment="Top" Grid.Column="1" Grid.ColumnSpan="2"/>
-                <TextBlock HorizontalAlignment="Left" Margin="169,1,0,0" TextWrapping="Wrap" Text="Categories" FontSize="13.333" VerticalAlignment="Top" Grid.Column="2"/>
-                <Button Margin="380,17,-60.667,8.333" HorizontalAlignment="Left" Width="136" Grid.Column="2" Command="{Binding GetStock, Mode=OneWay}" Content="Retrieve Stock"/>
-                <Button Margin="361.333,8.667,0,16.667" HorizontalAlignment="Left" Width="94" Grid.Column="2" Grid.Row="6" Command="{Binding Generate, Mode=OneWay}" Content="Generate"/>
-                <Custom:DatePicker Grid.Column="0" Grid.Row="6" Name="endDate" BorderBrush="Transparent" SelectedDate="{Binding EndDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="351,5,76,21.333" Grid.ColumnSpan="2" Foreground="White" />
-                <Custom:DatePicker Grid.Column="0" Grid.Row="6" Name="startDate" BorderBrush="Transparent" SelectedDate="{Binding StartDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="48,6,307.667,20.333" Foreground="White"/>
-                <TextBlock HorizontalAlignment="Left" Margin="325,10,0,0"  TextWrapping="Wrap" Text="End" FontSize="13.333" VerticalAlignment="Top" Grid.Column="0" Grid.Row="6"/>
-                <TextBlock HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" Text="Start" FontSize="13.333" VerticalAlignment="Top" Grid.Column="0" Grid.Row="6"/>
+                <Button Margin="325,20,-6,5" HorizontalAlignment="Left" Width="136" Grid.Column="2" Command="{Binding GetStock, Mode=OneWay}" Content="Retrieve Stock"/>
+                <Button Margin="361,19,0,6" HorizontalAlignment="Left" Width="94" Grid.Column="2" Grid.Row="6" Command="{Binding Generate, Mode=OneWay}" Content="Generate"/>
+                <Custom:DatePicker Grid.Column="0" Grid.Row="6" Name="endDate" BorderBrush="Transparent" SelectedDate="{Binding EndDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="410,20,40,5" Grid.ColumnSpan="2" Foreground="Black" />
+                <Custom:DatePicker Grid.Column="0" Grid.Row="6" Name="startDate" BorderBrush="Transparent" SelectedDate="{Binding StartDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="45,20,265,5" Foreground="Black"/>
+                <TextBlock HorizontalAlignment="Left" Margin="385,25,0,0"  TextWrapping="Wrap" Text="End" FontSize="13.333" VerticalAlignment="Top" Grid.Column="0" Grid.Row="6"/>
+                <TextBlock HorizontalAlignment="Left" Margin="10,25,0,0" TextWrapping="Wrap" Text="Start" FontSize="13.333" VerticalAlignment="Top" Grid.Column="0" Grid.Row="6"/>
                 <!-- *** The ItemsSource of the data grid is bound to the CollectionViewSource object that was instantiated above -->
                 <wpfElements:CustomDataGrid CanUserReorderColumns="True" CanUserResizeColumns="True" 
-                                        CanUserResizeRows="False" CanUserSortColumns="True" ItemsSource="{Binding Source={StaticResource X_CVS}}" Margin="8" Grid.Row="1" Grid.Column="2" Grid.RowSpan="4" AutoGenerateColumns="True"  IsReadOnly="True" SelectedItemsList="{Binding SpecailSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></wpfElements:CustomDataGrid>
+                                        CanUserResizeRows="False" CanUserSortColumns="True" ItemsSource="{Binding Source={StaticResource X_CVS}}" Margin="6,3,10,43" Grid.Row="1" Grid.Column="2" Grid.RowSpan="5" AutoGenerateColumns="True"  IsReadOnly="True" SelectedItemsList="{Binding SpecailSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                 <wpfElements:CustomDataGrid CanUserReorderColumns="True" CanUserResizeColumns="True" 
-                                        CanUserResizeRows="False" CanUserSortColumns="True" ItemsSource="{Binding Source={StaticResource DiscountedStock}}" Margin="8" Grid.Row="1" Grid.RowSpan="4" Grid.Column="0" AutoGenerateColumns="True"  IsReadOnly="True" SelectedItemsList="{Binding CordnersCordnersSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></wpfElements:CustomDataGrid>
+                                        CanUserResizeRows="False" CanUserSortColumns="True" ItemsSource="{Binding Source={StaticResource DiscountedStock}}" Margin="10,5,5.5,41" Grid.Row="1" Grid.RowSpan="5" Grid.Column="0" AutoGenerateColumns="True"  IsReadOnly="True" SelectedItemsList="{Binding CordnersCordnersSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                 <Button HorizontalAlignment="Center" Width="58" MaxHeight="25"  Grid.Row="4" Grid.Column="1" Command="{Binding AddSelectedItems, Mode=OneWay}" Content=">>" Height="Auto"/>
-                <Button HorizontalAlignment="Center" Width="58" MaxHeight="25" Grid.Row="1" Grid.Column="1" Command="{Binding RemoveSelectedItems, Mode=OneWay}" Content="&lt;&lt;" Height="50" Margin="21,14.667,21,16" Grid.RowSpan="4"/>
-                <ProgressBar Value="{Binding ProgressValue}" Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="3" Height="Auto" Margin="0,0,0.333,0.333" />
-                <wpfElements:MultiSelectComboBox HorizontalAlignment="Left" Margin="20,0,0,4.333" Width="105" VerticalAlignment="Bottom"
+                <Button HorizontalAlignment="Center" Width="58" MaxHeight="25" Grid.Row="3" Grid.Column="1" Command="{Binding RemoveSelectedItems, Mode=OneWay}" Content="&lt;&lt;" Height="Auto"/>
+                <ProgressBar Value="{Binding ProgressValue}" Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="3" Height="Auto" Margin="0,11,0,46" Grid.RowSpan="2" />
+                <TextBlock HorizontalAlignment="Left" Margin="20,0,0,39" TextWrapping="Wrap" Text="Supplier" FontSize="13.333"/>
+                <TextBlock HorizontalAlignment="Left" Margin="15,0,0,39" TextWrapping="Wrap" Text="Season" FontSize="13.333" Grid.Column="1"/>
+                <TextBlock HorizontalAlignment="Left" Margin="359,0,0,39" TextWrapping="Wrap" Text="Depart" FontSize="13.333"/>
+                <TextBlock HorizontalAlignment="Left" Margin="191,4,0,35" TextWrapping="Wrap" Text="Type" FontSize="13.333"/>
+                <wpfElements:MultiSelectComboBox HorizontalAlignment="Left" Margin="20,0,0,7" Width="105" VerticalAlignment="Bottom" Text="-- Supplier --"
                                              ItemsSource="{Binding Supplier, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SelectedItems="{Binding SelectedSupplier, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Height="28" Foreground="Black" />
-                <wpfElements:MultiSelectComboBox HorizontalAlignment="Left" Margin="191,0,0,4.333" Width="105" VerticalAlignment="Bottom" Foreground="Black"
+                <wpfElements:MultiSelectComboBox HorizontalAlignment="Left" Margin="191,0,0,7" Width="105" VerticalAlignment="Bottom" Foreground="Black" Text="-- Type --"
                                              ItemsSource="{Binding Style,Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SelectedItems="{Binding SelectedStyle, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Height="28"/>
-                <wpfElements:MultiSelectComboBox HorizontalAlignment="Left" Margin="359,0,0,4.333" Width="105" VerticalAlignment="Bottom" Foreground="Black"
+                <wpfElements:MultiSelectComboBox HorizontalAlignment="Left" Margin="355,0,0,7" Width="105" VerticalAlignment="Bottom" Foreground="Black" Text="-- Depart --"
                                              ItemsSource="{Binding StockType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SelectedItems="{Binding SelectedStockType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Height="28"/>
-                <wpfElements:MultiSelectComboBox HorizontalAlignment="Left" Margin="168,0,0,4.333" Width="105" VerticalAlignment="Bottom" Foreground="Black"
+                <wpfElements:MultiSelectComboBox HorizontalAlignment="Left" Margin="55,0,0,7" Width="105" VerticalAlignment="Bottom" Foreground="Black" Text="-- Categories --"
                                              ItemsSource="{Binding  Category, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SelectedItems="{Binding SelectedCategory, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Height="28" Grid.Column="2"/>
-                <Label Content="Adjust Price by £" Grid.Column="2" HorizontalAlignment="Left" Margin="37,15,0,0" Grid.Row="6" VerticalAlignment="Top" />
-                <TextBox Grid.Column="2" HorizontalAlignment="Left" Height="25" Margin="141,15.333,0,0" Grid.Row="6" TextWrapping="Wrap" Text="{Binding AdjustPrice}" VerticalAlignment="Top" Width="31" Background="White"/>
-                <Label Content="Adjust Price by %" Grid.Column="2" HorizontalAlignment="Left" Margin="192,15,0,0" Grid.Row="6" VerticalAlignment="Top" />
-                <TextBox Grid.Column="2" HorizontalAlignment="Left" Height="25" Margin="299,15.333,0,0" Grid.Row="6" TextWrapping="Wrap" Text="{Binding AdjustPricePercentage}" VerticalAlignment="Top" Width="31" Background="White"/>
+                <Label Content="Adjust Price by £" Grid.Column="2" HorizontalAlignment="Left" Margin="37,25,0,0" Grid.Row="6" VerticalAlignment="Top" />
+                <TextBox Grid.Column="2" HorizontalAlignment="Left" Height="25" Margin="141,25,0,0" Grid.Row="6" TextWrapping="Wrap" Text="{Binding AdjustPrice}" VerticalAlignment="Top" Width="31" Background="White" Foreground="Black"/>
+                <Label Content="Adjust Price by %" Grid.Column="2" HorizontalAlignment="Left" Margin="192,25,0,0" Grid.Row="6" VerticalAlignment="Top" />
+                <TextBox Grid.Column="2" HorizontalAlignment="Left" Height="25" Margin="299,25,0,0" Grid.Row="6" TextWrapping="Wrap" Text="{Binding AdjustPricePercentage}" VerticalAlignment="Top" Width="31" Background="White" Foreground="Black"/>
+                <TextBlock HorizontalAlignment="Left" Margin="55,4,0,35" TextWrapping="Wrap" Text="Categories" FontSize="13.333" Grid.Column="2"/>
                 <!--<Button Margin="5.333,255.667,0,363.333" HorizontalAlignment="Left" Width="90" Grid.Row="1" Grid.Column="1" Content="Add All" Height="Auto"/>
         <Button Margin="5.333,297.667,0,321.333" HorizontalAlignment="Left" Width="90" Grid.Row="1" Grid.Column="1" Content="Remove All" Height="Auto"/>-->
         </Grid>
     </xctk:BusyIndicator>
-    
+
 </UserControl>
 
 

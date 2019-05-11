@@ -72,6 +72,15 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             }
         }
 
+        public GenerateStockFileViewModel StockVM
+        {
+            get
+            {
+                var vm = Container.Resolve<GenerateStockFileViewModel>();
+                return vm;
+            }
+        }
+
         public static void Cleanup()
         {
             Container.Resolve<SkuViewModel>().Cleanup();

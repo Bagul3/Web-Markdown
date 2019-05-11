@@ -224,6 +224,9 @@ namespace ImportProducts.Services
             var condition = "\"new\"";
             var ean = "\"\"";
             var model = "\"" + dr["SUPPREF"] + "\"";
+            var infocare = "\"" + "row-product-featured-shoe-care" + "\"";
+            var sizeguide = "\"" + "product_tab_size_guide" + "\"";
+            var rrp = "\"" + dr["SELL"] + "\"";
 
             var newLine = $"{store}," +
                           $"{websites},{attribut_set},{type},{sku},{hasOption},{name.TrimEnd()},{pageLayout},{optionsContainer},{price},{weight},{status}," +
@@ -231,7 +234,7 @@ namespace ImportProducts.Services
                           $"{shortDescription},{gty},{productName},{color}," +
                           $"{sizeRange},{taxClass},{configurableAttribute},{simpleSku},{manufactor},{isInStock}," +
                           $"{category},{season},{stockType},{image},{smallImage},{thumbnail},{gallery},{condition},{ean}," +
-                          $"{description},{model}";
+                          $"{description},{model},{infocare},{sizeguide},{rrp}";
             return newLine;
         }
 
@@ -293,6 +296,19 @@ namespace ImportProducts.Services
             var productName = "\"" + descripto?.TrimEnd() + "\"";
             var color = "\"" + dr["MasterColour"].ToString().TrimEnd() + "\"";
             var sizeRange = "\"" + dr["SIZERANGE"] + size + "\"";
+
+            if (new[] { "A", "P", "Q", "S" }.Any(c => sizeRange.ToUpper().Contains(c)))
+            {
+                try
+                {
+                    sizeRange = sizeRange.Remove(0, 1);    
+                }
+                catch (Exception e)
+                {
+                    new LogWriter().LogWrite(e.StackTrace);
+                }
+            }
+
             var vat = dr["VAT"].ToString() == "A" ? "TAX" : "None";
             var taxClass = "\"" + vat + "\"";
             const string configurableAttribute = "\"\"";
@@ -307,7 +323,9 @@ namespace ImportProducts.Services
             var thumbnail = "\"/" + reffColour + ".jpg\"";
             var gallery = "\"" + BuildGalleryImages(t2TreFs, groupSkus2.Substring(0, 9)) + "\"";
             const string condition = "\"new\"";
-
+            var infocare = "\"" + "row-product-featured-shoe-care" + "\"";
+            var sizeguide = "\"" + "product_tab_size_guide" + "\"";
+            var rrp = "\"" + dr["SELL"] + "\"";
             var escapedEanCode = "\"\"";
 
             if (!string.IsNullOrEmpty(eanCode))
@@ -324,7 +342,7 @@ namespace ImportProducts.Services
                           $"{shortDescription},{gty},{productName},{color}," +
                           $"{sizeRange},{taxClass},{configurableAttribute},{simpleSku},{manufactor},{isInStock}," +
                           $"{category},{season},{stockType},{image},{smallImage},{thumbnail},{gallery},{condition},{ean}," +
-                          $"{description},{model}";
+                          $"{description},{model},{infocare},{sizeguide},{rrp}";
             return newLine;
         }
 

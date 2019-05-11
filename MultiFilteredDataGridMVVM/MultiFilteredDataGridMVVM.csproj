@@ -39,6 +39,9 @@
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>logo-_1_.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="GalaSoft.MvvmLight, Version=3.0.0.20008, Culture=neutral, PublicKeyToken=3e875cdb3903c512, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -102,6 +105,7 @@
     </ApplicationDefinition>
     <Compile Include="Class1.cs" />
     <Compile Include="Design\DesignDummyService.cs" />
+    <Compile Include="ViewModel\GenerateStockFileViewModel.cs" />
     <Compile Include="ViewModel\ImportProductViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\MainViewModelLocator.cs" />
@@ -126,6 +130,9 @@
     </Compile>
     <Compile Include="View\SkuChecker.xaml.cs">
       <DependentUpon>SkuChecker.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\StockFile.xaml.cs">
+      <DependentUpon>StockFile.xaml</DependentUpon>
     </Compile>
     <Compile Include="WpfElements\BooleanToVisibilityConverter.cs" />
     <Compile Include="WpfElements\SkuDropDown.cs" />
@@ -157,6 +164,10 @@
     <Page Include="View\SkuChecker.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="View\StockFile.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="WpfElements\MultiSelectComboBox.xaml">
       <SubType>Designer</SubType>
@@ -206,6 +217,12 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\1385_Disable_16x16_72_disabled.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\logo-_1_.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="logo-_1_.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

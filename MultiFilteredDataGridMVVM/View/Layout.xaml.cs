@@ -33,5 +33,10 @@ namespace MultiFilteredDataGridMVVM.View
         {
             DataContext = new OnlineStock();
         }
+
+        private void GenerateStockFile_Clicked(object sender, RoutedEventArgs e)
+        {
+            DataContext = new StockFile();
+        }
     }
 }

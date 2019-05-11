@@ -29,6 +29,6 @@ namespace Common
 
         public string Sell { get; set; }
 
-        public string SellB { get; set; }
+        public string RRP { get; set; }
     }
 }

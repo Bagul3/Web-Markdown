@@ -32,8 +32,9 @@ namespace MultiFilteredDataGridMVVM.ViewModel
         private Dictionary<string, object> _style;
         private Dictionary<string, object> _season;
         private Dictionary<string, object> _stockType;
+        private Dictionary<string, object> _size;
 
-        private string _selectedSize;
+        private Dictionary<string, object> _selectedSize;
         private Dictionary<string, object> _selectedSupplier;
         private Dictionary<string, object> _selectedCategory;
         private Dictionary<string, object> _selectedSeason;
@@ -47,7 +48,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
         private bool _canCanRemoveSupplierFilter;
         private bool _canCanRemoveStyleFilter;
         private bool _canCanRemoveColourFilter;
-        private bool _canCanRemoveStockTypeFilter;
+        private bool _canCanRemoveStockTypeFilter;        
 
         private double _progressValue;
 
@@ -134,15 +135,22 @@ namespace MultiFilteredDataGridMVVM.ViewModel
 
         public MainViewModel()
         {
-            LoadData();
-            this.worker = new BackgroundWorker
+            try
             {
-                WorkerReportsProgress = true
-            };
-            this.worker.DoWork += this.GenerateSpecailOrders;
-            this.worker.ProgressChanged += this.ProgressChanged;
-            
-            DoLoading();
+                LoadData();
+                this.worker = new BackgroundWorker
+                {
+                    WorkerReportsProgress = true
+                };
+                this.worker.DoWork += this.GenerateSpecailOrders;
+                this.worker.ProgressChanged += this.ProgressChanged;
+
+                DoLoading();
+            }
+            catch(Exception e)
+            {
+                MessageBox.Show(e.Message);
+            }            
         }
 
         private async Task DoLoading()
@@ -270,7 +278,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             }
         }
 
-        public string SelectedSize
+        public Dictionary<string, object> SelectedSize
         {
             get { return _selectedSize; }
             set
@@ -279,9 +287,10 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                     return;
                 _selectedSize = value;
                 RaisePropertyChanged("SelectedSize");
-                ApplyFilter(!string.IsNullOrEmpty(_selectedSize) ? FilterField.Size : FilterField.None);
+                //ApplyFilter(!string.IsNullOrEmpty(_selectedColour) ? FilterField.Colour : FilterField.None);
             }
         }
+
         /// <summary>
         /// Gets or sets the selected author in the list countries to filter the collection
         /// </summary>
@@ -417,6 +426,18 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 RaisePropertyChanged("Season");
             }
         }
+
+        public Dictionary<string, object> Size
+        {
+            get { return _size; }
+            set
+            {
+                if (_size == value)
+                    return;
+                _size = value;
+                RaisePropertyChanged("Size");
+            }
+        }
         /// <summary>
         /// Gets or sets a list of authors which is used to populate the country filter
         /// drop down list.
@@ -498,6 +519,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 RaisePropertyChanged("CanRemoveSizeFilter");
             }
         }
+
         /// <summary>
         /// Gets or sets a flag indicating if the Author filter, if applied, can be removed.
         /// </summary>
@@ -664,25 +686,32 @@ namespace MultiFilteredDataGridMVVM.ViewModel
 
         public async void GenerateSpecailOrders(object sender, DoWorkEventArgs e)
         {
-            var count = 0;
-            var csv = new StringBuilder();
-            var headers = $"{"sku"},{"special_price"},{"special_from_date"},{"special_to_date"}";
-            csv.AppendLine(headers);
-            var stamp = DateTime.Now.Millisecond;
-            File.AppendAllText(System.Configuration.ConfigurationManager.AppSettings["SalesPriceOutput"] + stamp + ".csv", csv.ToString());
-            foreach (var specailOrder in SpecailOrders)
+            try
             {
-                if (count >= 100)
+                var count = 0;
+                var csv = new StringBuilder();
+                var headers = $"{"sku"},{"special_price"},{"special_from_date"},{"special_to_date"},{"RRP"}";
+                csv.AppendLine(headers);
+                var stamp = DateTime.Now.Millisecond;
+                File.AppendAllText(System.Configuration.ConfigurationManager.AppSettings["SalesPriceOutput"] + stamp + ".csv", csv.ToString());
+                foreach (var specailOrder in SpecailOrders)
                 {
-                    count = 1;
+                    if (count >= 100)
+                    {
+                        count = 1;
+                    }
+                    count++;
+                    _specailOrdersService.GenerateCSVAsync(specailOrder, StartDate.ToString("yyyy-MM-dd"), EndDate.ToString("yyyy-MM-dd"), stamp, Convert.ToDecimal(AdjustPrice), AdjustPricePercentage);
+                    worker.ReportProgress(count);
                 }
-                count++;
-                _specailOrdersService.GenerateCSVAsync(specailOrder, StartDate.ToString("yyyy-MM-dd"), EndDate.ToString("yyyy-MM-dd"), stamp, AdjustPrice, AdjustPricePercentage);
-                worker.ReportProgress(count);
+                worker.ReportProgress(100);
+                AdjustPrice = 0;
+                MessageBox.Show("Sales Price CSV Generated to Input/Output Folder");
             }
-            worker.ReportProgress(100);
-            AdjustPrice = 0;
-            MessageBox.Show("Sales Price CSV Generated to Input/Output Folder");
+            catch(Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }           
         }
 
         public void RemoveSelectedListItems()
@@ -740,7 +769,8 @@ namespace MultiFilteredDataGridMVVM.ViewModel
 
         private void LoadData()
         {
-                //IsBusy = true;
+            //IsBusy = true;
+            Size = new Dictionary<string, object>();
             Supplier = new Dictionary<string, object>();
             Season = new Dictionary<string, object>();
             Category = new Dictionary<string, object>();

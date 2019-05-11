@@ -106,7 +106,6 @@ namespace DataService
                 {
                     Ref = dr["Ref"].ToString(),
                     Sell = dr["Sell"].ToString(),
-                    SellB = dr["SellB"].ToString(),
                     MasterSupplier = dr["MasterSupplier"].ToString(),
                     Color = dr["MasterColour"].ToString(),
                     Style = dr["STYPE"].ToString(),

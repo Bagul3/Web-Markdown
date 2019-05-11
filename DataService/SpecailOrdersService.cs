@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Common;
 using DataRepo;
+using System.Windows;
 
 namespace DataService
 {
@@ -19,47 +20,48 @@ namespace DataService
             _skuRepository = new SkuRepository();
         }
 
-        public void GenerateCSVAsync(SpecailOrders specailOrders, string startDate, string endDate, int stamp, double adjustmentPrice = 0, int adjustmentPercentage = 0)
+        public void GenerateCSVAsync(SpecailOrders specailOrders, string startDate, string endDate, int stamp, decimal adjustmentPrice = 0, int adjustmentPercentage = 0)
         {
-            var csv = new StringBuilder();
-           
-            var items = _skuRepository.RetrieveQuery(specailOrders.Ref, SqlQueries.SingleSkuSmaller);
-            var specailsOrders = new List<SpecailOrders>();
-
-            foreach (DataRow item in items.Tables[0].Rows)
+            try
             {
-                BuildStockObject(ref specailsOrders, item);
+                var csv = new StringBuilder();
+                var items = _skuRepository.RetrieveQuery(specailOrders.Ref, SqlQueries.SingleSkuSmaller);
+                var specailsOrders = new List<SpecailOrders>();
+
+                foreach (DataRow item in items.Tables[0].Rows)
+                {
+                    BuildStockObject(ref specailsOrders, item);
+                }
+
+                foreach (var o in specailsOrders)
+                {
+                    var sellPrice = Convert.ToDouble(o.Sell);
+                    var actualPrice = 0.0m;
+                    if (adjustmentPercentage != 0)
+                    {
+                        actualPrice = Convert.ToDecimal(o.Sell) - (Convert.ToDecimal(Convert.ToDecimal(adjustmentPercentage) / 100) * Convert.ToDecimal(o.Sell));
+                    }
+                    else
+                    {
+                        actualPrice = adjustmentPrice > 0 ? Convert.ToDecimal(Math.Ceiling(Convert.ToDecimal(o.Sell) - adjustmentPrice)) : Convert.ToDecimal(Math.Ceiling(sellPrice));
+                    }
+                    
+                    if (actualPrice.ToString().Contains(".") && Convert.ToInt16(actualPrice.ToString().Split('.')[1]) > 0 && 
+                        Convert.ToInt16(actualPrice.ToString().Split('.')[1]) < 49)
+                    {
+                        actualPrice++;
+                    }                    
+
+                    var newLine = $"{"\"" + (o).Ref + "\""},{"\"" + Convert.ToInt16(actualPrice) + "\""},{"\"" + (Convert.ToDateTime(startDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\"" + (Convert.ToDateTime(endDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\"" + (o).RRP + "\""}";
+                    csv.AppendLine(newLine);
+                }
+
+                File.AppendAllText(System.Configuration.ConfigurationManager.AppSettings["SalesPriceOutput"] + stamp + ".csv", csv.ToString());
             }
-            
-            foreach (var o in specailsOrders)
+            catch(Exception e)
             {
-                var price = 0.0;
-                var sellPrice = Convert.ToDouble(o.SellB);
-                var actualPrice = 0.0;
-
-                if (adjustmentPercentage != 0)
-                {
-                    actualPrice = adjustmentPercentage > 0
-                        ? Convert.ToDouble(o.Sell) - (Convert.ToDouble(Convert.ToDouble(adjustmentPercentage) / 100) * Convert.ToDouble(o.Sell))
-                        : Convert.ToDouble(o.Sell);
-                }
-                else
-                {
-                    actualPrice = adjustmentPrice > 0 ? Math.Ceiling(sellPrice - adjustmentPrice) : Math.Ceiling(sellPrice);
-                }
-
-                if (actualPrice.ToString().Split('.').Length > 2 && Convert.ToInt16(actualPrice.ToString().Split('.')[1]) > 0)
-                {
-                    var floored = Convert.ToInt16(sellPrice.ToString().Split('.')[1]);
-                    double roundup = (100 - floored) / 100;
-                    actualPrice += roundup;
-                }
-                
-                var newLine =  $"{"\"" + (o).Ref + "\""},{"\"" + Math.Round(actualPrice) + "\""},{"\"" + (Convert.ToDateTime(startDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\"" + (Convert.ToDateTime(endDate).ToString("yyyy/MM/dd") ?? "") + "\""}";
-                csv.AppendLine(newLine);
+                MessageBox.Show(e.Message);
             }
-                
-            File.AppendAllText(System.Configuration.ConfigurationManager.AppSettings["SalesPriceOutput"] + stamp + ".csv", csv.ToString());
         }
 
         public List<SpecailOrders> GetCordners()
@@ -199,7 +201,6 @@ namespace DataService
                 {
                     Ref = dr["Ref"].ToString(),
                     Sell = dr["Sell"].ToString(),
-                    SellB = dr["SellB"].ToString(),
                     MasterSupplier = dr["MasterSupplier"].ToString(),
                     Color = dr["MasterColour"].ToString(),
                     Style = dr["STYPE"].ToString(),
@@ -236,7 +237,7 @@ namespace DataService
                             {
                                 Ref = newStyle,
                                 Sell = dr["Sell"].ToString(),
-                                SellB = dr["SellB"].ToString()
+                                RRP = dr["BASESELL"].ToString()
                             });
                         }
                     }
@@ -247,8 +248,8 @@ namespace DataService
                     skuRecords.Add(new SpecailOrders()
                     {
                         Ref = dr["NewStyle"].ToString(),
-                        SellB = dr["SellB"].ToString(),
-                        Sell = dr["Sell"].ToString()
+                        Sell = dr["Sell"].ToString(),  
+                        RRP = dr["BASESELL"].ToString()
                     });
                 }
             }
