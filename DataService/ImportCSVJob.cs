@@ -295,13 +295,14 @@ namespace ImportProducts.Services
             var gty = "\"" + actualStock + "\"";
             var productName = "\"" + descripto?.TrimEnd() + "\"";
             var color = "\"" + dr["MasterColour"].ToString().TrimEnd() + "\"";
-            var sizeRange = "\"" + dr["SIZERANGE"] + size + "\"";
 
-            if (new[] { "A", "P", "Q", "S" }.Any(c => sizeRange.ToUpper().Contains(c)))
+            var sizerange = dr["SIZERANGE"] + size;
+
+            if (new[] { "A", "P", "Q", "S", "F", "R"}.Any(c => sizerange.ToUpper().Contains(c)))
             {
                 try
                 {
-                    sizeRange = sizeRange.Remove(0, 1);    
+                    sizerange = sizerange.Remove(0, 1);    
                 }
                 catch (Exception e)
                 {
@@ -309,6 +310,7 @@ namespace ImportProducts.Services
                 }
             }
 
+            var sizeRange = "\"" + sizerange + "\"";
             var vat = dr["VAT"].ToString() == "A" ? "TAX" : "None";
             var taxClass = "\"" + vat + "\"";
             const string configurableAttribute = "\"\"";

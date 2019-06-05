@@ -1,7 +1,10 @@
 ﻿using Common;
 using GalaSoft.MvvmLight;
+using GalaSoft.MvvmLight.Command;
+using MultiFilteredDataGridMVVM.WpfElements;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
 using System.Data.OleDb;
 using System.IO;
@@ -10,22 +13,255 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 
 namespace MultiFilteredDataGridMVVM.ViewModel
 {
     public class GenerateStockFileViewModel : ViewModelBase
     {
+
+        private bool _btnGenerateSingleFile;
+        private bool _btnGenerateMupliteFile;
+
+        private BackgroundWorker worker;
+        private double _progressValue;
+        private bool _btnCancel;
+        private string _status;
+        private readonly LogWriter _logger;
+        private List<string> doneList;
+
         public GenerateStockFileViewModel()
         {
-            MessageBox.Show("Generating stock file, a pop up will appear once completed");
-            ExecuteJob();
-            MessageBox.Show("Stcok file created");
+            InitializeCommands();
+            _btnCancel = false;
+            this.worker = new BackgroundWorker();
+            this.worker.WorkerReportsProgress = true;
+            this.worker.DoWork += this.ExecuteJob;
+            this.worker.ProgressChanged += this.ProgressChanged;
+            _logger = new LogWriter();
+            doneList = new List<string>();
         }
 
-        private readonly LogWriter _logger = new LogWriter();
-        private List<string> doneList = new List<string>();
+        public bool BtnGenerateSingleFile
+        {
+            get { return _btnGenerateSingleFile; }
+            set
+            {
+                if (_btnGenerateSingleFile == value)
+                    return;
+                _btnGenerateSingleFile = value;
+                RaisePropertyChanged("BtnGenerateSingleFile");
+            }
+        }
 
-        public void InsertIntoDescriptions(string sku)
+        public bool BtnGenerateMupliteFile
+        {
+            get { return _btnGenerateMupliteFile; }
+            set
+            {
+                if (_btnGenerateMupliteFile == value)
+                    return;
+                _btnGenerateMupliteFile = value;
+                RaisePropertyChanged("BtnGenerateMupliteFile");
+            }
+        }
+
+        public double ProgressValue
+        {
+            get { return _progressValue; }
+            set
+            {
+                _progressValue = value;
+                RaisePropertyChanged("ProgressValue");
+            }
+        }
+
+        public bool BtnCancel
+        {
+            get { return _btnCancel; }
+            set
+            {
+                if (_btnCancel == value)
+                    return;
+                _btnCancel = value;
+                RaisePropertyChanged("BtnCancel");
+            }
+        }
+
+        public string Status
+        {
+            get { return _status; }
+            set { _status = value;
+                RaisePropertyChanged("Status");
+            }
+            
+        }
+
+        public ICommand SingleFileCommand
+        {
+            get;
+            private set;
+        }
+
+        public ICommand MulitpleFileCommand
+        {
+            get;
+            private set;
+        }
+
+        private void InitializeCommands()
+        {
+            SingleFileCommand = new CommandHandler(() =>
+            {
+                this.worker = new BackgroundWorker();
+                this.worker.WorkerReportsProgress = true;
+                this.worker.DoWork += this.ExecuteJob;
+                this.worker.ProgressChanged += this.ProgressChanged;
+                this.worker.RunWorkerAsync();
+            }, () =>
+            {
+                return !this.worker.IsBusy;
+            });
+
+            MulitpleFileCommand = new CommandHandler(() =>
+            {
+                this.worker = new BackgroundWorker();
+                this.worker.WorkerReportsProgress = true;
+                this.worker.DoWork += this.ExecuteMupliteFilesJob;
+                this.worker.ProgressChanged += this.ProgressChanged;
+                this.worker.RunWorkerAsync();
+            }, () =>
+            {
+                return !this.worker.IsBusy;
+            });
+        }
+
+        public void ExecuteJob(object sender, DoWorkEventArgs e)
+        {
+            try
+            {
+                Status = " Generating";
+                BtnGenerateMupliteFile = false;
+                BtnGenerateSingleFile = false;
+                MessageBox.Show("Generating Stock job, you will be notified once the file is generated.");
+                worker.ReportProgress(1);
+                var csv = new StringBuilder();
+                this.DoCleanup();
+                var headers = $"{"sku"},{"qty"},{"is_in_stock"},{"sort_date"},{"ean"},{"price"},{"REM"},{"REM2"},{"season"}";
+                csv.AppendLine(headers);                
+                Status += "\n Getting SKUs from online";
+                var t2TreFs = RetrieveStockFromOnline();                
+                Status += "\n Gathering EAN Codes";
+                var eanDataset = Connection(null, StockSqlQueries.GetEanCodes);
+                worker.ReportProgress(10);
+                Status += "\n Injecting SKUs";
+                for (var i = 0; i < t2TreFs.Count; i++)
+                {
+                    Status = "\n Injecting SKU: " + t2TreFs[i] + " for processing";
+                    InsertIntoDescriptions(t2TreFs[i]);
+                }
+
+                t2TreFs = null;
+
+                worker.ReportProgress(90);
+                Status += "\n Building the stock";
+                var rows = this.Connection(null, StockSqlQueries.StockQuery);
+
+                foreach (DataRow reff in rows.Tables[0].Rows)
+                {
+                    csv.Append(DoJob(reff, eanDataset));
+                }
+
+                eanDataset = null;
+                rows = null;
+                worker.ReportProgress(100);
+
+                File.AppendAllText(System.Configuration.ConfigurationManager.AppSettings["StockFilePath"], csv.ToString());
+                MessageBox.Show("Stock file created.");
+                csv = null;
+                Status += "\n Done";
+                worker.ReportProgress(0);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                MessageBox.Show(ex.StackTrace);
+            }  
+            finally
+            {
+                BtnGenerateMupliteFile = true;
+                BtnGenerateSingleFile = true;
+            }
+        }
+
+        public void ExecuteMupliteFilesJob(object sender, DoWorkEventArgs e)
+        {
+            try
+            {
+                BtnGenerateMupliteFile = false;
+                BtnGenerateSingleFile = false;
+                MessageBox.Show("Generating Stock job with Muplite files, you will be notified once the file is generated.");
+                Status = "\n Generating";
+                worker.ReportProgress(1);
+                var csv = new StringBuilder();
+                this.DoCleanup();
+                var headers = $"{"sku"},{"qty"},{"is_in_stock"},{"sort_date"},{"ean"},{"price"},{"REM"},{"REM2"},{"season"}";
+                csv.AppendLine(headers);
+                Status += "\n Getting SKUs from online file";
+                var t2TreFs = RetrieveStockFromOnline();
+
+                Status += "\n Gathering EAN Codes";
+                var eanDataset = Connection(null, StockSqlQueries.GetEanCodes);
+                worker.ReportProgress(10);
+                Status += "\n Injecting SKUs for processing";
+                for (var j = 0; j < t2TreFs.Count; j++)
+                {
+                    Status = "\n Injecting SKU: " + t2TreFs[j] + " for processing";
+                    InsertIntoDescriptions(t2TreFs[j]);
+                }
+                worker.ReportProgress(90);
+                Status += "\n Building the stock";
+                var rows = this.Connection(null, StockSqlQueries.StockQuery);
+
+                var i = 0;
+                int card = 0;
+                foreach (DataRow reff in rows.Tables[0].Rows)
+                {
+                    Random rnd = new Random();
+                    card = rnd.Next(520);
+                    csv.Append(this.DoJob(reff, eanDataset));
+                    i++;
+                    if (i == Convert.ToInt32(System.Configuration.ConfigurationManager.AppSettings["Split_Delimiter"]))
+                    {
+                        File.AppendAllText(System.Configuration.ConfigurationManager.AppSettings["Split_OutputPath"] + card + ".csv", csv.ToString());
+                        Status += "\n Stock file: " + System.Configuration.ConfigurationManager.AppSettings["Split_OutputPath"] + card + ".csv Generated.";
+                        csv = new StringBuilder();
+                        csv.AppendLine(headers);
+                        i = 0;
+                    }
+                }
+
+                File.AppendAllText(System.Configuration.ConfigurationManager.AppSettings["Split_OutputPath"] + card + ".csv", csv.ToString());
+                csv = new StringBuilder();
+                eanDataset = null;
+                rows = null;
+                worker.ReportProgress(100);                
+                MessageBox.Show("Stock file created on");
+                Status += "\n Done.";
+                worker.ReportProgress(0);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                BtnGenerateMupliteFile = true;
+                BtnGenerateSingleFile = true;
+            }
+        }
+
+        private void InsertIntoDescriptions(string sku)
         {
             var doesSKUExist = Connection(sku, StockSqlQueries.DoesSKUExist);
             if (doesSKUExist.Tables[0].Rows.Count == 0)
@@ -36,37 +272,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             }
         }
 
-        public void ExecuteJob()
-        {
-            var csv = new StringBuilder();
-            this.DoCleanup();
-            var headers = $"{"sku"},{"qty"},{"is_in_stock"},{"sort_date"},{"ean"},{"price"},{"REM"},{"REM2"},{"season"}";
-            csv.AppendLine(headers);
-            Console.WriteLine("Getting SKUs from online file");
-            var t2TreFs = RetrieveStockFromOnline();
-
-            Console.WriteLine("Gathering EAN Codes");
-            var eanDataset = Connection(null, StockSqlQueries.GetEanCodes);
-
-            Console.WriteLine("Injecting SKUs");
-            for (var i = 0; i < t2TreFs.Count; i++)
-            {
-                InsertIntoDescriptions(t2TreFs[i]);
-            }
-
-            Console.WriteLine("Building the stock");
-            var rows = this.Connection(null, SqlQueries.StockQuery);
-
-            foreach (DataRow reff in rows.Tables[0].Rows)
-            {
-                csv.Append(DoJob(reff, eanDataset));
-            }
-
-            File.AppendAllText(System.Configuration.ConfigurationManager.AppSettings["OutputPath"], csv.ToString());
-            MessageBox.Show("Stock file created on");
-        }
-
-        public string GetCSV(string url)
+        private string GetCSV(string url)
         {
             var req = (HttpWebRequest)WebRequest.Create(url);
             var resp = (HttpWebResponse)req.GetResponse();
@@ -78,7 +284,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             return results;
         }
 
-        public void DeleteExistingDd()
+        private void DeleteExistingDd()
         {
             Console.WriteLine("Creating new DESC database");
             if (File.Exists(System.Configuration.ConfigurationManager.AppSettings["AccessConnectionString"] + "DESC.dbf"))
@@ -87,7 +293,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             }
         }
 
-        public void CreateDbfFile()
+        private void CreateDbfFile()
         {
             try
             {
@@ -135,7 +341,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             return skus;
         }
 
-        public string DoJob(DataRow dr, DataSet dt)
+        private string DoJob(DataRow dr, DataSet dt)
         {
             try
             {
@@ -146,8 +352,6 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 var inStockFlag = false;
                 var groupSkus = "";
                 var empty = "";
-
-                _logger.LogWrite("Working....");
 
                 var isStock = 0;
                 for (var i = 1; i < 14; i++)
@@ -217,6 +421,12 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 _logger.LogWrite(e.Message + e.StackTrace);
                 throw;
             }
+            finally
+            {
+                dt = null;
+                dr = null;
+                doneList = new List<string>();
+            }
         }
 
         private void UpdateStockValues(string sku, string todaysStock)
@@ -234,6 +444,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             //var seasonYear = season.ToLower().Split('s')[1];
             //if (year == seasonYear)
             //    return date.AddYears(1);
+            
             if (season.ToLower() == System.Configuration.ConfigurationManager.AppSettings["Season"].ToLower())
             {
                 return date.AddYears(1);
@@ -241,13 +452,13 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             return date;
         }
 
-        public void DoCleanup()
+        private void DoCleanup()
         {
             Console.WriteLine($"The Clean Job thread started successfully.");
             Console.WriteLine("Clean up: removing exisiting stock.csv");
-            if (File.Exists(System.Configuration.ConfigurationManager.AppSettings["OutputPath"]))
+            if (File.Exists(System.Configuration.ConfigurationManager.AppSettings["StockFilePath"]))
             {
-                File.Delete(System.Configuration.ConfigurationManager.AppSettings["OutputPath"]);
+                File.Delete(System.Configuration.ConfigurationManager.AppSettings["StockFilePath"]);
             }
         }
 
@@ -307,6 +518,11 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 .Replace(lineSeparator, string.Empty)
                 .Replace(paragraphSeparator, string.Empty);
         }
+
+        private void ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            this.ProgressValue = e.ProgressPercentage;
+        }       
     }
 
 }

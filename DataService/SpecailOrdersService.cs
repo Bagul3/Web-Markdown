@@ -38,8 +38,8 @@ namespace DataService
                     var sellPrice = Convert.ToDouble(o.Sell);
                     var actualPrice = 0.0m;
                     if (adjustmentPercentage != 0)
-                    {
-                        actualPrice = Convert.ToDecimal(o.Sell) - (Convert.ToDecimal(Convert.ToDecimal(adjustmentPercentage) / 100) * Convert.ToDecimal(o.Sell));
+                    {                        
+                        actualPrice = Convert.ToDecimal(string.Format("{0:F2}", Convert.ToDecimal(o.Sell) - (Convert.ToDecimal(Convert.ToDecimal(adjustmentPercentage) / 100) * Convert.ToDecimal(o.Sell))));                        
                     }
                     else
                     {
@@ -47,10 +47,10 @@ namespace DataService
                     }
                     
                     if (actualPrice.ToString().Contains(".") && Convert.ToInt16(actualPrice.ToString().Split('.')[1]) > 0 && 
-                        Convert.ToInt16(actualPrice.ToString().Split('.')[1]) < 49)
+                        Convert.ToInt16(actualPrice.ToString().Split('.')[1]) <= 49)
                     {
                         actualPrice++;
-                    }                    
+                    }
 
                     var newLine = $"{"\"" + (o).Ref + "\""},{"\"" + Convert.ToInt16(actualPrice) + "\""},{"\"" + (Convert.ToDateTime(startDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\"" + (Convert.ToDateTime(endDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\"" + (o).RRP + "\""}";
                     csv.AppendLine(newLine);
