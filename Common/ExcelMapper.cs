@@ -38,7 +38,7 @@ namespace Common
             {
                 var descrip = new Descriptions()
                 {
-                    T2TRef = (from DataRow row in dvEmp.Table.Rows select row["T2TREF"] != DBNull.Value ? (string)row["T2TREF"] : "").ElementAt(i).ToString(),
+                    T2TRef = (from DataRow row in dvEmp.Table.Rows select row["T2TREF"] != DBNull.Value ? row["T2TREF"] : "").ElementAt(i),
                     Descriptio = (from DataRow row in dvEmp.Table.Rows select row["TITLE"] != DBNull.Value ? (string)row["TITLE"] : "").ElementAt(i).ToString(),
                     Description = (from DataRow row in dvEmp.Table.Rows select row["DESCRIPTION"] != DBNull.Value ? (string)row["DESCRIPTION"] : "").ElementAt(i).ToString(),
                     Bullet1 = (from DataRow row in dvEmp.Table.Rows select row["BULLET 1"] != DBNull.Value ? (string)row["BULLET 1"] : "").ElementAt(i).ToString(),
