@@ -676,11 +676,20 @@ namespace MultiFilteredDataGridMVVM.ViewModel
 
         public void UpdateStockList()
         {
-            Cordners.Clear();
-            var selectedList = _specailOrdersService.GetSaleStock(SelectedSupplier, SelectedCategory, SelectedSeasons, SelectedStyle, SelectedStockType);
-            foreach (var o in selectedList.ToArray().Distinct())
+            try
             {
-                Cordners.Add(o);
+                Cordners.Clear();
+                var selectedList = _specailOrdersService.GetSaleStock(SelectedSupplier, SelectedCategory, SelectedSeasons, SelectedStyle, SelectedStockType);
+                foreach (var o in selectedList.ToArray().Distinct())
+                {
+                    Cordners.Add(o);
+                }
+            }    
+            catch (Exception e)
+            {
+                new LogWriter().LogWrite(e.Message);
+                new LogWriter().LogWrite(e.StackTrace);
+                MessageBox.Show(e.Message);
             }
         }
 

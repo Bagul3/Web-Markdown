@@ -7,15 +7,11 @@ namespace Common
 {
     public class SpecailOrders
     {
-        public string SupRef { get; set; }
-
         public string Ref { get; set; }
 
         public string MasterSupplier { get; set; }
 
-        public string Name { get; set; }
-
-        public string Desc { get; set; }
+        public string Name { get; set; }        
 
         public string Category { get; set; }
 
@@ -30,5 +26,9 @@ namespace Common
         public string Sell { get; set; }
 
         public string RRP { get; set; }
+
+        public string SupRef { get; set; }
+
+        public string Desc { get; set; }
     }
 }

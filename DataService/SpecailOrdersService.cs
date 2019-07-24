@@ -204,9 +204,12 @@ namespace DataService
                     MasterSupplier = dr["MasterSupplier"].ToString(),
                     Color = dr["MasterColour"].ToString(),
                     Style = dr["STYPE"].ToString(),
-                    StockType = dr["MasterStocktype"].ToString(),
+                    StockType = dr["MasterStocktype"].ToString(),                    
+                    Season = dr["User1"].ToString(),
+                    Name = dr["Short"].ToString(),
+                    SupRef = dr["SUPPREF"].ToString(),
+                    RRP = dr["BASESELL"].ToString(),
                     Category = dr["MasterSubDept"].ToString(),
-                    Season = dr["User1"].ToString()
                 });
                         
             }
