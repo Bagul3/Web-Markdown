@@ -76,8 +76,8 @@ namespace ImportProducts.Services
                             groupSkus = dr["NewStyle"].ToString();
                             var groupSkus2 = dr["NewStyle"] + append.Substring(1, 3);
                             var shortDescription =
-                                BuildShortDescription(descriptions.FirstOrDefault(x => x.T2TRef == reff));
-                            var descripto = descriptions.Where(x => x.T2TRef == reff)
+                                BuildShortDescription(descriptions.FirstOrDefault(x => x.T2TRef.ToString()== reff));
+                            var descripto = descriptions.Where(x => x.T2TRef.ToString() == reff)
                                 .Select(y => y.Descriptio).FirstOrDefault();
 
                             var size = "";
@@ -183,7 +183,7 @@ namespace ImportProducts.Services
         private static string ParentImportProduct(string groupSkus, List<Descriptions> descriptions, string reff, DataRow dr, List<string> simpleSkusList,
             int isStock, string reffColour, IEnumerable<string> t2TreFs)
         {
-            var description = descriptions.Where(x => x.T2TRef == reff).Select(y => y.Description).FirstOrDefault()?.TrimEnd();
+            var description = descriptions.Where(x => x.T2TRef.ToString() == reff).Select(y => y.Description).FirstOrDefault()?.TrimEnd();
             if (string.IsNullOrEmpty(description))
                 return null;
 
@@ -195,7 +195,7 @@ namespace ImportProducts.Services
             var type = "\"configurable\"";
             var sku = "\"" + groupSkus?.TrimEnd() + "\"";
             var hasOption = "\"1\"";
-            var name = "\"" + descriptions.Where(x => x.T2TRef == reff).Select(y => y.Descriptio).FirstOrDefault() + " in " +
+            var name = "\"" + descriptions.Where(x => x.T2TRef.ToString() == reff).Select(y => y.Descriptio).FirstOrDefault() + " in " +
                        dr["MasterColour"] + "\"";
             var pageLayout = "\"No layout updates.\"";
             var optionsContainer = "\"Product Info Column\"";
@@ -203,9 +203,9 @@ namespace ImportProducts.Services
             var weight = "\"0.01\"";
             var status = "\"Enabled\"";
             var visibility = Visibility()?.TrimEnd();
-            var shortDescription = "\"" + BuildShortDescription(descriptions.FirstOrDefault(x => x.T2TRef == reff)) + "\"";
+            var shortDescription = "\"" + BuildShortDescription(descriptions.FirstOrDefault(x => x.T2TRef.ToString() == reff)) + "\"";
             var gty = "\"0\"";
-            var productName = "\"" + descriptions.Where(x => x.T2TRef == reff).Select(y => y.Descriptio).FirstOrDefault() + "\"";
+            var productName = "\"" + descriptions.Where(x => x.T2TRef.ToString() == reff).Select(y => y.Descriptio).FirstOrDefault() + "\"";
             var color = "\"" + dr["MasterColour"].ToString().TrimEnd() + "\"";
             var sizeRange = "\"\"";
             var vat = dr["VAT"].ToString() == "A" ? "TAX" : "None";
@@ -272,7 +272,7 @@ namespace ImportProducts.Services
         private static string BuildChildImportProduct(string groupSkus2, DataRow dr, List<Descriptions> descriptions, string reff,
             string short_description, string actualStock, string descripto, string size, int isStock, string reffColour, IEnumerable<string> t2TreFs, string eanCode)
         {
-            var description = descriptions.Where(x => x.T2TRef == reff).Select(y => y.Description).FirstOrDefault()?.TrimEnd();
+            var description = descriptions.Where(x => x.T2TRef.ToString() == reff).Select(y => y.Description).FirstOrDefault()?.TrimEnd();
             if (string.IsNullOrEmpty(description))
                 return null;
 
@@ -284,7 +284,7 @@ namespace ImportProducts.Services
             const string type = "\"simple\"";
             var sku = "\"" + groupSkus2?.TrimEnd() + "\"";
             const string hasOption = "\"1\"";
-            var name = "\"" + dr["MasterSupplier"] + " " + descriptions.Where(x => x.T2TRef == reff).Select(y => y.Descriptio).FirstOrDefault() + " in " + dr["MasterColour"] + "\"";
+            var name = "\"" + dr["MasterSupplier"] + " " + descriptions.Where(x => x.T2TRef.ToString() == reff).Select(y => y.Descriptio).FirstOrDefault() + " in " + dr["MasterColour"] + "\"";
             const string pageLayout = "\"No layout updates.\"";
             const string optionsContainer = "\"Product Info Column\"";
             var price = "\"" + dr["BASESELL"].ToString().TrimEnd() + "\"";
