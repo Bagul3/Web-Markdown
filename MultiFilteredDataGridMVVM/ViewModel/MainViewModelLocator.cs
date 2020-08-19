@@ -81,6 +81,15 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             }
         }
 
+        public ConfigurationViewModel ConfigurationVM
+        {
+            get
+            {
+                var vm = Container.Resolve<ConfigurationViewModel>();
+                return vm;
+            }
+        }
+
         public static void Cleanup()
         {
             Container.Resolve<SkuViewModel>().Cleanup();

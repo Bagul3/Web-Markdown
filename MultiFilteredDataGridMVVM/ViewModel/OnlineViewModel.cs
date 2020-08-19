@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Data;
 using System.Data.OleDb;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
@@ -631,22 +628,6 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             }
         }
 
-        // Other helper methods ==============
-
-        /* Notes on Adding Filters:
-         *   Each filter is added by subscribing a filter method to the Filter event
-         *   of the CVS.  Filters are applied in the order in which they were added. 
-         *   To prevent adding filters mulitple times ( because we are using drop down lists
-         *   in the view), the CanRemove***Filter flags are used to ensure each filter
-         *   is added only once.  If a filter has been added, its corresponding CanRemove***Filter
-         *   is set to true.       
-         *   
-         *   If a filter has been applied already (for example someone selects "Canada" to filter by country
-         *   and then they change their selection to another value (say "Mexico") we need to undo the previous
-         *   country filter then apply the new one.  This does not completey Reset the filter, just
-         *   allows it to be changed to another filter value. This applies to the other filters as well
-         */
-
         public void AddCountryFilter()
         {
             // see Notes on Adding Filters:
@@ -684,6 +665,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 CanRemoveAuthorFilter = true;
             }
         }
+
         public void AddYearFilter()
         {
             // see Notes on Adding Filters:

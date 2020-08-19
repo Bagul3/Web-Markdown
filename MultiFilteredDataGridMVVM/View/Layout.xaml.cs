@@ -38,5 +38,10 @@ namespace MultiFilteredDataGridMVVM.View
         {
             DataContext = new StockFile();
         }
+
+        private void Configuration_Clicked(object sender, RoutedEventArgs e)
+        {
+            DataContext = new Configuration();
+        }
     }
 }

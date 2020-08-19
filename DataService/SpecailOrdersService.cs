@@ -20,15 +20,30 @@ namespace DataService
             _skuRepository = new SkuRepository();
         }
 
-        public void GenerateCSVAsync(SpecailOrders specailOrders, string startDate, string endDate, int stamp, decimal adjustmentPrice = 0, int adjustmentPercentage = 0)
+        public DataSet RetrieveAllSkuData()
+        {
+            try
+            {
+                return _skuRepository.RetrieveQuery(SqlQueries.AllSKUData);
+            }
+            catch (Exception e)
+            {
+                new LogWriter(e.Message);
+                new LogWriter(e.StackTrace);
+                MessageBox.Show(e.Message);
+            }
+            return new DataSet();
+        }
+
+        public void GenerateCSVAsync(SpecailOrders specailOrders, string startDate, string endDate, int stamp, List<DataRow> dataRows, decimal adjustmentPrice = 0, int adjustmentPercentage = 0)
         {
             try
             {
                 var csv = new StringBuilder();
-                var items = _skuRepository.RetrieveQuery(specailOrders.Ref, SqlQueries.SingleSkuSmaller);
+                //var items = _skuRepository.RetrieveQuery(specailOrders.Ref, SqlQueries.SingleSkuSmaller);
                 var specailsOrders = new List<SpecailOrders>();
 
-                foreach (DataRow item in items.Tables[0].Rows)
+                foreach (DataRow item in dataRows)
                 {
                     BuildStockObject(ref specailsOrders, item);
                 }
@@ -210,6 +225,7 @@ namespace DataService
                     SupRef = dr["SUPPREF"].ToString(),
                     RRP = dr["BASESELL"].ToString(),
                     Category = dr["MasterSubDept"].ToString(),
+                    NEWSTYLE = dr["NEWSTYLE"].ToString()
                 });
                         
             }

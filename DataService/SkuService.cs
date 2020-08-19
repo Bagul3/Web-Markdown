@@ -100,11 +100,11 @@ namespace DataService
         }
 
         private void BuildMongetoObj(ref List<SpecailOrders> skuRecords, DataRow dr)
-        {
+        { 
             skuRecords.Add(
                 new SpecailOrders()
                 {
-                    Ref = dr["Ref"].ToString(),
+                    Ref = dr["NEWSTYLE"].ToString(),
                     Sell = dr["Sell"].ToString(),
                     MasterSupplier = dr["MasterSupplier"].ToString(),
                     Color = dr["MasterColour"].ToString(),
@@ -114,9 +114,50 @@ namespace DataService
                     Season = dr["User1"].ToString(),
                     SupRef = dr["SUPPREF"].ToString(),
                     Desc = dr["T2_HEAD.DESC"].ToString(),
-                    Name = dr["SHORT"].ToString()
+                    Name = dr["SHORT"].ToString(),
+                    Qty = TotalStock(dr).ToString()
                 }
-                );
+               );
+        }
+
+        private int TotalStock(DataRow dr)
+        {
+            try
+            {
+                var actualStock = "";
+                var totalStock = 0;
+
+                for (var i = 1; i < 14; i++)
+                {
+                    if (!string.IsNullOrEmpty(dr["QTY" + i].ToString()))
+                    {
+                        if (dr["QTY" + i].ToString() != "")
+                        {
+                            if (Convert.ToInt32(dr["QTY" + i]) > 0)
+                            {
+                                if (dr["LY" + i].ToString() == "0" ||
+                                    string.IsNullOrEmpty(dr["LY" + i].ToString()))
+                                {
+                                    actualStock = dr["QTY" + i].ToString();
+                                }
+                                else
+                                {
+                                    actualStock =
+                                        (Convert.ToInt32(dr["QTY" + i]) - Convert.ToInt32(dr["LY" + i]))
+                                        .ToString();
+                                }
+
+                                totalStock += Convert.ToInt32(actualStock);
+                            }
+                        }
+                    }
+                }
+                return totalStock;
+            }
+            catch(Exception e)
+            {
+                throw e;
+            }
         }
     }
 }

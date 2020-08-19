@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Common;
+using DataRepo;
 
 namespace ImportProducts.Services
 {
@@ -17,12 +18,14 @@ namespace ImportProducts.Services
         private readonly LogWriter _logger;
         private readonly ExcelMapper _mapper;
         private readonly List<Descriptions> descriptions;
+        private static DataSet REMTable;
 
         public ImportCsvJob(string excelConnection)
         {
             this._logger = new LogWriter();
             this._mapper = new ExcelMapper();
             descriptions = _mapper.MapToDescriptions(excelConnection);
+            REMTable = new SkuRepository().RetrieveQuery(SqlQuery.FetchREM);
         }
 
         public StringBuilder DoJob(string refff, IEnumerable<string> t2TreFs, ref ObservableCollection<Error> errors)
@@ -183,10 +186,13 @@ namespace ImportProducts.Services
         private static string ParentImportProduct(string groupSkus, List<Descriptions> descriptions, string reff, DataRow dr, List<string> simpleSkusList,
             int isStock, string reffColour, IEnumerable<string> t2TreFs)
         {
+            // descriptions.Where(x => x.T2TRef.ToString() == reff).Select(y => y.Description).FirstOrDefault()?.TrimEnd()
             var description = descriptions.Where(x => x.T2TRef.ToString() == reff).Select(y => y.Description).FirstOrDefault()?.TrimEnd();
             if (string.IsNullOrEmpty(description))
                 return null;
 
+            var unquotedName = descriptions.Where(x => x.T2TRef.ToString() == reff).Select(y => y.Descriptio).FirstOrDefault() + " in " +
+                       dr["MasterColour"];
             description = Regex.Replace(description, @"\t|\n|\r", "");
             description = "\"" + description + "\"";
             var store = "\"admin\"";
@@ -195,8 +201,7 @@ namespace ImportProducts.Services
             var type = "\"configurable\"";
             var sku = "\"" + groupSkus?.TrimEnd() + "\"";
             var hasOption = "\"1\"";
-            var name = "\"" + descriptions.Where(x => x.T2TRef.ToString() == reff).Select(y => y.Descriptio).FirstOrDefault() + " in " +
-                       dr["MasterColour"] + "\"";
+            var name = "\"" + unquotedName + "\"";
             var pageLayout = "\"No layout updates.\"";
             var optionsContainer = "\"Product Info Column\"";
             var price = "\"" + dr["BASESELL"].ToString().TrimEnd() + "\"";
@@ -214,7 +219,9 @@ namespace ImportProducts.Services
             var simpleSku = BuildSimpleSku(simpleSkusList, reff);
             var manufactor = "\"" + dr["MasterSupplier"] + "\"";
             var isInStock = "\"" + isStock + "\"";
-            var category = "\"" + Category(dr) + "\"";
+            var cat = Category(dr, out string subCat);
+            var subCategory = "\"" + subCat + "\"";
+            var category = "\"" + cat + "\"";
             var season = "\"\"";
             var stockType = "\"" + dr["MasterStocktype"] + "\"";
             var image = "\"+/" + reffColour + ".jpg\"";
@@ -227,20 +234,107 @@ namespace ImportProducts.Services
             var infocare = "\"" + "row-product-featured-shoe-care" + "\"";
             var sizeguide = "\"" + "product_tab_size_guide" + "\"";
             var rrp = "\"" + dr["SELL"] + "\"";
-
+            var url_key = "\"" + unquotedName.Replace(" ", "-").ToLower() + "\"";
+            var url_path = "\"" + unquotedName.Replace(" ", "-").ToLower() + ".html" + "\"";
+            var rem1 = "\"" + GetREMValue(dr["REM"].ToString()) + "\"";
+            var rem2 = "\"" + GetREMValue(dr["REM2"].ToString()) + "\"";
+            var suSKU = "\"" + GetSUSKU(reff, t2TreFs) + "\"";
             var newLine = $"{store}," +
                           $"{websites},{attribut_set},{type},{sku},{hasOption},{name.TrimEnd()},{pageLayout},{optionsContainer},{price},{weight},{status}," +
                           $"{visibility}," +
                           $"{shortDescription},{gty},{productName},{color}," +
                           $"{sizeRange},{taxClass},{configurableAttribute},{simpleSku},{manufactor},{isInStock}," +
-                          $"{category},{season},{stockType},{image},{smallImage},{thumbnail},{gallery},{condition},{ean}," +
-                          $"{description},{model},{infocare},{sizeguide},{rrp}";
+                          $"{category},{subCategory},{season},{stockType},{image},{smallImage},{thumbnail},{gallery},{condition},{ean}," +
+                          $"{description},{model},{infocare},{sizeguide},{rrp},{url_key},{url_path},{rem1},{rem2},{suSKU}";
             return newLine;
         }
 
-        private static string Category(DataRow dr)
+        private static string GetREMValue(string rem)
         {
-            var category = dr["MasterStocktype"] + "/Shop By Department/" + dr["MasterDept"] + ";;";
+            if (!string.IsNullOrEmpty(rem))
+            {
+                var remresult = REMTable.Tables[0].Select("PROPERTY = '" + rem + "'").FirstOrDefault();
+                if (remresult != null)
+                {
+                    return remresult["NAME"].ToString();
+                }
+            }
+            return "";
+        }
+
+        private static string GetSUSKU(string refff, IEnumerable<string> t2TreFs)
+        {
+            var matchingItems = t2TreFs.Select(x => x).Where(y => y.Any(z => y.Contains(refff))).ToList();
+            if (matchingItems.Count == 0)
+                return "";
+            return String.Join(",", matchingItems);
+        }
+            
+
+        private static string Category(DataRow dr, out string subCategory)
+        {
+            var category = "Brands/" + dr["MasterSupplier"] + ";;";
+            subCategory = "";
+            // Ladies bags
+            if (dr["MasterStocktype"].ToString() == "UNISEX")
+            {
+                category = category + "UNISEX" + "/Shop By Brand/" +
+                       dr["MasterSupplier"];
+                return category;
+            }
+            if (dr["STYPE"].ToString() == "BAG" && dr["MasterStocktype"].ToString() == "LADIES")
+            {
+                category = category + "BAGS & ACCESSORIES" + "/Shop By Department" + "/" + "LADIES BAGS" + ";;";
+                category = category + "BAGS & ACCESSORIES" + "/Shop By Brand" + "/" + dr["MasterSupplier"].ToString();
+                return category;
+            }
+
+            if (dr["STYPE"].ToString() == "BAG")
+            {
+                category = category + "BAGS & ACCESSORIES" + "/Shop By Department" + "/" + "BACKPACKS" + ";;";
+                category = category + "BAGS & ACCESSORIES" + "/Shop By Brand" + "/" + dr["MasterSupplier"].ToString();
+                return category;
+            }
+            
+            if(dr["STYPE"].ToString() == "PEN")
+            {
+                category = category + "BAGS & ACCESSORIES" + "/Shop By Department" + "/" + "PENCIL CASES" + ";;";
+                category = category + "BAGS & ACCESSORIES" + "/Shop By Brand" + "/" + dr["MasterSupplier"].ToString();
+                return category;
+            }
+
+            // FIX LATER
+            
+
+            //Bags and Accessories and Shoecare
+            if (dr["MasterStocktype"].ToString() == "SUNDRIES")
+            {
+                switch (dr["STYPE"].ToString())
+                {
+                    case "ACC":
+                        subCategory = "ACCESSORIES";
+                        break;
+                    case "C&C":
+                        subCategory = "CLEAN & CARE";
+                        break;
+                    case "C&P":
+                        subCategory = "CREAMS & POLISH";
+                        break;
+                    case "I&S":
+                        subCategory = "INSOLES & SUPPORT";
+                        break;
+                    case "LAC":
+                        subCategory = "LACES";
+                        break;
+                }
+                category = category + "BAGS & ACCESSORIES" + "/Shop By Department" + "/" + "SHOE CARE" + ";;";
+                category = category + "BAGS & ACCESSORIES" + "/Shop By Brand" + "/" + dr["MasterSupplier"].ToString();
+                return category;
+            }
+
+            // Old category Formatting
+
+            category += dr["MasterStocktype"] + "/Shop By Department/" + dr["MasterDept"] + ";;";
 
             if (dr["MasterSubDept"] != "ANY" || dr["MasterSubDept"] != "")
             {
@@ -251,15 +345,14 @@ namespace ImportProducts.Services
             category = category + dr["MasterStocktype"] + "/Shop By Brand/" +
                        dr["MasterSupplier"] + ";;";
             category = category + dr["MasterStocktype"] + "/Shop By Brand/" +
-                       dr["MasterSupplier"] + "/" + dr["MasterDept"] + "::1::1::0;;";
+                       dr["MasterSupplier"] + "/" + dr["MasterDept"] + "::1::1::0";
 
             if (dr["MasterSubDept"] != "ANY" || dr["MasterSubDept"] != "")
             {
-                category = category + dr["MasterStocktype"] + "/Shop By Brand/" +
+                category = category + ";;" + dr["MasterStocktype"] + "/Shop By Brand/" +
                            dr["MasterSupplier"] + "/" + dr["MasterDept"] +
-                           "/" + dr["MasterSubDept"] + "::1::1::0;;";
+                           "/" + dr["MasterSubDept"] + "::1::1::0";
             }
-            category = category + "Brands/" + dr["MasterSupplier"];
 
             if (dr["USER1"].ToString().Contains("B"))
             {
@@ -272,10 +365,12 @@ namespace ImportProducts.Services
         private static string BuildChildImportProduct(string groupSkus2, DataRow dr, List<Descriptions> descriptions, string reff,
             string short_description, string actualStock, string descripto, string size, int isStock, string reffColour, IEnumerable<string> t2TreFs, string eanCode)
         {
+            //descriptions.Where(x => x.T2TRef.ToString() == reff).Select(y => y.Description).FirstOrDefault()?.TrimEnd()
             var description = descriptions.Where(x => x.T2TRef.ToString() == reff).Select(y => y.Description).FirstOrDefault()?.TrimEnd();
             if (string.IsNullOrEmpty(description))
                 return null;
 
+            var unquotedName = dr["MasterSupplier"] + " " + descriptions.Where(x => x.T2TRef.ToString() == reff).Select(y => y.Descriptio).FirstOrDefault() + " in " + dr["MasterColour"];            
             description = Regex.Replace(description, @"\t|\n|\r", "");
             description = "\"" + description + "\"";
             const string store = "\"admin\"";
@@ -284,7 +379,7 @@ namespace ImportProducts.Services
             const string type = "\"simple\"";
             var sku = "\"" + groupSkus2?.TrimEnd() + "\"";
             const string hasOption = "\"1\"";
-            var name = "\"" + dr["MasterSupplier"] + " " + descriptions.Where(x => x.T2TRef.ToString() == reff).Select(y => y.Descriptio).FirstOrDefault() + " in " + dr["MasterColour"] + "\"";
+            var name = "\"" + unquotedName + "\"";
             const string pageLayout = "\"No layout updates.\"";
             const string optionsContainer = "\"Product Info Column\"";
             var price = "\"" + dr["BASESELL"].ToString().TrimEnd() + "\"";
@@ -296,13 +391,21 @@ namespace ImportProducts.Services
             var productName = "\"" + descripto?.TrimEnd() + "\"";
             var color = "\"" + dr["MasterColour"].ToString().TrimEnd() + "\"";
 
-            var sizerange = dr["SIZERANGE"] + size;
+            var sizerange = dr["SIZERANGE"].ToString() + size;
 
-            if (new[] { "A", "P", "Q", "S", "F", "R"}.Any(c => sizerange.ToUpper().Contains(c)))
+            if (new[] { "A", "Q", "S", "R"}.Any(c => sizerange.ToUpper().Contains(c)))
             {
                 try
                 {
-                    sizerange = sizerange.Remove(0, 1);    
+                    if (sizerange.Contains('F'))
+                    {
+                        
+                    }
+                    else
+                    {
+                        sizerange = sizerange.Remove(0, 1);
+                    }
+                    
                 }
                 catch (Exception e)
                 {
@@ -317,6 +420,7 @@ namespace ImportProducts.Services
             const string simpleSku = "\"\"";
             var manufactor = "\"" + dr["MasterSupplier"] + "\"";
             var isInStock = "\"" + isStock + "\"";
+            const string subCategory = "\"\"";
             const string category = "\"\"";
             const string season = "\"\"";
             var stockType = "\"" + dr["MasterStocktype"] + "\"";
@@ -328,8 +432,11 @@ namespace ImportProducts.Services
             var infocare = "\"" + "row-product-featured-shoe-care" + "\"";
             var sizeguide = "\"" + "product_tab_size_guide" + "\"";
             var rrp = "\"" + dr["SELL"] + "\"";
+            var url_key = "\"" + unquotedName.Replace(" ", "-").ToLower() + "\"";
+            var url_path = "\"" + unquotedName.Replace(" ", "-").ToLower() + ".html" + "\"";
             var escapedEanCode = "\"\"";
-
+            var rem1 = "\"" + GetREMValue(dr["REM"].ToString()) + "\"";
+            var rem2 = "\"" + GetREMValue(dr["REM2"].ToString()) + "\"";
             if (!string.IsNullOrEmpty(eanCode))
             {
                 escapedEanCode = "\"" + RemoveLineEndings(eanCode.Trim().Replace(",", "")) + "\"";
@@ -338,13 +445,13 @@ namespace ImportProducts.Services
             var ean = escapedEanCode;
 
             var model = "\"" + dr["SUPPREF"] + "\"";
-
+            var suSKU = "\"" +  GetSUSKU(reff, t2TreFs) + "\"";
             var newLine = $"{store}," +
                           $"{websites},{attribut_set},{type},{sku},{hasOption},{name.TrimEnd()},{pageLayout},{optionsContainer},{price},{weight},{status},{visibility}," +
                           $"{shortDescription},{gty},{productName},{color}," +
                           $"{sizeRange},{taxClass},{configurableAttribute},{simpleSku},{manufactor},{isInStock}," +
-                          $"{category},{season},{stockType},{image},{smallImage},{thumbnail},{gallery},{condition},{ean}," +
-                          $"{description},{model},{infocare},{sizeguide},{rrp}";
+                          $"{category},{subCategory},{season},{stockType},{image},{smallImage},{thumbnail},{gallery},{condition},{ean}," +
+                          $"{description},{model},{infocare},{sizeguide},{rrp},{url_key},{url_path},{rem1},{rem2},{suSKU}";
             return newLine;
         }
 

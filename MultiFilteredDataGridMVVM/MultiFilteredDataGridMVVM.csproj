@@ -105,6 +105,9 @@
     </ApplicationDefinition>
     <Compile Include="Class1.cs" />
     <Compile Include="Design\DesignDummyService.cs" />
+    <Compile Include="Model\REM2.cs" />
+    <Compile Include="Model\REM1.cs" />
+    <Compile Include="ViewModel\ConfigurationViewModel.cs" />
     <Compile Include="ViewModel\GenerateStockFileViewModel.cs" />
     <Compile Include="ViewModel\ImportProductViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
@@ -112,6 +115,9 @@
     <Compile Include="Helpers\ViewCollectionViewSourceMessageToken.cs" />
     <Compile Include="ViewModel\OnlineViewModel.cs" />
     <Compile Include="ViewModel\SkuViewModel.cs" />
+    <Compile Include="View\Configuration.xaml.cs">
+      <DependentUpon>Configuration.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\ImportProducts.xaml.cs">
       <DependentUpon>ImportProducts.xaml</DependentUpon>
     </Compile>
@@ -141,6 +147,10 @@
     <Compile Include="WpfElements\MultiSelectComboBox.xaml.cs">
       <DependentUpon>MultiSelectComboBox.xaml</DependentUpon>
     </Compile>
+    <Page Include="View\Configuration.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="View\ImportProducts.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -206,6 +216,10 @@
     <ProjectReference Include="..\Common\Common.csproj">
       <Project>{01FC869E-416A-4603-9EE4-9E3D6DD068D1}</Project>
       <Name>Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DataRepo\DataRepo.csproj">
+      <Project>{D7C74DFA-D9F0-4BE8-8A9A-84B46E7269D6}</Project>
+      <Name>DataRepo</Name>
     </ProjectReference>
     <ProjectReference Include="..\DataService\DataService.csproj">
       <Project>{FE63D445-954F-4A3C-A7D3-70022437385E}</Project>

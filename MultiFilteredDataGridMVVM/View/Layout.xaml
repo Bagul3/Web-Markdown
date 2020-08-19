@@ -43,6 +43,7 @@
                 <Button Content="Missing From Online" Click="SKUCheckerView_Clicked" Margin="1"/>
                 <Button Content="Stock on Site" Click="OnlineCheckerView_Clicked" Margin="1"/>
                 <Button Content="Generate Stock File" Click="GenerateStockFile_Clicked" Margin="1"/>
+                <Button Content="Configuration" Click="Configuration_Clicked" Margin="1"/>
                 <Image Margin="0,500,10,0" RenderTransformOrigin="0.529,-4.02" VerticalAlignment="Bottom">
                     <Image.Source>
                         <BitmapImage DecodePixelWidth="300"  UriSource="/Resources/logo-_1_.bmp"/>

@@ -1,0 +1,66 @@
+﻿<UserControl x:Class="MultiFilteredDataGridMVVM.View.Configuration"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:viewModel="clr-namespace:MultiFilteredDataGridMVVM.ViewModel"
+             mc:Ignorable="d">
+    <UserControl.Resources>
+        <viewModel:MainViewModelLocator x:Key="ConfigurationVM" d:IsDataSource="True"/>
+    </UserControl.Resources>
+    <UserControl.DataContext>
+        <Binding Mode="OneWay" Path="ConfigurationVM" Source="{StaticResource ConfigurationVM}"/>
+    </UserControl.DataContext>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="4*"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="1*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <Label Grid.Row="0" Grid.Column="0">REM 1</Label>
+        <Label Grid.Row="0" Grid.Column="1">REM 2</Label>
+        <DataGrid Grid.Row="0" Grid.Column="0" ItemsSource="{Binding REM1}"
+          SelectedItem="{Binding SelectedREM1}"
+              CanUserAddRows="True">
+            <DataGrid.Columns>
+                <DataGridTemplateColumn Header="Delete">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Content="Delete"
+                            Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGrid}},
+                                              Path=DataContext.DeleteCommandREM1}"
+                            CommandParameter="{Binding}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+        <DataGrid Grid.Row="0" Grid.Column="1" ItemsSource="{Binding REM2}"
+          SelectedItem="{Binding SelectedREM2}"
+              CanUserAddRows="True">
+            <DataGrid.Columns>
+                <DataGridTemplateColumn Header="Delete">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Content="Delete"
+                            Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGrid}},
+                                              Path=DataContext.DeleteCommandREM2}"
+                            CommandParameter="{Binding}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+        <StackPanel Grid.Row="1" Grid.Column="0">
+            <StackPanel Orientation="Horizontal">
+                <Label Grid.Row="1" Grid.Column="0">Latest Season:</Label>
+                <TextBox BorderThickness="1" Grid.Row="1" Grid.Column="0" Text="{Binding LastestSeason}" Background="White" Foreground="Black" Height="25px" Width="35px"/>
+            </StackPanel>
+        </StackPanel>        
+        <Button Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding Add, Mode=OneWay}">Save</Button>
+    </Grid>
+</UserControl>

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -703,6 +704,11 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 csv.AppendLine(headers);
                 var stamp = DateTime.Now.Millisecond;
                 File.AppendAllText(System.Configuration.ConfigurationManager.AppSettings["SalesPriceOutput"] + stamp + ".csv", csv.ToString());
+
+                // Load all sku data;
+                var skuData = _specailOrdersService.RetrieveAllSkuData();
+
+
                 foreach (var specailOrder in SpecailOrders)
                 {
                     if (count >= 100)
@@ -710,7 +716,12 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                         count = 1;
                     }
                     count++;
-                    _specailOrdersService.GenerateCSVAsync(specailOrder, StartDate.ToString("yyyy-MM-dd"), EndDate.ToString("yyyy-MM-dd"), stamp, Convert.ToDecimal(AdjustPrice), AdjustPricePercentage);
+                    List<DataRow> dataRows = skuData.Tables[0].AsEnumerable().Where(x => (string)x["NEWSTYLE"] == specailOrder.NEWSTYLE).Distinct().ToList();
+
+                    _specailOrdersService.GenerateCSVAsync(specailOrder, StartDate.ToString("yyyy-MM-dd"), EndDate.ToString("yyyy-MM-dd"), 
+                        stamp,
+                        dataRows,
+                        Convert.ToDecimal(AdjustPrice), AdjustPricePercentage);
                     worker.ReportProgress(count);
                 }
                 worker.ReportProgress(100);
