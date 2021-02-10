@@ -76,6 +76,17 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             }, TaskScheduler.FromCurrentSynchronizationContext());
         }
 
+        private string _LoadExcelButton;
+        public string LoadExcelButton
+        {
+            get { return _LoadExcelButton ?? (_LoadExcelButton = "Load Excel"); }
+            set
+            {
+                _LoadExcelButton = value;
+                RaisePropertyChanged("LoadExcelButton");
+            }
+        }
+
         public ObservableCollection<Image> ImageName
         {
             get { return _image; }
@@ -271,7 +282,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 };
                 dlg.ShowDialog();
                 _descriptionsPath = dlg.FileName;
-                TxtStatus = "Decription loaded: " + _descriptionsPath;
+                LoadExcelButton = "Load: " + Path.GetFileName(_descriptionsPath);
             }
             catch (OperationCanceledException ex)
             {
@@ -323,9 +334,6 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             var recCount = 3;
             var first = true;
             var usedSkuNums = new List<string>();
-
-
-            TxtStatus = "Generating.....";
 
             _errors = new ObservableCollection<Error>();
 
@@ -410,9 +418,15 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             {
                 MessageBox.Show("Operation cancelled" + ex.Message);
             }
+            catch (NullReferenceException ex)
+            {
+                MessageBox.Show("Operation cancelled. Please ensure Excel file is labelled Sheet1.");
+                new LogWriter().LogWrite(ex.StackTrace);
+            }
             catch (Exception ex)
             {
                 MessageBox.Show("Operation cancelled" + ex.Message);
+                new LogWriter().LogWrite(ex.StackTrace);
             }
             finally
             {

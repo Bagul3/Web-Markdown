@@ -64,6 +64,16 @@ namespace MultiFilteredDataGridMVVM.ViewModel
         private double _adjustmentPrice = 0.0;
         private int _adjustPricePercentage = 0;
 
+        public ICommand StartCommand { get; private set; }
+
+
+        private Dictionary<string, object> _supplierLoader;
+        private Dictionary<string, object> _sizeLoader;
+        private Dictionary<string, object> _categoryLoader;
+        private Dictionary<string, object> _seasonLoader;
+        private Dictionary<string, object> _stockTypeLoader;
+        private Dictionary<string, object> _styleLoader;
+
         public double AdjustPrice
         {
             get
@@ -138,7 +148,8 @@ namespace MultiFilteredDataGridMVVM.ViewModel
         {
             try
             {
-                LoadData();
+                IsBusy = true;
+
                 this.worker = new BackgroundWorker
                 {
                     WorkerReportsProgress = true
@@ -146,36 +157,40 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 this.worker.DoWork += this.GenerateSpecailOrders;
                 this.worker.ProgressChanged += this.ProgressChanged;
 
+                Task.Factory.StartNew(() =>
+                {
+                    LoadData();
+                }).ContinueWith((task) =>
+                {
+                    Supplier = _supplierLoader;
+                    StockType = _stockTypeLoader;
+                    Category = _categoryLoader;
+                    Season = _seasonLoader;
+                    Size = _sizeLoader;
+                    Style = _styleLoader;
+                    
+                    IsBusy = false;
+                }, TaskScheduler.FromCurrentSynchronizationContext());
+
                 DoLoading();
+
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 MessageBox.Show(e.Message);
             }            
         }
 
-        private async Task DoLoading()
-        {
-            await Task.Factory.StartNew(() =>
-            {
-                IsBusy = true;
-                StartDate = DateTime.Now;
-                EndDate = DateTime.Now;
-                _specailOrdersService = new SpecailOrdersService();
-                ProgressValue = 0;
-                InitializeCommands();
-                //--------------------------------------------------------------
-                // This 'registers' the instance of this view model to recieve messages with this type of token.  This 
-                // is used to recieve a reference from the view that the collectionViewSource has been instantiated
-                // and to recieve a reference to the CollectionViewSource which will be used in the view model for 
-                // filtering
-                Messenger.Default.Register<ViewCollectionViewSourceMessageToken>(this,
-                    Handle_ViewCollectionViewSourceMessageToken);
-
-            }).ContinueWith((task) =>
-            {
-                IsBusy = false;
-            }, TaskScheduler.FromCurrentSynchronizationContext());
+        private void DoLoading()
+        { 
+            IsBusy = true;
+            StartDate = DateTime.Now;
+            EndDate = DateTime.Now;
+            _specailOrdersService = new SpecailOrdersService();
+            ProgressValue = 0;
+            InitializeCommands();
+            Messenger.Default.Register<ViewCollectionViewSourceMessageToken>(this,
+                Handle_ViewCollectionViewSourceMessageToken);
         }
 
         public override void Cleanup()
@@ -439,6 +454,17 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 RaisePropertyChanged("Size");
             }
         }
+
+        private string _GenerateButton;
+        public string GenerateButton
+        {
+            get { return _GenerateButton ?? (_GenerateButton = "Generate"); }
+            set
+            {
+                _GenerateButton = value;
+                RaisePropertyChanged("GenerateButton");
+            }
+        }
         /// <summary>
         /// Gets or sets a list of authors which is used to populate the country filter
         /// drop down list.
@@ -680,11 +706,19 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             try
             {
                 Cordners.Clear();
-                var selectedList = _specailOrdersService.GetSaleStock(SelectedSupplier, SelectedCategory, SelectedSeasons, SelectedStyle, SelectedStockType);
-                foreach (var o in selectedList.ToArray().Distinct())
+                List<SpecailOrders> selectedList = new List<SpecailOrders>();
+                IsBusy = true;
+                Task.Factory.StartNew(() =>
                 {
-                    Cordners.Add(o);
-                }
+                    selectedList = _specailOrdersService.GetSaleStock(SelectedSupplier, SelectedCategory, SelectedSeasons, SelectedStyle, SelectedStockType);
+                }).ContinueWith((task) =>
+                {
+                    foreach (var o in selectedList.ToArray().Distinct())
+                    {
+                        Cordners.Add(o);
+                    }
+                    IsBusy = false;
+                }, TaskScheduler.FromCurrentSynchronizationContext());
             }    
             catch (Exception e)
             {
@@ -698,6 +732,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
         {
             try
             {
+                GenerateButton = "Generating...";
                 var count = 0;
                 var csv = new StringBuilder();
                 var headers = $"{"sku"},{"special_price"},{"special_from_date"},{"special_to_date"},{"RRP"}";
@@ -708,6 +743,11 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 // Load all sku data;
                 var skuData = _specailOrdersService.RetrieveAllSkuData();
 
+                if (SpecailOrders.Count() == 0)
+                {
+                    MessageBox.Show("No Stock Items have been selected. \n Please move columns to the right for processing.");
+                    return;
+                }
 
                 foreach (var specailOrder in SpecailOrders)
                 {
@@ -726,6 +766,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 }
                 worker.ReportProgress(100);
                 AdjustPrice = 0;
+                GenerateButton = "Generate";
                 MessageBox.Show("Sales Price CSV Generated to Input/Output Folder");
             }
             catch(Exception ex)
@@ -789,66 +830,74 @@ namespace MultiFilteredDataGridMVVM.ViewModel
 
         private void LoadData()
         {
-            //IsBusy = true;
-            Size = new Dictionary<string, object>();
-            Supplier = new Dictionary<string, object>();
-            Season = new Dictionary<string, object>();
-            Category = new Dictionary<string, object>();
-            Style = new Dictionary<string, object>();
-            StockType = new Dictionary<string, object>();
-            Cordners = new ObservableCollection<SpecailOrders>();
+            IsBusy = true;
 
-            var things = new SpecailOrdersService().GetCordners();
+            //await Task.Factory.StartNew(() =>
+            //{
+                
+                _sizeLoader = new Dictionary<string, object>();
+                _supplierLoader = new Dictionary<string, object>();
+                _seasonLoader = new Dictionary<string, object>();
+                _categoryLoader = new Dictionary<string, object>();
+                _styleLoader = new Dictionary<string, object>();
+                _stockTypeLoader = new Dictionary<string, object>();
+                Cordners = new ObservableCollection<SpecailOrders>();
 
-            var q1 = from t in things
-                        select t.Season;
-            var obj = q1.Distinct().Zip(q1.Distinct(), (k, v) => new { k, v })
-                .ToDictionary(x => x.k, x => x.v).OrderBy(x => x.Key);
+                var things = new SpecailOrdersService().GetCordners();
 
-            foreach (var ob in obj)
-            {
-                Season.Add(ob.Key, ob.Value);
-            }
+                var q1 = from t in things
+                            select t.Season;
+                var obj = q1.Distinct().Zip(q1.Distinct(), (k, v) => new { k, v })
+                    .ToDictionary(x => x.k, x => x.v).OrderBy(x => x.Key);
 
-            var q2 = from t in things
-                        select t.MasterSupplier;
-            obj = q2.Distinct().Zip(q2.Distinct(), (k, v) => new { k, v })
-                .ToDictionary(x => x.k, x => x.v).OrderBy(x => x.Key);
+                foreach (var ob in obj)
+                {
+                    _seasonLoader.Add(ob.Key, ob.Value);
+                }
 
-            foreach (var ob in obj)
-            {
-                Supplier.Add(ob.Key, ob.Value);
-            }
+                var q2 = from t in things
+                            select t.MasterSupplier;
+                obj = q2.Distinct().Zip(q2.Distinct(), (k, v) => new { k, v })
+                    .ToDictionary(x => x.k, x => x.v).OrderBy(x => x.Key);
 
-            var q3 = from t in things
-                        select t.Category;
-            obj = q3.Distinct().Zip(q3.Distinct(), (k, v) => new { k, v })
-                .ToDictionary(x => x.k, x => x.v).OrderBy(x => x.Key);
+                foreach (var ob in obj)
+                {
+                    _supplierLoader.Add(ob.Key, ob.Value);
+                }
 
-            foreach (var ob in obj)
-            {
-                Category.Add(ob.Key, ob.Value);
-            }
+                var q3 = from t in things
+                            select t.Category;
+                obj = q3.Distinct().Zip(q3.Distinct(), (k, v) => new { k, v })
+                    .ToDictionary(x => x.k, x => x.v).OrderBy(x => x.Key);
 
-            var q4 = from t in things
-                        select t.Style;
-            obj = q4.Distinct().Zip(q4.Distinct(), (k, v) => new { k, v })
-                .ToDictionary(x => x.k, x => x.v).OrderBy(x => x.Key);
+                foreach (var ob in obj)
+                {
+                    _categoryLoader.Add(ob.Key, ob.Value);
+                }
 
-            foreach (var ob in obj)
-            {
-                Style.Add(ob.Key, ob.Value);
-            }
+                var q4 = from t in things
+                            select t.Style;
+                obj = q4.Distinct().Zip(q4.Distinct(), (k, v) => new { k, v })
+                    .ToDictionary(x => x.k, x => x.v).OrderBy(x => x.Key);
 
-            var q5 = from t in things
-                        select t.StockType;
-            obj = q5.Distinct().Zip(q5.Distinct(), (k, v) => new { k, v })
-                .ToDictionary(x => x.k, x => x.v).OrderBy(x => x.Key);
+                foreach (var ob in obj)
+                {
+                    _styleLoader.Add(ob.Key, ob.Value);
+                }
 
-            foreach (var ob in obj)
-            {
-                StockType.Add(ob.Key, ob.Value);
-            }
+                var q5 = from t in things
+                            select t.StockType;
+                obj = q5.Distinct().Zip(q5.Distinct(), (k, v) => new { k, v })
+                    .ToDictionary(x => x.k, x => x.v).OrderBy(x => x.Key);
+
+                foreach (var ob in obj)
+                {
+                    _stockTypeLoader.Add(ob.Key, ob.Value);
+                }
+            //}).ContinueWith((task) =>
+            //{
+            //    IsBusy = false;
+            //}, TaskScheduler.FromCurrentSynchronizationContext());
         }
         /// <summary>
         /// This method handles a message recieved from the View which enables a reference to the

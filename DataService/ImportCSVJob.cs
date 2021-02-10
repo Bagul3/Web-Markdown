@@ -78,17 +78,15 @@ namespace ImportProducts.Services
                             var append = (1000 + i).ToString();
                             groupSkus = dr["NewStyle"].ToString();
                             var groupSkus2 = dr["NewStyle"] + append.Substring(1, 3);
-                            var shortDescription =
-                                BuildShortDescription(descriptions.FirstOrDefault(x => x.T2TRef.ToString()== reff));
-                            var descripto = descriptions.Where(x => x.T2TRef.ToString() == reff)
-                                .Select(y => y.Descriptio).FirstOrDefault();
+
+                            var shortDescription = BuildShortDescription(FetchDescription(descriptions, reff));
+                            var descripto = FetchDescription(descriptions, reff)?.Descriptio;
 
                             var size = "";
                             size = i < 10 ? dr["S0" + i].ToString() : dr["S" + i].ToString();
 
                             if (size.Contains("½"))
-                                size = size.Replace("½", ".5");
-
+                                size = size.Replace("½", ".5");                            
 
                             simpleSkusList.Add(groupSkus2);
                             var eanDataset = Query(groupSkus2, SqlQuery.GetEanCodes);
@@ -97,9 +95,6 @@ namespace ImportProducts.Services
                             {
                                 eanCode = eanDataset.Tables[0].Rows[0]["EAN_CODE"].ToString();
                             }
-
-                            if (groupSkus2.Contains("008935"))
-                                Console.WriteLine();
 
                             string newLine = null;
                             if (Convert.ToInt32(actualStock) != 0)
@@ -236,8 +231,8 @@ namespace ImportProducts.Services
             var rrp = "\"" + dr["SELL"] + "\"";
             var url_key = "\"" + unquotedName.Replace(" ", "-").ToLower() + "\"";
             var url_path = "\"" + unquotedName.Replace(" ", "-").ToLower() + ".html" + "\"";
-            var rem1 = "\"" + GetREMValue(dr["REM"].ToString()) + "\"";
-            var rem2 = "\"" + GetREMValue(dr["REM2"].ToString()) + "\"";
+            var rem1 = "\"" + GetREMValue(dr["REM2"].ToString()) + "\"";
+            var rem2 = "\"" + GetREMValue(dr["REM"].ToString()) + "\"";
             var suSKU = "\"" + GetSUSKU(reff, t2TreFs) + "\"";
             var newLine = $"{store}," +
                           $"{websites},{attribut_set},{type},{sku},{hasOption},{name.TrimEnd()},{pageLayout},{optionsContainer},{price},{weight},{status}," +
@@ -435,8 +430,8 @@ namespace ImportProducts.Services
             var url_key = "\"" + unquotedName.Replace(" ", "-").ToLower() + "\"";
             var url_path = "\"" + unquotedName.Replace(" ", "-").ToLower() + ".html" + "\"";
             var escapedEanCode = "\"\"";
-            var rem1 = "\"" + GetREMValue(dr["REM"].ToString()) + "\"";
-            var rem2 = "\"" + GetREMValue(dr["REM2"].ToString()) + "\"";
+            var rem1 = "\"" + GetREMValue(dr["REM2"].ToString()) + "\"";
+            var rem2 = "\"" + GetREMValue(dr["REM"].ToString()) + "\"";
             if (!string.IsNullOrEmpty(eanCode))
             {
                 escapedEanCode = "\"" + RemoveLineEndings(eanCode.Trim().Replace(",", "")) + "\"";
@@ -529,20 +524,17 @@ namespace ImportProducts.Services
             return "<ul>" + bullet1 + bullet2 + bullet3 + bullet4 + bullet5 + bullet6 + bullet7 + "</ul>";
         }
 
-        private static string EncapsulateCommas(string description)
+        private static Descriptions FetchDescription(List<Descriptions> descriptions, string reff)
         {
-            if (string.IsNullOrEmpty(description))
-                return null;
-            description = Regex.Replace(description, @"\t|\n|\r", "");
-            var result = description.Split(',');
-            if (result.Length == 0)
-                return "\"" + description + "\"";
-            var output = "\"";
-            foreach (var field in result)
+            foreach(var description in descriptions)
             {
-                output += field + ",";
+                Console.WriteLine(description.T2TRef.ToString());
+                if ($"0{description.T2TRef}" == reff)
+                {
+                    return description;
+                }
             }
-            return description;
+            return null;
         }
     }
 }

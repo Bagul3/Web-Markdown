@@ -11,7 +11,6 @@ namespace DataService
     public class ImageService
     {
         private readonly LogWriter _logger;
-
         public ImageService()
         {
             _logger = new LogWriter();
@@ -21,7 +20,7 @@ namespace DataService
         {
             try
             {
-                var imageDetails = Directory.GetFiles(path, "*.jpg*", SearchOption.AllDirectories)
+                var imageDetails = Directory.GetFiles(path)
                     .ToList();
                 return ParseImageNames(imageDetails);
             }

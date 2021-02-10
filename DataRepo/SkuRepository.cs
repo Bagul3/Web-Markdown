@@ -117,6 +117,16 @@ namespace DataRepo
             }
         }
 
+        public void DeleteREM(string query)
+        {
+            using (var connectionHandler = new OleDbConnection(System.Configuration.ConfigurationManager.AppSettings["AccessConnectionString"]))
+            {
+                connectionHandler.Open();
+                var myAccessCommand = new OleDbCommand(query, connectionHandler);
+                myAccessCommand.ExecuteNonQuery();
+            }
+        }
+
         public DataSet RetrieveQuery(string reff, string query)
         {
             var dataset = new DataSet();

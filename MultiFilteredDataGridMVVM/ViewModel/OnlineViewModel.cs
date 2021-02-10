@@ -635,33 +635,23 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             {
                 CVS.Filter -= new FilterEventHandler(FilterByCountry);
                 CVS.Filter += new FilterEventHandler(FilterByCountry);
-
-                //X_Online.Filter -= new FilterEventHandler(FilterByCountry);
-                //X_Online.Filter += new FilterEventHandler(FilterByCountry);
             }
             else
             {
                 CVS.Filter += new FilterEventHandler(FilterByCountry);
-                //X_Online.Filter += new FilterEventHandler(FilterByCountry);
                 CanRemoveCountryFilter = true;
             }
         }
         public void AddAuthorFilter()
         {
-            // see Notes on Adding Filters:
             if (CanRemoveAuthorFilter)
             {
                 CVS.Filter -= new FilterEventHandler(FilterByAuthor);
                 CVS.Filter += new FilterEventHandler(FilterByAuthor);
-
-                //X_Online.Filter -= new FilterEventHandler(FilterByAuthor);
-                //X_Online.Filter += new FilterEventHandler(FilterByAuthor);
             }
             else
             {
                 CVS.Filter += new FilterEventHandler(FilterByAuthor);
-
-                //X_Online.Filter += new FilterEventHandler(FilterByAuthor);
                 CanRemoveAuthorFilter = true;
             }
         }
@@ -673,14 +663,10 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             {
                 CVS.Filter -= new FilterEventHandler(FilterByYear);
                 CVS.Filter += new FilterEventHandler(FilterByYear);
-
-                //X_Online.Filter -= new FilterEventHandler(FilterByYear);
-                //X_Online.Filter += new FilterEventHandler(FilterByYear);
             }
             else
             {
                 CVS.Filter += new FilterEventHandler(FilterByYear);
-                //X_Online.Filter += new FilterEventHandler(FilterByYear);
                 CanRemoveYearFilter = true;
             }
         }
@@ -692,14 +678,10 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             {
                 CVS.Filter -= new FilterEventHandler(FilterByColour);
                 CVS.Filter += new FilterEventHandler(FilterByColour);
-
-                //X_Online.Filter -= new FilterEventHandler(FilterByYear);
-                //X_Online.Filter += new FilterEventHandler(FilterByYear);
             }
             else
             {
                 CVS.Filter += new FilterEventHandler(FilterByColour);
-                //X_Online.Filter += new FilterEventHandler(FilterByYear);
                 CanRemoveColourFilter = true;
             }
         }
@@ -710,14 +692,10 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             {
                 CVS.Filter -= new FilterEventHandler(FilterByStyle);
                 CVS.Filter += new FilterEventHandler(FilterByStyle);
-
-                //X_Online.Filter -= new FilterEventHandler(FilterByYear);
-                //X_Online.Filter += new FilterEventHandler(FilterByYear);
             }
             else
             {
                 CVS.Filter += new FilterEventHandler(FilterByStyle);
-                //X_Online.Filter += new FilterEventHandler(FilterByYear);
                 CanRemoveStyleFilter = true;
             }
         }
@@ -729,14 +707,10 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             {
                 CVS.Filter -= new FilterEventHandler(FilterByStockType);
                 CVS.Filter += new FilterEventHandler(FilterByStockType);
-
-                //X_Online.Filter -= new FilterEventHandler(FilterByYear);\\\\\\\\\\
-                //X_Online.Filter += new FilterEventHandler(FilterByYear);
             }
             else
             {
                 CVS.Filter += new FilterEventHandler(FilterByStockType);
-                //X_Online.Filter += new FilterEventHandler(FilterByYear);
                 CanRemoveStockTypeFilter = true;
             }
         }

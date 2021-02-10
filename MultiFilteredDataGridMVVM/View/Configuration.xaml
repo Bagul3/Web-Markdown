@@ -21,8 +21,8 @@
             <ColumnDefinition></ColumnDefinition>
             <ColumnDefinition></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        <Label Grid.Row="0" Grid.Column="0">REM 1</Label>
-        <Label Grid.Row="0" Grid.Column="1">REM 2</Label>
+        <Label Grid.Row="0" Grid.Column="0">REM 2</Label>
+        <Label Grid.Row="0" Grid.Column="1">REM 1</Label>
         <DataGrid Grid.Row="0" Grid.Column="0" ItemsSource="{Binding REM1}"
           SelectedItem="{Binding SelectedREM1}"
               CanUserAddRows="True">
@@ -58,7 +58,7 @@
         <StackPanel Grid.Row="1" Grid.Column="0">
             <StackPanel Orientation="Horizontal">
                 <Label Grid.Row="1" Grid.Column="0">Latest Season:</Label>
-                <TextBox BorderThickness="1" Grid.Row="1" Grid.Column="0" Text="{Binding LastestSeason}" Background="White" Foreground="Black" Height="25px" Width="35px"/>
+                <TextBox BorderThickness="1" Grid.Row="1" Grid.Column="0" Text="{Binding LastestSeason}" Background="White" Foreground="Black" Height="35px" Width="35px"/>
             </StackPanel>
         </StackPanel>        
         <Button Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding Add, Mode=OneWay}">Save</Button>

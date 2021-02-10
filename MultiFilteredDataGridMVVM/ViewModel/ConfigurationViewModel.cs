@@ -143,6 +143,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 {
                     _skuRepository.InsertREM(rem.Name, rem.REM, rem.T2T_Id, rem.Property, SqlQueries.InsertREM);
                 }
+                
                 MessageBox.Show("Successfully Saved.");
             }
             catch (Exception ex)

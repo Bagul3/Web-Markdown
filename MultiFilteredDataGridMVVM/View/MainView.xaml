@@ -37,33 +37,10 @@
                 <!---->
         </Grid.ColumnDefinitions>
 
-        <!--<ComboBox HorizontalAlignment="Left" Margin="62,0,0,9" Width="104" VerticalAlignment="Bottom" 
-            ItemsSource="{Binding Supplier}" SelectedItem="{Binding SelectedSupplier, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Height="27"/>-->
-                <!--<Button HorizontalAlignment="Left" Margin="171,21,0,10.333" Width="27" 
-            Command="{Binding RemoveSupplierFilterCommand, Mode=OneWay}">
-            <Image Width="10" Height="10" Style="{DynamicResource ImageStyleForButtons}"/>
-        </Button>-->
-                <!--<Button Margin="289,21,0,10.333" HorizontalAlignment="Left" Width="28" 
-            Command="{Binding RemoveSizeFilterCommand, Mode=OneWay}">
-            <Image Width="10" Height="10" Style="{DynamicResource ImageStyleForButtons}"/>
-        </Button>-->
-                <!--<Button Margin="438,21,0,10.333" HorizontalAlignment="Left" Width="24" 
-                Command="{Binding RemoveStockTypeFilterCommand, Mode=OneWay}">
-            <Image Width="10" Height="10" Style="{DynamicResource ImageStyleForButtons}"/>
-        </Button>-->
-
                 <wpfElements:MultiSelectComboBox HorizontalAlignment="Left" Margin="15,0,0,7" Width="105" VerticalAlignment="Bottom" Text="-- Season --"
-                                             ItemsSource="{Binding Season, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SelectedItems="{Binding SelectedSeasons, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Height="28" Grid.Column="1"/>
-                <!--<Button HorizontalAlignment="Left" Margin="125,17,0,10.333" Width="29"  Grid.Column="2"
-                        Command="{Binding RemoveColourFilterCommand, Mode=OneWay}" RenderTransformOrigin="11.825,0.6">
-                        <Image Width="10" Height="10" Style="{DynamicResource ImageStyleForButtons}"/>
-                    </Button>-->
-                <!--        <Button HorizontalAlignment="Left" Margin="314,17,0,10.333" Width="30"  Grid.Column="2"-->
-                <!--                Command="{Binding RemoveStyleFilterCommand, Mode=OneWay}" RenderTransformOrigin="11.825,0.6">-->
-                <!--            <Image Width="10" Height="10" Style="{DynamicResource ImageStyleForButtons}"/>-->
-                <!--        </Button>-->
+                                             ItemsSource="{Binding Season, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SelectedItems="{Binding SelectedSeasons, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Height="28" Grid.Column="1"/>                
                 <Button Margin="325,20,-6,5" HorizontalAlignment="Left" Width="136" Grid.Column="2" Command="{Binding GetStock, Mode=OneWay}" Content="Retrieve Stock"/>
-                <Button Margin="361,19,0,6" HorizontalAlignment="Left" Width="94" Grid.Column="2" Grid.Row="6" Command="{Binding Generate, Mode=OneWay}" Content="Generate"/>
+            <Button Margin="361,19,0,6" HorizontalAlignment="Left" Width="94" Grid.Column="2" Grid.Row="6" Command="{Binding Generate, Mode=OneWay}" Content="{Binding GenerateButton}"/>
                 <Custom:DatePicker Grid.Column="0" Grid.Row="6" Name="endDate" BorderBrush="Transparent" SelectedDate="{Binding EndDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="410,20,40,5" Grid.ColumnSpan="2" Foreground="Black" />
                 <Custom:DatePicker Grid.Column="0" Grid.Row="6" Name="startDate" BorderBrush="Transparent" SelectedDate="{Binding StartDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="45,20,265,5" Foreground="Black"/>
                 <TextBlock HorizontalAlignment="Left" Margin="385,25,0,0"  TextWrapping="Wrap" Text="End" FontSize="13.333" VerticalAlignment="Top" Grid.Column="0" Grid.Row="6"/>
