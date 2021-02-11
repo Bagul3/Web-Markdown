@@ -182,9 +182,7 @@ namespace ImportProducts.Services
             int isStock, string reffColour, IEnumerable<string> t2TreFs)
         {
             // descriptions.Where(x => x.T2TRef.ToString() == reff).Select(y => y.Description).FirstOrDefault()?.TrimEnd()
-            var description = descriptions.Where(x => x.T2TRef.ToString() == reff).Select(y => y.Description).FirstOrDefault()?.TrimEnd();
-            if (string.IsNullOrEmpty(description))
-                return null;
+            var description = FetchDescription(descriptions, reff).Description.TrimEnd();
 
             var unquotedName = descriptions.Where(x => x.T2TRef.ToString() == reff).Select(y => y.Descriptio).FirstOrDefault() + " in " +
                        dr["MasterColour"];
@@ -361,7 +359,7 @@ namespace ImportProducts.Services
             string short_description, string actualStock, string descripto, string size, int isStock, string reffColour, IEnumerable<string> t2TreFs, string eanCode)
         {
             //descriptions.Where(x => x.T2TRef.ToString() == reff).Select(y => y.Description).FirstOrDefault()?.TrimEnd()
-            var description = descriptions.Where(x => x.T2TRef.ToString() == reff).Select(y => y.Description).FirstOrDefault()?.TrimEnd();
+            var description = FetchDescription(descriptions, reff).Description.TrimEnd();
             if (string.IsNullOrEmpty(description))
                 return null;
 
@@ -524,11 +522,11 @@ namespace ImportProducts.Services
             return "<ul>" + bullet1 + bullet2 + bullet3 + bullet4 + bullet5 + bullet6 + bullet7 + "</ul>";
         }
 
+        //For Conor make sure you add a 0 as somme reason it gets dropped for 
         private static Descriptions FetchDescription(List<Descriptions> descriptions, string reff)
         {
             foreach(var description in descriptions)
             {
-                Console.WriteLine(description.T2TRef.ToString());
                 if ($"0{description.T2TRef}" == reff)
                 {
                     return description;

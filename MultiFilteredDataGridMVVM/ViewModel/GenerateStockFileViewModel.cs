@@ -284,38 +284,6 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             return results;
         }
 
-        private void DeleteExistingDd()
-        {
-            Console.WriteLine("Creating new DESC database");
-            if (File.Exists(System.Configuration.ConfigurationManager.AppSettings["AccessConnectionString"] + "DESC.dbf"))
-            {
-                File.Delete(System.Configuration.ConfigurationManager.AppSettings["AccessConnectionString"] + "DESC.dbf");
-            }
-        }
-
-        private void CreateDbfFile()
-        {
-            try
-            {
-                using (var connection = new OleDbConnection(System.Configuration.ConfigurationManager.AppSettings["AccessConnectionString"]))
-                {
-                    connection.Open();
-                    var command = connection.CreateCommand();
-
-                    command.CommandText = "create table DESC(INDIVIDUAL (ID int primary key, SKU char(100))";
-                    command.ExecuteNonQuery();
-                    connection.Close();
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Stack trace: " + e.StackTrace);
-                Console.WriteLine("Message: " + e.Message);
-                Console.Read();
-            }
-
-        }
-
         private List<string> RetrieveStockFromOnline()
         {
             var fileList = GetCSV("https://www.cordners.co.uk/exportcsv/");
