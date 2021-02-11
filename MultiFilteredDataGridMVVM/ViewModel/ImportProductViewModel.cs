@@ -282,7 +282,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 };
                 dlg.ShowDialog();
                 _descriptionsPath = dlg.FileName;
-                LoadExcelButton = "Load: " + Path.GetFileName(_descriptionsPath);
+                LoadExcelButton = "File: " + Path.GetFileName(_descriptionsPath);
             }
             catch (OperationCanceledException ex)
             {
