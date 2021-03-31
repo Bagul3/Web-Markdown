@@ -23,7 +23,6 @@ namespace MultiFilteredDataGridMVVM.ViewModel
         private ObservableCollection<Image> _fileNames;
         private ObservableCollection<Error> _errors;
         CancellationTokenSource _cancelToken;
-        IProgress<double> _progressOperation;
         public static string ImagePath;
         private ImportCsvJob job;
         private StringBuilder _csv;
@@ -363,8 +362,10 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                             batchNumber++;
                             var dateFromFolder = ImagePath.Split('\\');
                             var result = job.DoJob(refff, t2tRefs, ref _errors);
-                            bodyContent.AppendLine(result.ToString());
-
+                            if (result.Length != 0)
+                            {
+                                bodyContent.AppendLine(result.ToString());
+                            }
                             if (batchNumber == Convert.ToInt32(System.Configuration.ConfigurationManager.AppSettings["Delimiter"]))
                             {
                                 batchInc++;
@@ -372,7 +373,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                                 batchNumber = 0;
 
                             }
-                            if (!String.IsNullOrEmpty(bodyContent.ToString()))
+                            if (bodyContent.Length != 0)
                             {
                                 _csv.AppendLine(bodyContent.ToString());
                                 if (first)
@@ -408,7 +409,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 var unquieErrors = _errors.GroupBy(i => i.RefNumber).Select(i => i.First()).ToList();
                 foreach (var error in unquieErrors)
                 {
-                    error.ErrorMessage = "No description found!";
+                    error.ErrorMessage = error.ErrorMessage;
                     _errors.Add(error);
                 }
                 Errors = _errors;
@@ -421,6 +422,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             catch (NullReferenceException ex)
             {
                 MessageBox.Show("Operation cancelled. Please ensure Excel file is labelled Sheet1.");
+                new LogWriter().LogWrite(ex.Message);
                 new LogWriter().LogWrite(ex.StackTrace);
             }
             catch (Exception ex)

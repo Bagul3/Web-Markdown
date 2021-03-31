@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Common;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
@@ -103,6 +104,26 @@ namespace DataRepo
             }
         }
 
+        public void PackTable()
+        {
+            using (OleDbConnection connection = new OleDbConnection(System.Configuration.ConfigurationManager.AppSettings["AccessConnectionString"]))
+            {
+                using (OleDbCommand scriptCommand = connection.CreateCommand())
+                {
+                    connection.Open();
+
+                    string vfpScript = @"SET EXCLUSIVE ON
+                                DELETE FROM [CONFIG]
+                                PACK";
+
+                    scriptCommand.CommandType = CommandType.StoredProcedure;
+                    scriptCommand.CommandText = "ExecScript";
+                    scriptCommand.Parameters.Add("myScript", OleDbType.Char).Value = vfpScript;
+                    scriptCommand.ExecuteNonQuery();
+                }
+            }
+        }
+
         public void InsertREM(string name, string rem, string id, string rem_property, string query)
         {
             using (var connectionHandler = new OleDbConnection(System.Configuration.ConfigurationManager.AppSettings["AccessConnectionString"]))
@@ -113,6 +134,20 @@ namespace DataRepo
                 myAccessCommand.Parameters.AddWithValue("@rem", rem);
                 myAccessCommand.Parameters.AddWithValue("@id", id);
                 myAccessCommand.Parameters.AddWithValue("@property", rem_property);
+                myAccessCommand.ExecuteNonQuery();
+            }
+        }
+
+        public void InsertSeasonData(string season, string id, string top, string bottom)
+        {
+            using (var connectionHandler = new OleDbConnection(System.Configuration.ConfigurationManager.AppSettings["AccessConnectionString"]))
+            {
+                connectionHandler.Open();
+                var myAccessCommand = new OleDbCommand(SqlQueries.InsertSeasonalData, connectionHandler);
+                myAccessCommand.Parameters.AddWithValue("@season", season);
+                myAccessCommand.Parameters.AddWithValue("@id", id);
+                myAccessCommand.Parameters.AddWithValue("@toppage", top);
+                myAccessCommand.Parameters.AddWithValue("@bottompage", bottom);
                 myAccessCommand.ExecuteNonQuery();
             }
         }

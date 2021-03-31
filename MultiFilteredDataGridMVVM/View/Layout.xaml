@@ -15,6 +15,7 @@
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="{DynamicResource MaterialDesignFont}"
         WindowState="Maximized"
+        xmlns:viewModel="clr-namespace:MultiFilteredDataGridMVVM.ViewModel"
         Title="Cordners" Height="1000" Width="1500" ResizeMode="CanResize">
     <Window.Resources>
         <DataTemplate x:Name="redViewTemplate" DataType="{x:Type viewmodels:MainViewModel}">

@@ -61,16 +61,16 @@ namespace Common
                     {
                         var descrip = new Descriptions()
                         {
-                            T2TRef = (from DataRow row in dataTable.Rows select row["T2TREF"] != DBNull.Value ? row["T2TREF"] : "").ElementAt(i),
-                            Descriptio = (from DataRow row in dataTable.Rows select row["TITLE"] != DBNull.Value ? (string)row["TITLE"] : "").ElementAt(i).ToString(),
-                            Description = (from DataRow row in dataTable.Rows select row["DESCRIPTION"] != DBNull.Value ? (string)row["DESCRIPTION"] : "").ElementAt(i).ToString(),
-                            Bullet1 = (from DataRow row in dataTable.Rows select row["BULLET 1"] != DBNull.Value ? (string)row["BULLET 1"] : "").ElementAt(i).ToString(),
-                            Bullet2 = (from DataRow row in dataTable.Rows select row["BULLET 2"] != DBNull.Value ? (string)row["BULLET 2"] : "").ElementAt(i).ToString(),
-                            Bullet3 = (from DataRow row in dataTable.Rows select row["BULLET 3"] != DBNull.Value ? (string)row["BULLET 3"] : "").ElementAt(i).ToString(),
-                            Bullet4 = (from DataRow row in dataTable.Rows select row["BULLET 4"] != DBNull.Value ? (string)row["BULLET 4"] : "").ElementAt(i).ToString(),
-                            Bullet5 = (from DataRow row in dataTable.Rows select row["BULLET 5"] != DBNull.Value ? (string)row["BULLET 5"] : "").ElementAt(i).ToString(),
-                            Bullet6 = (from DataRow row in dataTable.Rows select row["BULLET 6"] != DBNull.Value ? (string)row["BULLET 6"] : "").ElementAt(i).ToString(),
-                            Bullet7 = (from DataRow row in dataTable.Rows select row["BULLET 7"] != DBNull.Value ? (string)row["BULLET 7"] : "").ElementAt(i).ToString()
+                            T2TRef = (from DataRow row in dataTable.Rows select row["T2TREF"] != DBNull.Value ? row["T2TREF"].ToString() : "").ElementAt(i),
+                            Descriptio = (from DataRow row in dataTable.Rows select row["TITLE"] != DBNull.Value ? row["TITLE"].ToString() : "").ElementAt(i).ToString(),
+                            Description = (from DataRow row in dataTable.Rows select row["DESCRIPTION"] != DBNull.Value ? row["DESCRIPTION"].ToString() : "").ElementAt(i).ToString(),
+                            Bullet1 = (from DataRow row in dataTable.Rows select row["BULLET 1"] != DBNull.Value ? row["BULLET 1"].ToString() : "").ElementAt(i).ToString(),
+                            Bullet2 = (from DataRow row in dataTable.Rows select row["BULLET 2"] != DBNull.Value ? row["BULLET 2"].ToString() : "").ElementAt(i).ToString(),
+                            Bullet3 = (from DataRow row in dataTable.Rows select row["BULLET 3"] != DBNull.Value ? row["BULLET 3"].ToString() : "").ElementAt(i).ToString(),
+                            Bullet4 = (from DataRow row in dataTable.Rows select row["BULLET 4"] != DBNull.Value ? row["BULLET 4"].ToString() : "").ElementAt(i).ToString(),
+                            Bullet5 = (from DataRow row in dataTable.Rows select row["BULLET 5"] != DBNull.Value ? row["BULLET 5"].ToString() : "").ElementAt(i).ToString(),
+                            Bullet6 = (from DataRow row in dataTable.Rows select row["BULLET 6"] != DBNull.Value ? row["BULLET 6"].ToString() : "").ElementAt(i).ToString(),
+                            Bullet7 = (from DataRow row in dataTable.Rows select row["BULLET 7"] != DBNull.Value ? row["BULLET 7"].ToString() : "").ElementAt(i).ToString()
 
                         };
 

@@ -299,9 +299,9 @@ WHERE (((Left([T2_LOOK]![KEY],3))='CAT')) ORDER BY Trim(Mid([T2_LOOK].[KEY],4,6)
 
         public static string DeleteREM => @"DELETE FROM [REM] PACK";
 
-        public static string FetchLatestSeaosn => @"SELECT SEASON FROM [CONFIG]";
+        public static string FetchSeasonalData => @"SELECT * FROM [CONFIG]";
 
-        public static string InsertLatestSeason => @"INSERT INTO [CONFIG] (SEASON) VALUES (@season)";
+        public static string InsertSeasonalData => @"INSERT INTO [CONFIG] ([SEASON],[ID],[TOPPAGE],[BOTTOMPAGE]) VALUES (@season, @id, @toppage, @bottompage)";
 
         public static string DeleteConfigurables => @"DELETE FROM [CONFIG]";
 

@@ -19,7 +19,7 @@
         <Binding Mode="OneWay" Path="SKUVM" Source="{StaticResource MainViewModelLocatorDataSource}"/>
     </UserControl.DataContext>
     <xctk:BusyIndicator IsBusy="{Binding IsBusy}">
-        <Grid>
+        <Grid> 
             <Grid.RowDefinitions>
                 <RowDefinition Height="57"/>
                 <RowDefinition/>

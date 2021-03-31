@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:viewModel="clr-namespace:MultiFilteredDataGridMVVM.ViewModel"
+             xmlns:wpfElements="clr-namespace:Cordners.WpfElements"
              mc:Ignorable="d">
     <UserControl.Resources>
         <viewModel:MainViewModelLocator x:Key="ConfigurationVM" d:IsDataSource="True"/>
@@ -55,12 +56,24 @@
                 </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
+        <StackPanel Grid.Row="1" Grid.Column="1">
+            <StackPanel Orientation="Horizontal">
+                <Label Grid.Row="1" Grid.Column="1">Comma Seprate Seasons you would like to appear at the back of the website eg. B18,B20</Label>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label Grid.Row="1" Grid.Column="0">Bottom Page Seasons:</Label>
+                <TextBox BorderThickness="1" Grid.Row="1" Grid.Column="1" Text="{Binding BottomSeason}" Background="White" Foreground="Black" Height="35px" Width="100"/>
+            </StackPanel>
+        </StackPanel>
         <StackPanel Grid.Row="1" Grid.Column="0">
             <StackPanel Orientation="Horizontal">
-                <Label Grid.Row="1" Grid.Column="0">Latest Season:</Label>
-                <TextBox BorderThickness="1" Grid.Row="1" Grid.Column="0" Text="{Binding LastestSeason}" Background="White" Foreground="Black" Height="35px" Width="35px"/>
+                <Label Grid.Row="1" Grid.Column="0">Comma Seprate Seasons you would like to order by eg. S21,W20,S19</Label>
             </StackPanel>
-        </StackPanel>        
+            <StackPanel Orientation="Horizontal">
+                <Label Grid.Row="1" Grid.Column="0">Top Page Seasons:</Label>
+                <TextBox BorderThickness="1" Grid.Row="1" Grid.Column="0" Text="{Binding LastestSeason}" Background="White" Foreground="Black" Height="35px" Width="100"/>
+            </StackPanel>
+        </StackPanel>
         <Button Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding Add, Mode=OneWay}">Save</Button>
     </Grid>
 </UserControl>

@@ -19,6 +19,7 @@ namespace ImportProducts.Services
         private readonly ExcelMapper _mapper;
         private readonly List<Descriptions> descriptions;
         private static DataSet REMTable;
+        private string reffCode = "";
 
         public ImportCsvJob(string excelConnection)
         {
@@ -30,84 +31,110 @@ namespace ImportProducts.Services
 
         public StringBuilder DoJob(string refff, IEnumerable<string> t2TreFs, ref ObservableCollection<Error> errors)
         {
-            var csvLines = new StringBuilder();
-            _logger.LogWrite("Generating stock.csv: This will take a few minutes, please wait....");
-
-            var reff = refff.Substring(0, 6);
-            var data = Query(reff, SqlQuery.ImportProductsQuery);
-
-            var actualStock = "0";
-            var inStockFlag = false;
-            var groupSkus = "";
-
-            foreach (DataRow dr in data.Tables[0].Rows)
+            try
             {
-                _logger.LogWrite("Working....");
-                var simpleSkusList = new List<string>();
-                if (t2TreFs.Any(x => x.Contains(dr["NewStyle"].ToString())))
-                {
-                    var imageLists = t2TreFs.First(stringToCheck => stringToCheck.Contains(dr["NewStyle"].ToString()));
-                    var isStock = 0;
-                    for (var i = 1; i < 14; i++)
-                    {
-                        Console.WriteLine(dr["QTY" + i].ToString());
+                var csvLines = new StringBuilder();
+                _logger.LogWrite("Generating stock.csv: This will take a few minutes, please wait....");
 
-                        if (!string.IsNullOrEmpty(dr["QTY" + i].ToString()))
+                var reff = refff.Substring(0, 6);
+                reffCode = reff;
+                var data = Query(reff, SqlQuery.ImportProductsQuery);
+
+                var actualStock = "0";
+                var inStockFlag = false;
+                var groupSkus = "";
+
+                foreach (DataRow dr in data.Tables[0].Rows)
+                {
+                    _logger.LogWrite("Working....");
+                    var simpleSkusList = new List<string>();
+                    if (t2TreFs.Any(x => x.Contains(dr["NewStyle"].ToString())))
+                    {
+                        var imageLists = t2TreFs.First(stringToCheck => stringToCheck.Contains(dr["NewStyle"].ToString()));
+                        var isStock = 0;
+                        for (var i = 1; i < 14; i++)
                         {
-                            if (Convert.ToInt32(dr["QTY" + i]) > 0)
+                            Console.WriteLine(dr["QTY" + i].ToString());
+
+                            if (!string.IsNullOrEmpty(dr["QTY" + i].ToString()))
                             {
-                                if (string.IsNullOrEmpty(dr["LY" + i].ToString()))
+                                if (Convert.ToInt32(dr["QTY" + i]) > 0)
                                 {
-                                    actualStock = dr["QTY" + i].ToString();
+                                    if (string.IsNullOrEmpty(dr["LY" + i].ToString()))
+                                    {
+                                        actualStock = dr["QTY" + i].ToString();
+                                    }
+                                    else
+                                    {
+                                        actualStock =
+                                            (Convert.ToInt32(dr["QTY" + i]) - Convert.ToInt32(dr["LY" + i]))
+                                            .ToString();
+                                    }
+
+                                    isStock = 1;
+                                    inStockFlag = true;
                                 }
                                 else
                                 {
-                                    actualStock =
-                                        (Convert.ToInt32(dr["QTY" + i]) - Convert.ToInt32(dr["LY" + i]))
-                                        .ToString();
+                                    isStock = 0;
                                 }
 
-                                isStock = 1;
-                                inStockFlag = true;
+                                var append = (1000 + i).ToString();
+                                groupSkus = dr["NewStyle"].ToString();
+                                var groupSkus2 = dr["NewStyle"] + append.Substring(1, 3);
+
+                                var shortDescription = BuildShortDescription(FetchDescription(descriptions, reff));
+                                var descripto = FetchDescription(descriptions, reff)?.Descriptio;
+
+                                var size = "";
+                                size = i < 10 ? dr["S0" + i].ToString() : dr["S" + i].ToString();
+
+                                if (size.Contains("½"))
+                                    size = size.Replace("½", ".5");
+
+                                simpleSkusList.Add(groupSkus2);
+                                var eanDataset = Query(groupSkus2, SqlQuery.GetEanCodes);
+                                string eanCode = null;
+                                if (eanDataset.Tables[0].Rows.Count != 0)
+                                {
+                                    eanCode = eanDataset.Tables[0].Rows[0]["EAN_CODE"].ToString();
+                                }
+
+                                string newLine = null;
+                                if (Convert.ToInt32(actualStock) != 0)
+                                {
+                                    newLine = BuildChildImportProduct(groupSkus2, dr, descriptions, reff, shortDescription, actualStock, descripto, size, isStock, imageLists, t2TreFs, eanCode);
+                                }
+
+                                if (newLine != null)
+                                {
+                                    csvLines.AppendLine(newLine);
+                                }
+                                else if (Convert.ToInt32(actualStock) != 0)
+                                {
+                                    errors.Add(new Error()
+                                    {
+                                        RefNumber = reff,
+                                        ErrorMessage = "No description found!"
+                                    });
+                                    break;
+                                }
+
+                                actualStock = "0";
                             }
-                            else
-                            {
-                                isStock = 0;
-                            }
 
-                            var append = (1000 + i).ToString();
-                            groupSkus = dr["NewStyle"].ToString();
-                            var groupSkus2 = dr["NewStyle"] + append.Substring(1, 3);
+                        }
 
-                            var shortDescription = BuildShortDescription(FetchDescription(descriptions, reff));
-                            var descripto = FetchDescription(descriptions, reff)?.Descriptio;
-
-                            var size = "";
-                            size = i < 10 ? dr["S0" + i].ToString() : dr["S" + i].ToString();
-
-                            if (size.Contains("½"))
-                                size = size.Replace("½", ".5");                            
-
-                            simpleSkusList.Add(groupSkus2);
-                            var eanDataset = Query(groupSkus2, SqlQuery.GetEanCodes);
-                            string eanCode = null;
-                            if (eanDataset.Tables[0].Rows.Count != 0)
-                            {
-                                eanCode = eanDataset.Tables[0].Rows[0]["EAN_CODE"].ToString();
-                            }
-
-                            string newLine = null;
-                            if (Convert.ToInt32(actualStock) != 0)
-                            {
-                                newLine = BuildChildImportProduct(groupSkus2, dr, descriptions, reff, shortDescription, actualStock, descripto, size, isStock, imageLists, t2TreFs, eanCode);
-                            }
-
-
+                        isStock = inStockFlag ? 1 : 0;
+                        if (!string.IsNullOrEmpty(dr["NewStyle"].ToString()))
+                        {
+                            var newLine = ParentImportProduct(groupSkus, descriptions, reff, dr, simpleSkusList,
+                                isStock, imageLists, t2TreFs);
                             if (newLine != null)
                             {
                                 csvLines.AppendLine(newLine);
                             }
-                            else if (Convert.ToInt32(actualStock) != 0)
+                            else
                             {
                                 errors.Add(new Error()
                                 {
@@ -115,36 +142,27 @@ namespace ImportProducts.Services
                                 });
                                 break;
                             }
-
-                            actualStock = "0";
                         }
-
+                        inStockFlag = false;
                     }
-
-                    isStock = inStockFlag ? 1 : 0;
-                    if (!string.IsNullOrEmpty(dr["NewStyle"].ToString()))
-                    {
-                        var newLine = ParentImportProduct(groupSkus, descriptions, reff, dr, simpleSkusList,
-                            isStock, imageLists, t2TreFs);
-                        if (newLine != null)
-                        {
-                            csvLines.AppendLine(newLine);
-                        }
-                        else
-                        {
-                            errors.Add(new Error()
-                            {
-                                RefNumber = reff
-                            });
-                            break;
-                        }
-                    }
-                    inStockFlag = false;
                 }
-            }
 
-            _logger.LogWrite("Finished for: " + refff);
-            return csvLines;
+                _logger.LogWrite("Finished for: " + refff);
+                return csvLines;
+            }
+            catch(Exception ex)
+            {
+                errors.Add(new Error()
+                {
+                    RefNumber = reffCode,
+                    ErrorMessage = $"An error occurred trying to generate, double check execel sheet and description"
+                });
+                new LogWriter().LogWrite($"Parent SKU: {reffCode}");
+                new LogWriter().LogWrite($"Full SKU: {refff}");
+                new LogWriter().LogWrite(ex.Message);
+                new LogWriter().LogWrite(ex.StackTrace);
+            }
+            return new StringBuilder();
         }
 
         private static DataSet Query(string param, string query)
@@ -182,10 +200,17 @@ namespace ImportProducts.Services
             int isStock, string reffColour, IEnumerable<string> t2TreFs)
         {
             // descriptions.Where(x => x.T2TRef.ToString() == reff).Select(y => y.Description).FirstOrDefault()?.TrimEnd()
-            var description = FetchDescription(descriptions, reff).Description.TrimEnd();
+            var result = FetchDescription(descriptions, reff);
 
-            var unquotedName = descriptions.Where(x => x.T2TRef.ToString() == reff).Select(y => y.Descriptio).FirstOrDefault() + " in " +
-                       dr["MasterColour"];
+            if (result == null)
+                return null;
+
+            var description = result.Description?.TrimEnd();
+
+            if (string.IsNullOrEmpty(description))
+                return null;
+
+            var unquotedName = result.Descriptio + " in " + dr["MasterColour"];
             description = Regex.Replace(description, @"\t|\n|\r", "");
             description = "\"" + description + "\"";
             var store = "\"admin\"";
@@ -201,9 +226,9 @@ namespace ImportProducts.Services
             var weight = "\"0.01\"";
             var status = "\"Enabled\"";
             var visibility = Visibility()?.TrimEnd();
-            var shortDescription = "\"" + BuildShortDescription(descriptions.FirstOrDefault(x => x.T2TRef.ToString() == reff)) + "\"";
+            var shortDescription = "\"" + BuildShortDescription(result) + "\"";
             var gty = "\"0\"";
-            var productName = "\"" + descriptions.Where(x => x.T2TRef.ToString() == reff).Select(y => y.Descriptio).FirstOrDefault() + "\"";
+            var productName = "\"" + result.Descriptio + "\"";
             var color = "\"" + dr["MasterColour"].ToString().TrimEnd() + "\"";
             var sizeRange = "\"\"";
             var vat = dr["VAT"].ToString() == "A" ? "TAX" : "None";
@@ -359,11 +384,18 @@ namespace ImportProducts.Services
             string short_description, string actualStock, string descripto, string size, int isStock, string reffColour, IEnumerable<string> t2TreFs, string eanCode)
         {
             //descriptions.Where(x => x.T2TRef.ToString() == reff).Select(y => y.Description).FirstOrDefault()?.TrimEnd()
-            var description = FetchDescription(descriptions, reff).Description.TrimEnd();
-            if (string.IsNullOrEmpty(description))
+            var result = FetchDescription(descriptions, reff);
+
+            if (result == null)
                 return null;
 
-            var unquotedName = dr["MasterSupplier"] + " " + descriptions.Where(x => x.T2TRef.ToString() == reff).Select(y => y.Descriptio).FirstOrDefault() + " in " + dr["MasterColour"];            
+            var description = result?.Description;
+            if (string.IsNullOrEmpty(description))
+                return null;
+            else
+                description = description.TrimEnd();
+
+            var unquotedName = dr["MasterSupplier"] + " " + result.Descriptio + " in " + dr["MasterColour"];            
             description = Regex.Replace(description, @"\t|\n|\r", "");
             description = "\"" + description + "\"";
             const string store = "\"admin\"";
@@ -527,10 +559,20 @@ namespace ImportProducts.Services
         {
             foreach(var description in descriptions)
             {
-                if ($"0{description.T2TRef}" == reff)
+                if(description.T2TRef.ToString().ToCharArray()[0] != '0')
                 {
-                    return description;
+                    if ($"0{description.T2TRef}" == reff)
+                    {
+                        return description;
+                    }
                 }
+                else
+                {
+                    if ($"{description.T2TRef}" == reff)
+                    {
+                        return description;
+                    }
+                }                
             }
             return null;
         }

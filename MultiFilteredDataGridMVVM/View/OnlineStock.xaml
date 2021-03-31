@@ -19,6 +19,9 @@
         <Binding Mode="OneWay" Path="OnlineVM" Source="{StaticResource MainViewModelLocatorDataSource}"/>
     </UserControl.DataContext>
     <xctk:BusyIndicator IsBusy="{Binding IsBusy}">
+        <!--<Grid
+            viewModel:ScaleToWindowSizeBehavior.Denominators="1000, 700"
+            viewModel:ScaleToWindowSizeBehavior.ParentWindow="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}}" >-->
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="57"/>

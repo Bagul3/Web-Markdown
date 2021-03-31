@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data;
+using System.Text;
 using System.Windows.Forms;
 using System.Windows.Input;
 
@@ -21,20 +22,30 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             _skuRepository = new SkuRepository();
             REM1 = new ObservableCollection<REM1>(FetchREM1());
             REM2 = new ObservableCollection<REM2>(FetchREM2());
-            _latestSeason = GetLatestSeason();
+            var seasonalData = _skuRepository.RetrieveQuery(SqlQueries.FetchSeasonalData).Tables;
+            _latestSeason = GetSeasonalDataFor(seasonalData, "TOPPAGE");
+            _bottomSeason = GetSeasonalDataFor(seasonalData, "BOTTOMPAGE");
             InitializeCommands();
         }
 
-        private string GetLatestSeason()
+        private string GetSeasonalDataFor(DataTableCollection seasonalData, string type)
         {
             try
             {
-                var remresult = _skuRepository.RetrieveQuery(SqlQueries.FetchLatestSeaosn).Tables;
+                var season = new StringBuilder();
+                var remresult = _skuRepository.RetrieveQuery(SqlQueries.FetchSeasonalData).Tables;
                 if (remresult != null)
                 {
-                    return remresult[0].Rows[0]["SEASON"].ToString();
+                    for(int i = 0; i < remresult[0].Rows.Count;i++)
+                    {
+                        if (remresult[0].Rows[i][$"{type}"].ToString() == "true")
+                        {
+                            season.Append($"{remresult[0].Rows[i]["SEASON"]},");
+                        }                                                
+                    }
+                    
                 }
-                return "";
+                return season.ToString().Remove(season.ToString().Length - 1);
             }
             catch (Exception ex)
             {
@@ -56,6 +67,22 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             {
                 _latestSeason = value;
                 RaisePropertyChanged("LastestSeason");
+            }
+        }
+
+        private string _bottomSeason = "";
+
+        public string BottomSeason
+        {
+            get
+            {
+                return _bottomSeason;
+
+            }
+            set
+            {
+                _bottomSeason = value;
+                RaisePropertyChanged("BottomSeason");
             }
         }
 
@@ -126,28 +153,75 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             private set;
         }
 
-        private void AddREMS()
+        private void InsertSeasonalData()
+        {
+            var id = 0;
+            var latestSeasons = _latestSeason.Split(',');
+            _skuRepository.RetrieveQuery(SqlQueries.DeleteConfigurables);
+            foreach (var season in latestSeasons) 
+            {
+                if (season != "")
+                {
+                    id++;
+                    _skuRepository.InsertSeasonData(season.Trim(), id.ToString(), "true", "false");
+                }                
+            }
+            var bottomSeasons = _bottomSeason.Split(',');
+            foreach(var season in bottomSeasons)
+            {
+                if (season != "")
+                {
+                    id++;
+                    _skuRepository.InsertSeasonData(season.Trim(), id.ToString(), "false", "true");
+                }                
+            }
+        }
+
+        private void InsertRems()
+        {
+            _skuRepository.RetrieveQuery(SqlQueries.DeleteREM);            
+
+            foreach (var rem in REM1)
+            {
+                _skuRepository.InsertREM(rem.Name, rem.REM, rem.T2T_Id, rem.Property, SqlQueries.InsertREM);
+            }
+            foreach (var rem in REM2)
+            {
+                _skuRepository.InsertREM(rem.Name, rem.REM, rem.T2T_Id, rem.Property, SqlQueries.InsertREM);
+            }
+        }
+
+        private void Save()
         {
             try
             {
-                _skuRepository.RetrieveQuery(SqlQueries.DeleteREM);
-                _skuRepository.RetrieveQuery(SqlQueries.DeleteConfigurables);
-
-                _skuRepository.RetrieveQuery(_latestSeason, SqlQueries.InsertLatestSeason);
-
-                foreach (var rem in REM1)
+                try
                 {
-                    _skuRepository.InsertREM(rem.Name, rem.REM, rem.T2T_Id, rem.Property, SqlQueries.InsertREM);
+                    InsertSeasonalData();
                 }
-                foreach (var rem in REM2)
+                catch(Exception ex)
                 {
-                    _skuRepository.InsertREM(rem.Name, rem.REM, rem.T2T_Id, rem.Property, SqlQueries.InsertREM);
+                    new LogWriter().LogWrite("ERROR: Inserting seasonal data");
+                    new LogWriter().LogWrite("ERROR: " + ex.Message);
+                    new LogWriter().LogWrite("ERROR: " + ex.StackTrace);
+                    throw ex;
                 }
-                
+                try
+                {
+                    InsertRems();
+                }
+                catch (Exception ex)
+                {
+                    new LogWriter().LogWrite("ERROR: Inserting REMs");
+                    new LogWriter().LogWrite("ERROR: " + ex.Message);
+                    new LogWriter().LogWrite("ERROR: " + ex.StackTrace);
+                    throw ex;
+                }
                 MessageBox.Show("Successfully Saved.");
             }
             catch (Exception ex)
             {
+                new LogWriter().LogWrite("ERROR: " + ex.Message);
                 new LogWriter().LogWrite("ERROR: " + ex.StackTrace);
                 MessageBox.Show("An error occurred trying to save configurables, if this continues contact Conor");
             }
@@ -223,7 +297,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
 
         private void InitializeCommands()
         {
-            Add = new RelayCommand(AddREMS);
+            Add = new RelayCommand(Save);
         }
     }
 }

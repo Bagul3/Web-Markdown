@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2027
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30517.126
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultiFilteredDataGridMVVM", "MultiFilteredDataGridMVVM\MultiFilteredDataGridMVVM.csproj", "{B0C37EDE-7C3D-4BE8-AC0D-C348192C3B84}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "MultiFilteredDataGridMVVM\Core.csproj", "{B0C37EDE-7C3D-4BE8-AC0D-C348192C3B84}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libs", "Libs", "{8DC105DB-FD43-4778-9CD6-298503E9F1DA}"
 	ProjectSection(SolutionItems) = preProject
