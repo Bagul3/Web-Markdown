@@ -80,6 +80,11 @@ namespace DataService
                 category = category.Remove(category.Length - 1, 1);
             }
 
+            if (category.Last() == '/')
+            {
+                category = category.Remove(category.Length - 1, 1);
+            }
+
             return category.Replace(",,",",");
         }
 

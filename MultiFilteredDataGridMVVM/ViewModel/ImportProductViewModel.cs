@@ -43,7 +43,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
 
         private string headers = $"{"sku"},{"store_view_codes"},{"websites"},{"attribut_set"},{"type"},{"has_options"},{"name"},{"page_layout"},{"options_container"},{"price"},{"weight"},{"status"},{"visibility"},{"short_description"},{"qty"},{"product_name"},{"color"}," +
         $"{"size"},{"tax_class_id"},{"configurable_attributes"},{"manufacturer"},{"categories"},{"sub_categories"},{"season"},{"stock_type"},{"image"},{"small_image"},{"thumbnail"},{"gallery"}," +
-        $"{"condition"},{"ean"},{"description"},{"model"},{"infocare"},{"sizeguide"},{"RRP"},{"url_key"},{"url_path"},{"rem"},{"rem2"},{"susku"},{"parent_sku"}";
+        $"{"condition"},{"ean"},{"description"},{"model"},{"infocare"},{"sizeguide"},{"RRP"},{"url_key"},{"url_path"},{"rem"},{"rem2"},{"susku"},{"uDef2"},{"d_type"},{"parent_sku"}";
 
         public ImportProductViewModel()
         {
@@ -366,13 +366,6 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                             {
                                 bodyContent.AppendLine(result.ToString());
                             }
-                            if (batchNumber == Convert.ToInt32(System.Configuration.ConfigurationManager.AppSettings["Delimiter"]))
-                            {
-                                batchInc++;
-                                first = true;
-                                batchNumber = 0;
-
-                            }
                             if (bodyContent.Length != 0)
                             {
                                 _csv.AppendLine(bodyContent.ToString());
@@ -383,7 +376,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                                     first = false;
                                     File.AppendAllText(
                                         (System.Configuration.ConfigurationManager.AppSettings["ImportProductsOutput"] + " " + dateFromFolder[dateFromFolder.Length - 1].Trim() + "" + batchInc + ".csv"),
-                                        heead.ToString() + Environment.NewLine);
+                                        heead.ToString());
 
                                 }
 

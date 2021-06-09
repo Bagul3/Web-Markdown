@@ -66,7 +66,8 @@ namespace ImportProducts.Services
                             {
                                 errors.Add(new Error()
                                 {
-                                    RefNumber = reff
+                                    RefNumber = reff,
+                                    ErrorMessage = "No description found!"
                                 });
                                 break;
                             }
@@ -141,7 +142,7 @@ namespace ImportProducts.Services
                 errors.Add(new Error()
                 {
                     RefNumber = reffCode,
-                    ErrorMessage = $"An error occurred trying to generate, double check execel sheet and description"
+                    ErrorMessage = $"An error occurred trying to generate, double check excel sheet and description"
                 });
                 new LogWriter().LogWrite($"Parent SKU: {reffCode}");
                 new LogWriter().LogWrite($"Full SKU: {refff}");
@@ -214,7 +215,7 @@ namespace ImportProducts.Services
                                           .Settype("configurable")
                                           .Setsku(groupSkus?.TrimEnd())
                                           .SethasOption("1")
-                                          .SetName(result.Descriptio + " in " + dr["MasterColour"])
+                                          .SetName(result.Descriptio.TrimEnd() + " in " + dr["MasterColour"].ToString().TrimEnd())
                                           .SetpageLayout("No layout updates.")
                                           .SetoptionsContainer("Product Info Column")
                                           .Setprice(dr["BASESELL"].ToString().TrimEnd())
@@ -222,8 +223,8 @@ namespace ImportProducts.Services
                                           .Setstatus("Enabled")
                                           .Setvisibility(null)
                                           .SetshortDescription(BuildShortDescription(result))
-                                          .Setgty("0")
-                                          .SetproductName(result.Descriptio)
+                                          .Setgty("")
+                                          .SetproductName(result.Descriptio.TrimEnd())
                                           .Setcolor(dr["MasterColour"].ToString().TrimEnd())
                                           .SetsizeRange(null)
                                           .SettaxClass("Taxable Goods")
@@ -241,14 +242,16 @@ namespace ImportProducts.Services
                                           .Setinfocare("")
                                           .Setsizeguide("")
                                           .Setrrp(dr["SELL"].ToString())
-                                          .Seturl_key((result.Descriptio + " in " + dr["MasterColour"]).Replace(" ", "-").Replace("'", "").ToLower() + "-" + groupSkus)
-                                          .Seturl_path((result.Descriptio + " in " + dr["MasterColour"]).Replace(" ", "-").Replace("'", "").ToLower() + ".html")
+                                          .Seturl_key((result.Descriptio.TrimEnd() + " in " + dr["MasterColour"].ToString().TrimEnd()).Replace(" ", "-").Replace("'", "").ToLower() + "-" + groupSkus)
+                                          .Seturl_path((result.Descriptio.TrimEnd() + " in " + dr["MasterColour"].ToString().TrimEnd()).Replace(" ", "-").Replace("'", "").ToLower() + ".html")
                                           .Setean(null)
                                           .Setrem1(GetREMValue(dr["REM2"].ToString()))
                                           .Setrem2(GetREMValue(dr["REM"].ToString()))
                                           .Setmodel(dr["SUPPREF"].ToString())
                                           .SetsuSKU(GetSUSKU(reff, t2TreFs))
                                           .SetDescription(Regex.Replace(description, @"\t|\n|\r", ""))
+                                          .SetUDef(dr["MasterSubDept"].ToString())
+                                          .SetSType(dr["MasterDept"].ToString())
                                           .SetParentSku("")
                                           .ToString();
         }

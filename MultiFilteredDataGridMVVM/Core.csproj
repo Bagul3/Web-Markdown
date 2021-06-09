@@ -170,9 +170,6 @@
     <Compile Include="View\SkuChecker.xaml.cs">
       <DependentUpon>SkuChecker.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\StockFile.xaml.cs">
-      <DependentUpon>StockFile.xaml</DependentUpon>
-    </Compile>
     <Compile Include="WpfElements\BooleanToVisibilityConverter.cs" />
     <Compile Include="WpfElements\SkuDropDown.cs" />
     <Compile Include="WpfElements\CommandHandler.cs" />
@@ -211,10 +208,6 @@
     <Page Include="View\SkuChecker.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
-    </Page>
-    <Page Include="View\StockFile.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="WpfElements\MultiSelectComboBox.xaml">
       <SubType>Designer</SubType>

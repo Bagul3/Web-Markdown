@@ -50,6 +50,8 @@ namespace ImportProducts.Model
         private string weight;
         private string suSKU;
         private string parentSku;
+        private string stype;
+        private string udef2;
 
         public ImportProducts SetParentSku(string parentSku)
         {
@@ -347,6 +349,18 @@ namespace ImportProducts.Model
             return this;
         }
 
+        public ImportProducts SetUDef(string udef2)
+        {
+            this.udef2 = "\"" + udef2 + "\"";
+            return this;
+        }
+
+        public ImportProducts SetSType(string stype)
+        {
+            this.stype = "\"" + stype + "\"";
+            return this;
+        }
+
         public override string ToString()
         {
             return $"{sku},{store}," +
@@ -354,7 +368,7 @@ namespace ImportProducts.Model
                           $"{shortDescription},{gty},{productName},{color}," +
                           $"{sizeRange},{taxClass},{configurableAttribute},{manufactor}," +
                           $"{category},{subCategory},{season},{stockType},{image},{smallImage},{thumbnail},{gallery},{condition},{ean}," +
-                          $"{description},{model},{infocare},{sizeguide},{rrp},{url_key},{url_path},{rem1},{rem2},{suSKU},{parentSku}";
+                          $"{description},{model},{infocare},{sizeguide},{rrp},{url_key},{url_path},{rem1},{rem2},{suSKU},{udef2},{stype},{parentSku}";
         }
 
         public string RemoveLineEndings(string value)

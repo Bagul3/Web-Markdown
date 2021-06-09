@@ -12,7 +12,6 @@
         <viewModel:MainViewModelLocator x:Key="MainViewModelLocatorDataSource" d:IsDataSource="True"/>
         <!-- This next line instantiates a CollectionViewSource with the collection of Things as its collection of objects-->
         <CollectionViewSource Source="{Binding Things}" x:Key="X_CVS"/>
-        <CollectionViewSource Source="{Binding Online}" x:Key="X_Online"/>
     </UserControl.Resources>
 
     <UserControl.DataContext>

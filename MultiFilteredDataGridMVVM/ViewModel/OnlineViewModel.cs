@@ -490,7 +490,8 @@ namespace MultiFilteredDataGridMVVM.ViewModel
 
             await Task.Factory.StartNew(() =>
              {
-                 var online = new SkuService().GetOnlineStock().Result;
+                 var onlineSKUs = new SkuService().OnlineSKUs();
+                 var online = new SkuService().GetOnlineSKuValues(onlineSKUs);
 
                  var q1 = from t in online
                           select t.MasterSupplier;

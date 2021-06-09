@@ -47,9 +47,11 @@ namespace DataService
                 {
                     BuildStockObject(ref specailsOrders, item);
                 }
-
+                var count = 0;
                 foreach (var o in specailsOrders)
                 {
+                    if (count == (specailsOrders.Count-1))
+                        break;
                     var sellPrice = Convert.ToDouble(o.Sell);
                     var actualPrice = 0.0m;
                     if (adjustmentPercentage != 0)
@@ -69,6 +71,7 @@ namespace DataService
 
                     var newLine = $"{"\"" + (o).Ref + "\""},{"\"" + Convert.ToInt16(actualPrice) + "\""},{"\"" + (Convert.ToDateTime(startDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\"" + (Convert.ToDateTime(endDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\"" + (o).RRP + "\""}";
                     csv.AppendLine(newLine);
+                    count++;
                 }
 
                 File.AppendAllText(System.Configuration.ConfigurationManager.AppSettings["SalesPriceOutput"] + stamp + ".csv", csv.ToString());
