@@ -69,7 +69,7 @@ namespace DataService
                         actualPrice++;
                     }
 
-                    var newLine = $"{"\"" + (o).Ref + "\""},{"\"" + Convert.ToInt16(actualPrice) + "\""},{"\"" + (Convert.ToDateTime(startDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\"" + (Convert.ToDateTime(endDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\"" + (o).RRP + "\""}";
+                    var newLine = $"{"\"" + (o).Ref + "\""},{"\"" + Convert.ToInt16(actualPrice) + "\""},{"\"" + "\""},{"\"" + (Convert.ToDateTime(startDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\"" + "\""},{"\"" + (Convert.ToDateTime(endDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\"" + "\""},{"\"" + (o).RRP + "\""}";
                     csv.AppendLine(newLine);
                     count++;
                 }

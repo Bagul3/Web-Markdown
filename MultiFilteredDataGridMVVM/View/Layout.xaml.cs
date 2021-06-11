@@ -51,5 +51,11 @@ namespace MultiFilteredDataGridMVVM.View
             Process.Start(System.Configuration.ConfigurationManager.AppSettings["ExecuteConfigJob"]);
             MessageBox.Show("Config Job has been executed. Please check C:\\WebUpdates\\Config for Configurable files.");
         }
+
+        private void Generate_Euro_CSV(object sender, RoutedEventArgs e)
+        {
+            Process.Start(System.Configuration.ConfigurationManager.AppSettings["ExecuteEuroJob"]);
+            MessageBox.Show("Config Job has been executed. Please check C:\\WebUpdates\\Euro for Euro files.");
+        }
     }
 }

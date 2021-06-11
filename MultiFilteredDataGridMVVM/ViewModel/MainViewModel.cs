@@ -735,7 +735,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 GenerateButton = "Generating...";
                 var count = 0;
                 var csv = new StringBuilder();
-                var headers = $"{"sku"},{"special_price"},{"special_from_date"},{"special_to_date"},{"RRP"}";
+                var headers = $"{"sku"},{"special_price"},{"special_price-1"},{"special_from_date"},{"special_from_date-1"},{"special_to_date"},{"special_to_date-1"},{"RRP"}";
                 csv.AppendLine(headers);
                 var stamp = DateTime.Now.Millisecond;
                 File.AppendAllText(System.Configuration.ConfigurationManager.AppSettings["SalesPriceOutput"] + stamp + ".csv", csv.ToString());

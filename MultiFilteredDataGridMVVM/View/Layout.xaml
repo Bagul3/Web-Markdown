@@ -46,6 +46,7 @@
                 <Button Content="Configuration" Click="Configuration_Clicked" Margin="1"/>
                 <Button Content="Generate Simple CSV" Click="Generate_Simple_CSV" Margin="1"/>
                 <Button Content="Generate Config CSV" Click="Generate_Config_CSV" Margin="1"/>
+                <Button Content="Generate Euro CSV" Click="Generate_Euro_CSV" Margin="1"/>
                 <Image Margin="0,500,10,0" RenderTransformOrigin="0.529,-4.02" VerticalAlignment="Bottom">
                     <Image.Source>
                         <BitmapImage DecodePixelWidth="300"  UriSource="/Resources/logo-_1_.bmp"/>
