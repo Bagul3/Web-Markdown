@@ -140,14 +140,13 @@
     <Compile Include="Model\REM2.cs" />
     <Compile Include="Model\REM1.cs" />
     <Compile Include="ViewModel\ConfigurationViewModel.cs" />
-    <Compile Include="ViewModel\GenerateStockFileViewModel.cs" />
     <Compile Include="ViewModel\ImportProductViewModel.cs" />
-    <Compile Include="ViewModel\MainViewModel.cs" />
-    <Compile Include="ViewModel\MainViewModelLocator.cs" />
+    <Compile Include="ViewModel\SalesViewModel.cs" />
+    <Compile Include="ViewModel\ContainerLocator.cs" />
     <Compile Include="Helpers\ViewCollectionViewSourceMessageToken.cs" />
     <Compile Include="ViewModel\OnlineViewModel.cs" />
     <Compile Include="ViewModel\ScaleToWindowSizeBehavior.cs" />
-    <Compile Include="ViewModel\SkuViewModel.cs" />
+    <Compile Include="ViewModel\MissingOnline.cs" />
     <Compile Include="View\Configuration.xaml.cs">
       <DependentUpon>Configuration.xaml</DependentUpon>
     </Compile>

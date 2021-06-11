@@ -21,7 +21,7 @@ using MultiFilteredDataGridMVVM.WpfElements;
 
 namespace MultiFilteredDataGridMVVM.ViewModel
 {
-    public class MainViewModel : ViewModelBase
+    public class SalesViewModel : ViewModelBase
     {
         #region Members
 
@@ -53,7 +53,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
 
         private double _progressValue;
 
-        private SpecailOrdersService _specailOrdersService;
+        private SalesService _specailOrdersService;
         private BackgroundWorker worker;
 
         private Dictionary<string, object> _items;
@@ -144,7 +144,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
 
         #endregion
 
-        public MainViewModel()
+        public SalesViewModel()
         {
             try
             {
@@ -186,7 +186,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             IsBusy = true;
             StartDate = DateTime.Now;
             EndDate = DateTime.Now;
-            _specailOrdersService = new SpecailOrdersService();
+            _specailOrdersService = new SalesService();
             ProgressValue = 0;
             InitializeCommands();
             Messenger.Default.Register<ViewCollectionViewSourceMessageToken>(this,
@@ -843,7 +843,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 _stockTypeLoader = new Dictionary<string, object>();
                 Cordners = new ObservableCollection<SpecailOrders>();
 
-                var things = new SpecailOrdersService().GetCordners();
+                var things = new SalesService().GetCordners();
 
                 var q1 = from t in things
                             select t.Season;

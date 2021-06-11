@@ -9,7 +9,7 @@
              xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              mc:Ignorable="d" >
     <UserControl.Resources>
-        <viewModel:MainViewModelLocator x:Key="MainViewModelLocatorDataSource" d:IsDataSource="True"/>
+        <viewModel:ContainerLocator x:Key="MainViewModelLocatorDataSource" d:IsDataSource="True"/>
         <!-- This next line instantiates a CollectionViewSource with the collection of Things as its collection of objects-->
         <CollectionViewSource Source="{Binding Things}" x:Key="X_CVS"/>
     </UserControl.Resources>

@@ -10,7 +10,7 @@
     xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
     mc:Ignorable="d" x:Class="MultiFilteredDataGridMVVM.View.MainView">
     <UserControl.Resources>
-        <MultiFilteredDataGridMVVM_ViewModel:MainViewModelLocator x:Key="MainViewModelLocatorDataSource" d:IsDataSource="True"/>
+        <MultiFilteredDataGridMVVM_ViewModel:ContainerLocator x:Key="MainViewModelLocatorDataSource" d:IsDataSource="True"/>
         <!-- This next line instantiates a CollectionViewSource with the collection of Things as its collection of objects-->
         <CollectionViewSource Source="{Binding Cordners}" x:Key="DiscountedStock"/>
         <CollectionViewSource Source="{Binding SpecailOrders}" x:Key="X_CVS" />

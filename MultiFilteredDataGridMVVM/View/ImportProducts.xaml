@@ -10,7 +10,7 @@
              xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              mc:Ignorable="d">
     <UserControl.Resources>
-        <viewModel:MainViewModelLocator x:Key="ProductVM" d:IsDataSource="True"/>
+        <viewModel:ContainerLocator x:Key="ProductVM" d:IsDataSource="True"/>
         <CollectionViewSource Source="{Binding ImageName}" x:Key="ImageName"/>
         <CollectionViewSource Source="{Binding Errors}" x:Key="Errors"/>
     </UserControl.Resources>

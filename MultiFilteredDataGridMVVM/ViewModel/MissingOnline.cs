@@ -21,7 +21,7 @@ using ServiceStack;
 namespace MultiFilteredDataGridMVVM.ViewModel
 {
 
-    public class SkuViewModel : ViewModelBase
+    public class MissingOnline : ViewModelBase
     {
         #region Members
 
@@ -57,7 +57,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
         private double _progressValue;
         private bool _isBusy;
         private SkuService _skuService;
-        public SkuViewModel(IDataService dataService)
+        public MissingOnline(IDataService dataService)
         {
             this.worker = new BackgroundWorker();
             this.worker.WorkerReportsProgress = true;

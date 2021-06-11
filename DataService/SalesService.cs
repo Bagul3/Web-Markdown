@@ -11,11 +11,11 @@ using System.Windows;
 
 namespace DataService
 {
-    public class SpecailOrdersService
+    public class SalesService
     {
         private readonly SkuRepository _skuRepository;
 
-        public SpecailOrdersService()
+        public SalesService()
         {
             _skuRepository = new SkuRepository();
         }
