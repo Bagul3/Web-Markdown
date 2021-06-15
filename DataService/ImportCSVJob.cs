@@ -319,7 +319,7 @@ namespace ImportProducts.Services
         {
             if (!string.IsNullOrEmpty(rem))
             {
-                var remresult = REMTable.Tables[0].Select("PROPERTY = '" + rem + "'").FirstOrDefault();
+                var remresult = REMTable.Tables[0].Select("Id = '" + rem + "'").FirstOrDefault();
                 if (remresult != null)
                 {
                     return remresult["NAME"].ToString();
