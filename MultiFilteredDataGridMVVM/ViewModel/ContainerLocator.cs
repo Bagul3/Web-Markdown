@@ -80,6 +80,15 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             }
         }
 
+        public SalesUpdaterViewModal SalesUpdaterVM
+        {
+            get
+            {
+                var vm = Container.Resolve<SalesUpdaterViewModal>();
+                return vm;
+            }
+        }
+
         public static void Cleanup()
         {
             Container.Resolve<MissingOnline>().Cleanup();

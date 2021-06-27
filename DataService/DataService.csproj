@@ -52,6 +52,7 @@
     <Compile Include="DummyService.cs" />
     <Compile Include="ImageService.cs" />
     <Compile Include="ImportCSVJob.cs" />
+    <Compile Include="MagentoAPI.cs" />
     <Compile Include="Models\ImportProducts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SkuService.cs" />

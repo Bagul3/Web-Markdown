@@ -340,19 +340,28 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             {
                 TxtStatus = "Removing exisiting import product file...";
                 job = new ImportCsvJob(_descriptionsPath);
-                job.DoCleanup(ImagePath);
+                //job.DoCleanup(ImagePath);
                 TxtStatus = "Generating import product csv file, please wait this can take several minutes....";
-                var t2tRefs = new ImageService().ReadImageDetails(ImagePath);
+                //var t2tRefs = new ImageService().ReadImageDetails(ImagePath);
+
+                var skuService = new SkuService();
+
+                var allstock = skuService.GetStock().Result;
+                var onlineSKUs = skuService.OnlineSKUs();
+                var online = skuService.GetOnlineSKuValues(onlineSKUs);
+                var missing = skuService.GetMissingStock(online, allstock).Result;
+
+                var t2tRefs = allstock.Where(x => x.Season == "B21").Select(x => x.NEWSTYLE).ToList();
                 worker.ReportProgress(1);
 
-                foreach (var refff in t2tRefs.Distinct())
+                foreach (var refff in t2tRefs)
                 {
                     //_cancelToken.Token.ThrowIfCancellationRequested();
-                    if (string.IsNullOrEmpty(_descriptionsPath))
-                    {
-                        MessageBox.Show("Please select a descriptions file");
-                        return;
-                    }
+                    //if (string.IsNullOrEmpty(_descriptionsPath))
+                    //{
+                    //    MessageBox.Show("Please select a descriptions file");
+                    //    return;
+                    //}
 
                     if (!refff.Contains(checkNumber))
                     {
@@ -360,7 +369,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                         {
                             usedSkuNums.Add(refff.Substring(0, 6));
                             batchNumber++;
-                            var dateFromFolder = ImagePath.Split('\\');
+                            var dateFromFolder = DateTime.Now.Millisecond.ToString();
                             var result = job.DoJob(refff, t2tRefs, ref _errors);
                             if (result.Length != 0)
                             {
@@ -375,13 +384,13 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                                     heead.AppendLine(headers);
                                     first = false;
                                     File.AppendAllText(
-                                        (System.Configuration.ConfigurationManager.AppSettings["ImportProductsOutput"] + " " + dateFromFolder[dateFromFolder.Length - 1].Trim() + "" + batchInc + ".csv"),
+                                        (System.Configuration.ConfigurationManager.AppSettings["ImportProductsOutput"] + "-sizefix-B21-" + batchInc + ".csv"),
                                         heead.ToString());
 
                                 }
 
                                 File.AppendAllText(
-                                    (System.Configuration.ConfigurationManager.AppSettings["ImportProductsOutput"] + " " + dateFromFolder[dateFromFolder.Length - 1].Trim() + "" + batchInc + ".csv"),
+                                    (System.Configuration.ConfigurationManager.AppSettings["ImportProductsOutput"] + "-sizefix-B21-" + batchInc + ".csv"),
                                     _csv.ToString().Trim() + Environment.NewLine);
 
                             }
