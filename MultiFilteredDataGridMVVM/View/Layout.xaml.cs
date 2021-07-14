@@ -1,8 +1,5 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Windows;
-using Cordners.View.SpecialPrice;
-using MultiFilteredDataGridMVVM.ViewModel;
 
 namespace MultiFilteredDataGridMVVM.View
 {
@@ -39,12 +36,7 @@ namespace MultiFilteredDataGridMVVM.View
         private void Configuration_Clicked(object sender, RoutedEventArgs e)
         {
             DataContext = new Configuration();
-        }
-
-        private void SalesPriceUpdater_Clicked(object sender, RoutedEventArgs e)
-        {
-            DataContext = new Updater();
-        }        
+        }    
 
         private void Generate_Simple_CSV(object sender, RoutedEventArgs e)
         {

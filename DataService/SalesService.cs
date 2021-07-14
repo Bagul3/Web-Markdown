@@ -35,7 +35,7 @@ namespace DataService
             return new DataSet();
         }
 
-        public void GenerateCSVAsync(SpecailOrders specailOrders, string startDate, string endDate, int stamp, List<DataRow> dataRows, decimal adjustmentPrice = 0, int adjustmentPercentage = 0)
+        public void GenerateCSVAsync(string startDate, string endDate, int stamp, List<DataRow> dataRows, decimal adjustmentPrice = 0, int adjustmentPercentage = 0)
         {
             try
             {
@@ -50,36 +50,44 @@ namespace DataService
                 var count = 0;
                 foreach (var o in specailsOrders)
                 {
-                    if (count == (specailsOrders.Count-1))
+                    if (count == (specailsOrders.Count - 1))
                         break;
-                    var sellPrice = Convert.ToDouble(o.Sell);
-                    var actualPrice = 0.0m;
-                    if (adjustmentPercentage != 0)
-                    {                        
-                        actualPrice = Convert.ToDecimal(string.Format("{0:F2}", Convert.ToDecimal(o.Sell) - (Convert.ToDecimal(Convert.ToDecimal(adjustmentPercentage) / 100) * Convert.ToDecimal(o.Sell))));                        
-                    }
-                    else
-                    {
-                        actualPrice = adjustmentPrice > 0 ? Convert.ToDecimal(Math.Ceiling(Convert.ToDecimal(o.Sell) - adjustmentPrice)) : Convert.ToDecimal(Math.Ceiling(sellPrice));
-                    }
-                    
-                    if (actualPrice.ToString().Contains(".") && Convert.ToInt16(actualPrice.ToString().Split('.')[1]) > 0 && 
-                        Convert.ToInt16(actualPrice.ToString().Split('.')[1]) <= 49)
-                    {
-                        actualPrice++;
-                    }
+                    decimal actualPrice = GenerateSalesPrice(adjustmentPrice, adjustmentPercentage, o.Sell);
 
-                    var newLine = $"{"\"" + (o).Ref + "\""},{"\"" + Convert.ToInt16(actualPrice) + "\""},{"\"" + "\""},{"\"" + (Convert.ToDateTime(startDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\"" + "\""},{"\"" + (Convert.ToDateTime(endDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\"" + "\""},{"\"" + (o).RRP + "\""}";
+                    var newLine = $"{"\"" + (o).Ref + "\""},{"\"" + Convert.ToInt16(actualPrice) + "\""},{"\" \""},{"\"" + (Convert.ToDateTime(startDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\" \""},{"\"" + (Convert.ToDateTime(endDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\" \""},{"\"" + (o).RRP + "\""}";
                     csv.AppendLine(newLine);
                     count++;
                 }
 
-                File.AppendAllText(System.Configuration.ConfigurationManager.AppSettings["SalesPriceOutput"] + stamp + ".csv", csv.ToString());
+                File.AppendAllText(ConfigurationManager.AppSettings["SalesPriceOutput"] + stamp + ".csv", csv.ToString());
             }
             catch(Exception e)
             {
                 MessageBox.Show(e.Message);
             }
+        }
+
+        public decimal GenerateSalesPrice(decimal adjustmentPrice, int adjustmentPercentage, string sell)
+        {
+            var sellPrice = Convert.ToDouble(sell);
+            decimal actualPrice;
+            if (adjustmentPercentage != 0)
+            {
+                actualPrice = Convert.ToDecimal(string.Format("{0:F2}", Convert.ToDecimal(sell) - (Convert.ToDecimal(Convert.ToDecimal(adjustmentPercentage) / 100) * Convert.ToDecimal(sell))));
+            }
+            else
+            {
+                actualPrice = adjustmentPrice > 0 ? Convert.ToDecimal(Math.Ceiling(Convert.ToDecimal(sell) - adjustmentPrice)) : Convert.ToDecimal(Math.Ceiling(sellPrice));
+            }
+
+            var decimalPart = actualPrice - Math.Truncate(actualPrice);
+
+            if (((decimalPart * 100) <= 50) && (decimalPart != 0))
+            {
+                actualPrice += 1.00m;
+            }
+
+            return Math.Round(actualPrice);
         }
 
         public List<SpecailOrders> GetCordners()
@@ -96,7 +104,7 @@ namespace DataService
             return skuRecords;
         }
 
-        public List<SpecailOrders> GetSaleStock(Dictionary<string,object> suppliers, Dictionary<string, object> categorys, Dictionary<string, object> seasons, Dictionary<string, object> styles, Dictionary<string, object> stockTypes)
+        public List<SpecailOrders> GetSaleStock(Dictionary<string,object> suppliers, Dictionary<string, object> categorys, Dictionary<string, object> seasons, Dictionary<string, object> styles, Dictionary<string, object> stockTypes, Dictionary<string, object> colours)
         {
             var queryBuilder = new StringBuilder();
             var stockList = new List<SpecailOrders>();
@@ -193,6 +201,25 @@ namespace DataService
                     else
                     {
                         queryBuilder.Append(" OR STYPE = '" + style.Value + "' ");
+                    }
+
+                }
+                queryBuilder.Append(") ");
+            }
+            if (colours != null && colours.Count != 0)
+            {
+                isFirst = true;
+                queryBuilder.Append(" AND(");
+                foreach (var colour in colours)
+                {
+                    if (isFirst)
+                    {
+                        queryBuilder.Append(" Colour.MasterColour = '" + colour.Value + "' ");
+                        isFirst = false;
+                    }
+                    else
+                    {
+                        queryBuilder.Append(" OR Colour.MasterColour = '" + colour.Value + "' ");
                     }
 
                 }

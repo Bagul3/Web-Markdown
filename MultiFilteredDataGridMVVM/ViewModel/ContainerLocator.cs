@@ -11,7 +11,6 @@ namespace MultiFilteredDataGridMVVM.ViewModel
         static ContainerLocator()
         {
             Container = new UnityContainer();
-
             if (ViewModelBase.IsInDesignModeStatic)
             {
                 // if in design mode, use design data service
@@ -22,11 +21,10 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 // otherwise for runtime use real data source
                 Container.RegisterType<IDataService, DummyService>();
             }
-
             // register as a singleton
             Container.RegisterType<SalesViewModel>(new ContainerControlledLifetimeManager());
             Container.RegisterType<ImportProductViewModel>(new ContainerControlledLifetimeManager());
-            Container.RegisterType<MissingOnline>(new ContainerControlledLifetimeManager());
+            //Container.RegisterType<MissingOnline>(new ContainerControlledLifetimeManager());
         }
 
         public static IUnityContainer Container
@@ -76,15 +74,6 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             get
             {
                 var vm = Container.Resolve<ConfigurationViewModel>();
-                return vm;
-            }
-        }
-
-        public SalesUpdaterViewModal SalesUpdaterVM
-        {
-            get
-            {
-                var vm = Container.Resolve<SalesUpdaterViewModal>();
                 return vm;
             }
         }

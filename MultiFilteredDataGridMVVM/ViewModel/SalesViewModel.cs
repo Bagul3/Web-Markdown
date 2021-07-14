@@ -12,6 +12,8 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
 using Common;
+using Cordners.Api;
+using Cordners.Model;
 using DataService;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
@@ -28,8 +30,8 @@ namespace MultiFilteredDataGridMVVM.ViewModel
         private DateTime _startDate;
         private DateTime _endDate;
 
-        private DateTime _startDateApi;
-        private DateTime _endDateApi;
+        private DateTime _startDateApi = DateTime.Now;
+        private DateTime _endDateApi = DateTime.Now;
 
         private Dictionary<string, object> _category;
         private Dictionary<string, object> _supplier;
@@ -333,7 +335,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             get { return _endDateApi; }
             set
             {
-                _endDate = value;
+                _endDateApi = value;
                 RaisePropertyChanged("EndDateApi");
             }
         }
@@ -731,7 +733,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 IsBusy = true;
                 Task.Factory.StartNew(() =>
                 {
-                    selectedList = _specailOrdersService.GetSaleStock(SelectedSupplier, SelectedCategory, SelectedSeasons, SelectedStyle, SelectedStockType);
+                    selectedList = _specailOrdersService.GetSaleStock(SelectedSupplier, SelectedCategory, SelectedSeasons, SelectedStyle, SelectedStockType, SelectedColour);
                 }).ContinueWith((task) =>
                 {
                     foreach (var o in selectedList.ToArray().Distinct())
@@ -749,7 +751,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             }
         }
 
-        public async void GenerateSpecailOrders(object sender, DoWorkEventArgs e)
+        public void GenerateSpecailOrders(object sender, DoWorkEventArgs e)
         {
             try
             {
@@ -779,7 +781,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                     count++;
                     List<DataRow> dataRows = skuData.Tables[0].AsEnumerable().Where(x => (string)x["NEWSTYLE"] == specailOrder.NEWSTYLE).Distinct().ToList();
 
-                    _specailOrdersService.GenerateCSVAsync(specailOrder, StartDate.ToString("yyyy-MM-dd"), EndDate.ToString("yyyy-MM-dd"), 
+                    _specailOrdersService.GenerateCSVAsync(StartDate.ToString("yyyy-MM-dd"), EndDate.ToString("yyyy-MM-dd"), 
                         stamp,
                         dataRows,
                         Convert.ToDecimal(AdjustPrice), AdjustPricePercentage);
@@ -798,7 +800,68 @@ namespace MultiFilteredDataGridMVVM.ViewModel
 
         public void SetSalesPrice()
         {
-            Console.WriteLine("Derpo");
+            var successful = true;
+            IList selectedList = new ArrayList();
+            IsBusy = true;
+            DataSet skuData = new DataSet();
+            Task.Factory.StartNew(() =>
+            {
+                selectedList = CordnersCordnersSelected;
+                skuData = _specailOrdersService.RetrieveAllSkuData();
+            }).ContinueWith((task) =>
+            {
+                var specialPriceList = new List<SpecialPrice>();
+                var time = DateTime.Now.Second;
+                var headers = $"{"sku"},{"special_price"},{"special_price-1"},{"special_from_date"},{"special_from_date-1"},{"special_to_date"},{"special_to_date-1"},{"RRP"}";
+                File.AppendAllText(System.Configuration.ConfigurationManager.AppSettings["SalesPriceOutput"] + time + ".csv", headers + Environment.NewLine);
+                foreach (var item in selectedList)
+                {
+                    for (int i = 1; i <= 13; i++)
+                    {
+                        var size = "";
+                        if (i < 10)
+                        {
+                            size += "00" + i;
+                        }
+                        else
+                        {
+                            size += "0" + i;
+                        }
+                        specialPriceList.Add(BuildSpecialPriceObj((item as SpecailOrders).NEWSTYLE + size, (item as SpecailOrders).Sell));
+                    }
+                    List<DataRow> dataRows = skuData.Tables[0].AsEnumerable().Where(x => (string)x["NEWSTYLE"] == (item as SpecailOrders).NEWSTYLE).Distinct().ToList();
+
+                    _specailOrdersService.GenerateCSVAsync(StartDateApi.ToString("yyyy-MM-dd"), EndDateApi.ToString("yyyy-MM-dd"),
+                        time,
+                        dataRows,
+                        Convert.ToDecimal(AdjustPriceApi), AdjustPricePercentageApi);
+                }
+                successful =
+                    new MagentoSpecialPrice().UpdateSpecialPrice(specialPriceList.ToArray());
+
+                IsBusy = false;
+                if (successful)
+                {
+                    MessageBox.Show($"Success! Sales price updated for {CordnersCordnersSelected.Count} item(s)!");
+                }
+                else
+                {
+                    MessageBox.Show("An error occurred setting sales price.");
+                }
+
+            }, TaskScheduler.FromCurrentSynchronizationContext());
+        }
+
+        private SpecialPrice BuildSpecialPriceObj(string sku, string sell)
+        {
+            var salesService = new SalesService();
+            return new SpecialPrice()
+            {
+                sku = sku,
+                price = salesService.GenerateSalesPrice(Convert.ToDecimal(_adjustmentPriceApi), Convert.ToInt32(_adjustPricePercentageApi), sell),
+                price_from = _startDateApi.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss"),
+                price_to = _endDateApi.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss")
+            };
         }
 
         public void RemoveSelectedListItems()

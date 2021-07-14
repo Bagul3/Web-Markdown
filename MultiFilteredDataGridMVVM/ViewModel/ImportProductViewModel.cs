@@ -15,7 +15,6 @@ using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using ImportProducts.Services;
 using MultiFilteredDataGridMVVM.WpfElements;
-
 namespace MultiFilteredDataGridMVVM.ViewModel
 {
     public class ImportProductViewModel : ViewModelBase
@@ -27,7 +26,6 @@ namespace MultiFilteredDataGridMVVM.ViewModel
         private ImportCsvJob job;
         private StringBuilder _csv;
         private string _descriptionsPath;
-
         private ObservableCollection<Image> _image;
         private ObservableCollection<Error> _error;
         private string _text;
@@ -35,16 +33,12 @@ namespace MultiFilteredDataGridMVVM.ViewModel
         private bool _btnLoadImages;
         private bool _btnGenerateImportCsv;
         private bool _btnLoadExcel;
-
         private double _progressValue;
         private BackgroundWorker worker;
-
         private bool _isBusy;
-
         private string headers = $"{"sku"},{"store_view_codes"},{"websites"},{"attribut_set"},{"type"},{"has_options"},{"name"},{"page_layout"},{"options_container"},{"price"},{"weight"},{"status"},{"visibility"},{"short_description"},{"qty"},{"product_name"},{"color"}," +
         $"{"size"},{"tax_class_id"},{"configurable_attributes"},{"manufacturer"},{"categories"},{"sub_categories"},{"season"},{"stock_type"},{"image"},{"small_image"},{"thumbnail"},{"gallery"}," +
         $"{"condition"},{"ean"},{"description"},{"model"},{"infocare"},{"sizeguide"},{"RRP"},{"url_key"},{"url_path"},{"rem"},{"rem2"},{"susku"},{"uDef2"},{"d_type"},{"parent_sku"}";
-
         public ImportProductViewModel()
         {
             InitializeCommands();
@@ -53,7 +47,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             LoadData();
             _btnCancel = false;
             _btnLoadImages = true;
-            
+
             _csv = new StringBuilder();
             _errors = new ObservableCollection<Error>();
             ImageName = new ObservableCollection<Image>();
@@ -62,19 +56,16 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             this.worker.DoWork += this.GenerateImportCsv;
             this.worker.ProgressChanged += this.ProgressChanged;
         }
-
         private async Task LoadData()
         {
             await Task.Factory.StartNew(() =>
             {
                 IsBusy = true;
-
             }).ContinueWith((task) =>
             {
                 IsBusy = false;
             }, TaskScheduler.FromCurrentSynchronizationContext());
         }
-
         private string _LoadExcelButton;
         public string LoadExcelButton
         {
@@ -85,7 +76,6 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 RaisePropertyChanged("LoadExcelButton");
             }
         }
-
         public ObservableCollection<Image> ImageName
         {
             get { return _image; }
@@ -97,13 +87,11 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 RaisePropertyChanged("ImageName");
             }
         }
-
         public bool IsBusy
         {
             get
             {
                 return _isBusy;
-
             }
             set
             {
@@ -111,7 +99,6 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 RaisePropertyChanged("IsBusy");
             }
         }
-
         public ObservableCollection<Error> Errors
         {
             get { return _error; }
@@ -123,7 +110,6 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 RaisePropertyChanged("Errors");
             }
         }
-
         public double ProgressValue
         {
             get { return _progressValue; }
@@ -133,7 +119,6 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 RaisePropertyChanged("ProgressValue");
             }
         }
-
         public string TxtStatus
         {
             get { return _text; }
@@ -145,7 +130,6 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 RaisePropertyChanged("TxtStatus");
             }
         }
-
         public bool BtnCancel
         {
             get { return _btnCancel; }
@@ -157,7 +141,6 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 RaisePropertyChanged("BtnCancel");
             }
         }
-
         public bool BtnLoadImages
         {
             get { return _btnLoadImages; }
@@ -169,7 +152,6 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 RaisePropertyChanged("BtnLoadImages");
             }
         }
-
         public bool BtnLoadExcelBtn
         {
             get { return _btnLoadExcel; }
@@ -181,7 +163,6 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 RaisePropertyChanged("BtnLoadExcelBtn");
             }
         }
-
         public bool BtnGenerateImportCsv
         {
             get { return _btnGenerateImportCsv; }
@@ -193,37 +174,31 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 RaisePropertyChanged("BtnLoadImages");
             }
         }
-
         public ICommand LoadImagesCommand
         {
             get;
             private set;
         }
-
         public ICommand LoadExcelCommand
         {
             get;
             private set;
         }
-
         public ICommand CancelCommand
         {
             get;
             private set;
         }
-
         public ICommand GenerateCommand
         {
             get;
             private set;
         }
-
         private void InitializeCommands()
         {
             LoadExcelCommand = new RelayCommand(LoadDescriptions, null);
             LoadImagesCommand = new RelayCommand(LoadImages, null);
             CancelCommand = new RelayCommand(Cancel, null);
-
             GenerateCommand = new CommandHandler(() =>
             {
                 this.worker.RunWorkerAsync();
@@ -232,14 +207,12 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 return !this.worker.IsBusy;
             });
         }
-
         private async void LoadImages()
         {
             _cancelToken = new CancellationTokenSource();
             BtnLoadImages = false;
             BtnCancel = true;
             TxtStatus = "Loading.....";
-
             try
             {
                 var folderBrowserDlg = new FolderBrowserDialog
@@ -247,11 +220,8 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                     ShowNewFolderButton = true
                 };
                 var dlgResult = folderBrowserDlg.ShowDialog();
-
                 ImagePath = folderBrowserDlg.SelectedPath;
-
                 await LoadImagesAsync(_cancelToken.Token);
-
                 _errors.Clear();
                 TxtStatus = "Operation Completed";
             }
@@ -270,7 +240,6 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 BtnCancel = false;
             }
         }
-
         private void LoadDescriptions()
         {
             try
@@ -297,12 +266,11 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 BtnCancel = false;
             }
         }
-
         private void Cancel()
         {
             _cancelToken.Cancel();
         }
-        
+
         private async Task LoadImagesAsync(CancellationToken ct)
         {
             _fileNames = new ObservableCollection<Image>();
@@ -317,7 +285,6 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 ImageName = _fileNames;
             });
         }
-
         private void GenerateImportCsv(object sender, DoWorkEventArgs e)
         {
             _csv = new StringBuilder();
@@ -325,7 +292,6 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             BtnLoadImages = false;
             BtnGenerateImportCsv = false;
             BtnCancel = true;
-
             var bodyContent = new StringBuilder();
             var checkNumber = "00000";
             var batchNumber = 0;
@@ -333,35 +299,24 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             var recCount = 3;
             var first = true;
             var usedSkuNums = new List<string>();
-
             _errors = new ObservableCollection<Error>();
-
             try
             {
                 TxtStatus = "Removing exisiting import product file...";
                 job = new ImportCsvJob(_descriptionsPath);
-                //job.DoCleanup(ImagePath);
+                job.DoCleanup(ImagePath);
                 TxtStatus = "Generating import product csv file, please wait this can take several minutes....";
-                //var t2tRefs = new ImageService().ReadImageDetails(ImagePath);
-
-                var skuService = new SkuService();
-
-                var allstock = skuService.GetStock().Result;
-                var onlineSKUs = skuService.OnlineSKUs();
-                var online = skuService.GetOnlineSKuValues(onlineSKUs);
-                var missing = skuService.GetMissingStock(online, allstock).Result;
-
-                var t2tRefs = allstock.Where(x => x.Season == "B21").Select(x => x.NEWSTYLE).ToList();
+                var t2tRefs = new ImageService().ReadImageDetails(ImagePath);
                 worker.ReportProgress(1);
 
-                foreach (var refff in t2tRefs)
+                foreach (var refff in t2tRefs.Distinct())
                 {
                     //_cancelToken.Token.ThrowIfCancellationRequested();
-                    //if (string.IsNullOrEmpty(_descriptionsPath))
-                    //{
-                    //    MessageBox.Show("Please select a descriptions file");
-                    //    return;
-                    //}
+                    if (string.IsNullOrEmpty(_descriptionsPath))
+                    {
+                        MessageBox.Show("Please select a descriptions file");
+                        return;
+                    }
 
                     if (!refff.Contains(checkNumber))
                     {
@@ -369,7 +324,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                         {
                             usedSkuNums.Add(refff.Substring(0, 6));
                             batchNumber++;
-                            var dateFromFolder = DateTime.Now.Millisecond.ToString();
+                            var dateFromFolder = ImagePath.Split('\\');
                             var result = job.DoJob(refff, t2tRefs, ref _errors);
                             if (result.Length != 0)
                             {
@@ -384,28 +339,23 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                                     heead.AppendLine(headers);
                                     first = false;
                                     File.AppendAllText(
-                                        (System.Configuration.ConfigurationManager.AppSettings["ImportProductsOutput"] + "-sizefix-B21-" + batchInc + ".csv"),
-                                        heead.ToString());
+                                        System.Configuration.ConfigurationManager.AppSettings["ImportProductsOutput"] + " " + dateFromFolder[dateFromFolder.Length - 1].Trim() + "" + batchInc + ".csv",
+                                        heead.ToString() );
 
                                 }
 
                                 File.AppendAllText(
-                                    (System.Configuration.ConfigurationManager.AppSettings["ImportProductsOutput"] + "-sizefix-B21-" + batchInc + ".csv"),
+                                    System.Configuration.ConfigurationManager.AppSettings["ImportProductsOutput"] + " " + dateFromFolder[dateFromFolder.Length - 1].Trim() + "" + batchInc + ".csv",
                                     _csv.ToString().Trim() + Environment.NewLine);
 
                             }
-
                             _csv = new StringBuilder();
                             bodyContent = new StringBuilder();
                             checkNumber = refff.Substring(0, 9);
-
                             worker.ReportProgress(recCount++);
-
                         }
                     }
-
                 }
-
                 _csv.AppendLine(bodyContent.ToString());
                 worker.ReportProgress(100);
                 var unquieErrors = _errors.GroupBy(i => i.RefNumber).Select(i => i.First()).ToList();
@@ -440,7 +390,6 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 BtnLoadImages = true;
             }
         }
-
         private void ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             this.ProgressValue = e.ProgressPercentage;

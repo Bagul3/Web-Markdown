@@ -28,7 +28,7 @@ namespace Common
                     Log(logMessage, w);
                 }
             }
-            catch (Exception ex)
+            catch
             {
             }
         }
@@ -44,7 +44,7 @@ namespace Common
                 txtWriter.WriteLine("  :{0}", logMessage);
                 txtWriter.WriteLine("-------------------------------");
             }
-            catch (Exception ex)
+            catch
             {
             }
         }

@@ -23,5 +23,10 @@ namespace MultiFilteredDataGridMVVM.View
 
             // Note to MVVM purists:  Not an ideal solution.  But based on the amount if time spent on this it was acceptable, especially to the client.
         }
+
+        private void MenuItem_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+
+        }
     }
 }

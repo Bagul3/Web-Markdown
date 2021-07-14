@@ -67,16 +67,12 @@ namespace Common
 
         public bool ContainsKey(TKey key)
         {
-            //var m=base.FirstOrDefault((i) => i.Key == key);
             var r = ThisAsCollection().FirstOrDefault((i) => Equals(key, i.Key));
 
             return !Equals(default(ObservableKeyValuePair<TKey, TValue>), r);
         }
 
-        bool Equals<TKey>(TKey a, TKey b)
-        {
-            return EqualityComparer<TKey>.Default.Equals(a, b);
-        }
+        bool Equals<TKey>(TKey a, TKey b) => EqualityComparer<TKey>.Default.Equals(a, b);
 
         private ObservableCollection<ObservableKeyValuePair<TKey, TValue>> ThisAsCollection()
         {

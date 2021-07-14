@@ -149,16 +149,12 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="API\SpecialPrice.cs" />
     <Compile Include="Class1.cs" />
-    <Compile Include="Design\DesignDummyService.cs" />
-    <Compile Include="Model\API\SpecialPrice.cs" />
+    <Compile Include="Design\DummyService.cs" />
     <Compile Include="Model\REM2.cs" />
     <Compile Include="Model\REM1.cs" />
-    <Compile Include="ViewModel\API\SalesUpdaterDropdownProps.cs" />
     <Compile Include="ViewModel\ConfigurationViewModel.cs" />
     <Compile Include="ViewModel\ImportProductViewModel.cs" />
-    <Compile Include="ViewModel\API\SalesUpdaterViewModel.cs" />
     <Compile Include="ViewModel\SalesViewModel.cs" />
     <Compile Include="ViewModel\ContainerLocator.cs" />
     <Compile Include="Helpers\ViewCollectionViewSourceMessageToken.cs" />
@@ -190,9 +186,6 @@
     <Compile Include="View\SkuChecker.xaml.cs">
       <DependentUpon>SkuChecker.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\SpecialPrice\Updater.xaml.cs">
-      <DependentUpon>Updater.xaml</DependentUpon>
-    </Compile>
     <Compile Include="WpfElements\BooleanToVisibilityConverter.cs" />
     <Compile Include="WpfElements\SkuDropDown.cs" />
     <Compile Include="WpfElements\CommandHandler.cs" />
@@ -209,8 +202,8 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Themes\RemoveHover.xaml">
-      <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="View\Common\PriceModal.xaml">
       <SubType>Designer</SubType>
@@ -243,10 +236,6 @@
     <Page Include="View\SkuChecker.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
-    </Page>
-    <Page Include="View\SpecialPrice\Updater.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="WpfElements\MultiSelectComboBox.xaml">
       <SubType>Designer</SubType>

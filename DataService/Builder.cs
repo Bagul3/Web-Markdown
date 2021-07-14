@@ -52,7 +52,7 @@ namespace DataService
             // Old category Formatting
             category += "Default Category/" + dr["MasterStocktype"] + "/Shop By Department/" + dr["MasterDept"] + ",";
 
-            if (dr["MasterSubDept"] != "ANY" || dr["MasterSubDept"] != "")
+            if (dr["MasterSubDept"].ToString() != "ANY" || dr["MasterSubDept"].ToString() != "")
             {
                 category = category + "Default Category/" + dr["MasterStocktype"] + "/Shop By Department/" +
                            dr["MasterDept"] + "/" + dr["MasterSubDept"] + ",";
@@ -63,7 +63,7 @@ namespace DataService
             category = category + "Default Category/" + dr["MasterStocktype"] + "/Shop By Brand/" +
                        dr["MasterSupplier"] + "/" + dr["MasterDept"] + ",";
 
-            if (dr["MasterSubDept"] != "ANY" || dr["MasterSubDept"] != "")
+            if (dr["MasterSubDept"].ToString() != "ANY" || dr["MasterSubDept"].ToString() != "")
             {
                 category = category + "," + "Default Category/" + dr["MasterStocktype"] + "/Shop By Brand/" +
                            dr["MasterSupplier"] + "/" + dr["MasterDept"] +

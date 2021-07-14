@@ -44,7 +44,7 @@
                                              SelectedItems="{Binding SelectedSeasons, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                                              Height="28"
                                              Grid.ColumnSpan="2"/>
-            <Button Margin="315,20,0,5" 
+            <Button Margin="390,20,0,5" 
                     HorizontalAlignment="Left" 
                     Width="136" Grid.Column="2" 
                     Command="{Binding GetStock, Mode=OneWay}" 
@@ -103,7 +103,8 @@
                                         Grid.RowSpan="5"
                                         AutoGenerateColumns="True"
                                         IsReadOnly="True"
-                                        SelectedItemsList="{Binding SpecailSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                        SelectedItemsList="{Binding SpecailSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                        Style="{StaticResource MaterialDesignDataGrid}"/>
             <wpfElements:CustomDataGrid CanUserReorderColumns="True"
                                         CanUserResizeColumns="True" 
                                         CanUserResizeRows="False"
@@ -112,20 +113,22 @@
                                         Margin="10,5,5.5,41" Grid.Row="1" Grid.RowSpan="5" Grid.Column="0"
                                         AutoGenerateColumns="True"
                                         IsReadOnly="True"
-                                        SelectedItemsList="{Binding CordnersCordnersSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                        SelectedItemsList="{Binding CordnersCordnersSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                        Style="{StaticResource MaterialDesignDataGrid}">
+                
                 <DataGrid.ContextMenu>
-                    <ContextMenu>
-                        <MenuItem Height="Auto" Width="Auto" StaysOpenOnClick="True" Background="WhiteSmoke" >
-                            <MenuItem.Header>
+                    <ContextMenu Background="WhiteSmoke">
+                        <MenuItem Height="Auto" Width="Auto" StaysOpenOnClick="True" Background="WhiteSmoke" Style="{StaticResource RemoveHover}">
+                            <MenuItem.Header>                                
                                 <StackPanel>
-                                    <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Start Date" FontSize="13.333"/>
+                                    <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Start Date" FontSize="13.333" Foreground="Black"/>
                                     <Custom:DatePicker BorderBrush="Transparent" Foreground="Black" SelectedDate="{Binding StartDateApi, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                                    <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="End Date" FontSize="13.333"/>
+                                    <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="End Date" FontSize="13.333" Foreground="Black"/>
                                     <Custom:DatePicker BorderBrush="Transparent" Foreground="Black" SelectedDate="{Binding EndDateApi, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                    <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Discount Price (£)" FontSize="13.333"/>
-                                    <TextBox HorizontalAlignment="Left" Height="25" Width="30" TextWrapping="Wrap" Foreground="Black" Background="White" BorderThickness="1" Text="{Binding AdjustPriceApi}"/>
-                                    <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Discount Price (%)" FontSize="13.333"/>
-                                    <TextBox HorizontalAlignment="Left" Height="25" Width="30" TextWrapping="Wrap" Foreground="Black" Background="White" BorderThickness="1" Text="{Binding AdjustPricePercentageApi}"/>
+                                    <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Discount Price (£)" FontSize="13.333" Foreground="Black"/>
+                                    <TextBox HorizontalAlignment="Left" Height="35" Width="30" TextWrapping="Wrap" Foreground="Black" Background="White" BorderThickness="1" Text="{Binding AdjustPriceApi}"/>
+                                    <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Discount Price (%)" FontSize="13.333" Foreground="Black"/>
+                                    <TextBox HorizontalAlignment="Left" Height="35" Width="30" TextWrapping="Wrap" Foreground="Black" Background="White" BorderThickness="1" Text="{Binding AdjustPricePercentageApi}"/>
                                     <Button HorizontalAlignment="Left" Content="Set Sales price" Command="{Binding SalesPrice, Mode=OneWay}"/>
                                 </StackPanel>
                             </MenuItem.Header>
@@ -193,13 +196,13 @@
                                              ItemsSource="{Binding Style,Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                              SelectedItems="{Binding SelectedStyle, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                              Height="28"/>
-            <wpfElements:MultiSelectComboBox HorizontalAlignment="Left" Margin="105,0,0,7"
+            <wpfElements:MultiSelectComboBox HorizontalAlignment="Left" Margin="60,0,0,7"
                                              Width="105"
                                              VerticalAlignment="Bottom"
                                              Foreground="Black" Text="-- Categories --"
                                              ItemsSource="{Binding  Category, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                              SelectedItems="{Binding SelectedCategory, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                             Height="28" Grid.Column="1" Grid.ColumnSpan="2"/>
+                                             Height="28" Grid.Column="2"/>
             <Label Content="Adjust Price by £"
                    Grid.Column="2"
                    HorizontalAlignment="Left"
@@ -235,11 +238,11 @@
                      Background="White" 
                      Foreground="Black"/>
             <TextBlock HorizontalAlignment="Left"
-                       Margin="105,4,0,35"
+                       Margin="65,4,0,35"
                        TextWrapping="Wrap"
                        Text="Categories"
                        FontSize="13.333"
-                       Grid.Column="1" Grid.ColumnSpan="2"/>
+                       Grid.Column="2"/>
             <wpfElements:MultiSelectComboBox HorizontalAlignment="Left"
                                              Margin="356,0,0,7"
                                              Width="105"
@@ -249,13 +252,19 @@
                                              ItemsSource="{Binding StockType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                              SelectedItems="{Binding SelectedStockType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                              Height="28" />
-            <wpfElements:MultiSelectComboBox HorizontalAlignment="Left" Margin="150,0,0,7"
+            <wpfElements:MultiSelectComboBox HorizontalAlignment="Left" Margin="225,0,0,7"
                 Width="105"
                 VerticalAlignment="Bottom"
                 Foreground="Black" Text="-- Colour --"
                 ItemsSource="{Binding Colour, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                 SelectedItems="{Binding SelectedColour, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                 Height="28" Grid.Column="2"/>
+            <TextBlock HorizontalAlignment="Left"
+                Margin="230,4,0,35"
+                TextWrapping="Wrap"
+                Text="Colour"
+                FontSize="13.333"
+                Grid.Column="2"/>
         </Grid>
     </xctk:BusyIndicator>
 

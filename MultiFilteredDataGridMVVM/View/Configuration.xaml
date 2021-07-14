@@ -25,7 +25,7 @@
         <Label Grid.Row="0" Grid.Column="0">REM 2</Label>
         <Label Grid.Row="0" Grid.Column="1">REM 1</Label>
         <DataGrid Grid.Row="0" Grid.Column="0" ItemsSource="{Binding REM1}"
-          SelectedItem="{Binding SelectedREM1}"
+          SelectedItem="{Binding SelectedREM1}" Style="{StaticResource MaterialDesignDataGrid}"
               CanUserAddRows="True">
             <DataGrid.Columns>
                 <DataGridTemplateColumn Header="Delete">
@@ -40,7 +40,7 @@
                 </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
-        <DataGrid Grid.Row="0" Grid.Column="1" ItemsSource="{Binding REM2}"
+        <DataGrid Grid.Row="0" Grid.Column="1" ItemsSource="{Binding REM2}" Style="{StaticResource MaterialDesignDataGrid}"
           SelectedItem="{Binding SelectedREM2}"
               CanUserAddRows="True">
             <DataGrid.Columns>

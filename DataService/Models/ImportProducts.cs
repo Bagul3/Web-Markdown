@@ -351,13 +351,28 @@ namespace ImportProducts.Model
 
         public ImportProducts SetUDef(string udef2)
         {
-            this.udef2 = "\"" + udef2 + "\"";
+            if (udef2 == "")
+            {
+                this.udef2 = "\"\"";
+            }
+            else
+            {
+                this.udef2 = "\"" + udef2 + "\"";
+            }
+            
             return this;
         }
 
         public ImportProducts SetSType(string stype)
         {
-            this.stype = "\"" + stype + "\"";
+            if (stype == "")
+            {
+                this.stype = "\"\"";
+            }
+            else
+            {
+                this.stype = "\"" + stype + "\"";
+            }
             return this;
         }
 
