@@ -74,6 +74,7 @@
     <Compile Include="LogWriter.cs" />
     <Compile Include="ObservableKeyValuePair.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SizeRanges.cs" />
     <Compile Include="SpecailOrders.cs" />
     <Compile Include="SqlQueries.cs" />
     <Compile Include="SqlQuery.cs" />

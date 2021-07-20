@@ -304,28 +304,46 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             {
                 TxtStatus = "Removing exisiting import product file...";
                 job = new ImportCsvJob(_descriptionsPath);
-                job.DoCleanup(ImagePath);
+                //job.DoCleanup(ImagePath);
                 TxtStatus = "Generating import product csv file, please wait this can take several minutes....";
-                var t2tRefs = new ImageService().ReadImageDetails(ImagePath);
+                //var t2tRefs = new ImageService().ReadImageDetails(ImagePath);
+
+                var skuService = new SkuService();
+
+                var allstocksize = skuService.GetStockWithSize().Result;
+                var onlineSKUs = skuService.OnlineSKUSizes();
+                var onlinesize = skuService.GetOnlineSkuSize(onlineSKUs);
+
+                var s21online = onlinesize.Where(x => x.Season == "B19").ToList();
+                var s21 = allstocksize.Where(x => x.Season == "B19").ToList();
+
+                var sizeRanges = skuService.GetMissingSizes(s21online, s21).Result;
+
+
+                var allstock = skuService.GetStock().Result;
+                var online = skuService.GetOnlineSKuValues(onlineSKUs);
+                var t2treff = skuService.GetMissingStock(online, allstock).Result;
                 worker.ReportProgress(1);
 
-                foreach (var refff in t2tRefs.Distinct())
-                {
-                    //_cancelToken.Token.ThrowIfCancellationRequested();
-                    if (string.IsNullOrEmpty(_descriptionsPath))
-                    {
-                        MessageBox.Show("Please select a descriptions file");
-                        return;
-                    }
+                var actualT2tReff = t2treff.Where(x => x.Season == "B19").Select(x => x.NEWSTYLE);
 
-                    if (!refff.Contains(checkNumber))
+                foreach (var refff in sizeRanges)
+                {
+                    _cancelToken.Token.ThrowIfCancellationRequested();
+                    //if (string.IsNullOrEmpty(_descriptionsPath))
+                    //{
+                    //    MessageBox.Show("Please select a descriptions file");
+                    //    return;
+                    //}
+
+                    if (!refff.NEWSTYLE.Contains(checkNumber))
                     {
-                        if (!usedSkuNums.Contains(refff.Substring(0, 6)))
+                        if (!usedSkuNums.Contains(refff.NEWSTYLE.Substring(0, 6)))
                         {
-                            usedSkuNums.Add(refff.Substring(0, 6));
+                            usedSkuNums.Add(refff.NEWSTYLE.Substring(0, 6));
                             batchNumber++;
-                            var dateFromFolder = ImagePath.Split('\\');
-                            var result = job.DoJob(refff, t2tRefs, ref _errors);
+                            var dateFromFolder = DateTime.Now.Millisecond.ToString();
+                            var result = job.DoJob(refff.NEWSTYLE, actualT2tReff, ref _errors, refff.SKUSize.Substring(6,3));
                             if (result.Length != 0)
                             {
                                 bodyContent.AppendLine(result.ToString());
@@ -339,19 +357,19 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                                     heead.AppendLine(headers);
                                     first = false;
                                     File.AppendAllText(
-                                        System.Configuration.ConfigurationManager.AppSettings["ImportProductsOutput"] + " " + dateFromFolder[dateFromFolder.Length - 1].Trim() + "" + batchInc + ".csv",
-                                        heead.ToString() );
+                                        System.Configuration.ConfigurationManager.AppSettings["ImportProductsOutput"] + "-missing-" + batchInc + ".csv",
+                                        heead.ToString());
 
                                 }
 
                                 File.AppendAllText(
-                                    System.Configuration.ConfigurationManager.AppSettings["ImportProductsOutput"] + " " + dateFromFolder[dateFromFolder.Length - 1].Trim() + "" + batchInc + ".csv",
+                                    System.Configuration.ConfigurationManager.AppSettings["ImportProductsOutput"] + "-missing-" + batchInc + ".csv",
                                     _csv.ToString().Trim() + Environment.NewLine);
 
                             }
                             _csv = new StringBuilder();
                             bodyContent = new StringBuilder();
-                            checkNumber = refff.Substring(0, 9);
+                            checkNumber = refff.NEWSTYLE.Substring(0, 9);
                             worker.ReportProgress(recCount++);
                         }
                     }

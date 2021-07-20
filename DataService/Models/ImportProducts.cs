@@ -270,6 +270,12 @@ namespace ImportProducts.Model
             return this;
         }
 
+        //public ImportProducts Setgallery(string reff)
+        //{
+        //    this.gallery = "\"" + reff + "\"";
+        //    return this;
+        //}
+
         public ImportProducts Setcondition(string condition)
         {
             this.condition = "\"new\"";

@@ -25,11 +25,11 @@ namespace ImportProducts.Services
         {
             this._logger = new LogWriter();
             this._mapper = new ExcelMapper();
-            descriptions = _mapper.MapToDescriptions(excelConnection);
+            //descriptions = _mapper.MapToDescriptions(excelConnection);
             REMTable = new SkuRepository().RetrieveQuery(SqlQuery.FetchREM);
             data = Query(SqlQuery.ImportProductsAllQuery);
         }
-        public StringBuilder DoJob(string refff, IEnumerable<string> t2TreFs, ref ObservableCollection<Error> errors)
+        public StringBuilder DoJob(string refff, IEnumerable<string> t2TreFs, ref ObservableCollection<Error> errors, string sizeCode)
         {
             try
             {
@@ -43,84 +43,97 @@ namespace ImportProducts.Services
                 var skudata = data.Tables[0].Select($"REF = {reff}");
                 foreach (DataRow dr in skudata)
                 {
-                    if (t2TreFs.Any(x => x.Contains(dr["NewStyle"].ToString())))
-                    {
+                    //if (t2TreFs.Any(x => x.Contains(dr["NewStyle"].ToString())))
+                    //{
                         parentSKU = dr["NewStyle"].ToString();
-                        var imageLists = t2TreFs.First(stringToCheck => stringToCheck.Contains(dr["NewStyle"].ToString()));
+                        //var imageLists = t2TreFs.First(stringToCheck => stringToCheck.Contains(dr["NewStyle"].ToString()));
                         if (!string.IsNullOrEmpty(dr["NewStyle"].ToString()))
                         {
-                            var newLine = ParentImportProduct(parentSKU, descriptions, reff, dr, imageLists, t2TreFs);
-                            if (newLine != null)
-                            {
-                                csvLines.AppendLine(newLine);
-                            }
-                            else
-                            {
-                                errors.Add(new Error()
-                                {
-                                    RefNumber = reff,
-                                    ErrorMessage = "No description found!"
-                                });
-                                break;
-                            }
+                            //var newLine = ParentImportProduct(parentSKU, descriptions, reff, dr, imageLists, t2TreFs);
+                            //if (newLine != null)
+                            //{
+                            //    csvLines.AppendLine(newLine);
+                            //}
+                            //else
+                            //{
+                            //    errors.Add(new Error()
+                            //    {
+                            //        RefNumber = reff,
+                            //        ErrorMessage = "No description found!"
+                            //    });
+                            //    break;
+                            //}
                         }
                         for (var i = 1; i < 14; i++)
                         {
-                            if (!string.IsNullOrEmpty(dr["QTY" + i].ToString()))
+                            var currentCode = "";
+                            if (i < 10)
                             {
-                                if (string.IsNullOrEmpty(dr["LY" + i].ToString()))
-                                {
-                                    actualStock = dr["QTY" + i].ToString();
-                                }
-                                else
-                                {
-                                    actualStock =
-                                        (Convert.ToInt32(dr["QTY" + i]) - Convert.ToInt32(dr["LY" + i]))
-                                        .ToString();
-                                }
-
-                                var append = (1000 + i).ToString();
-                                var groupSkus2 = dr["NewStyle"] + append.Substring(1, 3);
-
-                                var shortDescription = BuildShortDescription(FetchDescription(descriptions, reff));
-                                var descripto = FetchDescription(descriptions, reff)?.Descriptio;
-
-                                var size = "";
-                                size = i < 10 ? dr["S0" + i].ToString() : dr["S" + i].ToString();
-                                if (size.Contains("½"))
-                                    size = size.Replace("½", ".5");
-                                var eanDataset = Query(groupSkus2, SqlQuery.GetEanCodes);
-                                string eanCode = null;
-                                if (eanDataset.Tables[0].Rows.Count != 0)
-                                {
-                                    eanCode = eanDataset.Tables[0].Rows[0]["EAN_CODE"].ToString();
-                                }
-
-                                string newLine = null;
-                                sizes.Add(dr["SIZERANGE"].ToString() + size);
-                                if (Convert.ToInt32(actualStock) != 0)
-                                {
-                                    newLine = BuildChildImportProduct(groupSkus2, dr, descriptions, reff, shortDescription, actualStock, descripto, size, imageLists, t2TreFs, eanCode, parentSKU);
-                                }
-
-                                if (newLine != null)
-                                {
-                                    csvLines.AppendLine(newLine);
-                                }
-                                else if (Convert.ToInt32(actualStock) != 0)
-                                {
-                                    errors.Add(new Error()
-                                    {
-                                        RefNumber = reff,
-                                        ErrorMessage = "No description found!"
-                                    });
-                                    break;
-                                }
-
-                                actualStock = "0";
+                                currentCode = "00" + i;
+                            }
+                            else
+                            {
+                                currentCode = "0" + i;
                             }
 
-                        }
+                            if (currentCode == sizeCode)
+                            {
+                                if (!string.IsNullOrEmpty(dr["QTY" + i].ToString()))
+                                {
+                                    if (string.IsNullOrEmpty(dr["LY" + i].ToString()))
+                                    {
+                                        actualStock = dr["QTY" + i].ToString();
+                                    }
+                                    else
+                                    {
+                                        actualStock =
+                                            (Convert.ToInt32(dr["QTY" + i]) - Convert.ToInt32(dr["LY" + i]))
+                                            .ToString();
+                                    }
+
+                                    var append = (1000 + i).ToString();
+                                    var groupSkus2 = dr["NewStyle"] + append.Substring(1, 3);
+
+                                    var shortDescription = "test";
+                                    //var descripto = FetchDescription(descriptions, reff)?.Descriptio;
+
+                                    var size = "";
+                                    size = i < 10 ? dr["S0" + i].ToString() : dr["S" + i].ToString();
+                                    if (size.Contains("½"))
+                                        size = size.Replace("½", ".5");
+                                    var eanDataset = Query(groupSkus2, SqlQuery.GetEanCodes);
+                                    string eanCode = null;
+                                    if (eanDataset.Tables[0].Rows.Count != 0)
+                                    {
+                                        eanCode = eanDataset.Tables[0].Rows[0]["EAN_CODE"].ToString();
+                                    }
+
+                                    string newLine = null;
+                                    sizes.Add(dr["SIZERANGE"].ToString() + size);
+                                    if (Convert.ToInt32(actualStock) != 0)
+                                    {
+                                        newLine = BuildChildImportProduct(groupSkus2, dr, descriptions, reff, shortDescription, actualStock, null, size, null, t2TreFs, eanCode, parentSKU);
+                                    }
+
+                                    if (newLine != null)
+                                    {
+                                        csvLines.AppendLine(newLine);
+                                    }
+                                    else if (Convert.ToInt32(actualStock) != 0)
+                                    {
+                                        errors.Add(new Error()
+                                        {
+                                            RefNumber = reff,
+                                            ErrorMessage = "No description found!"
+                                        });
+                                        break;
+                                    }
+
+                                    actualStock = "0";
+                                }
+                            }
+
+                        //}
                     }
                 }
                 _logger.LogWrite("Finished for: " + refff);
@@ -184,15 +197,15 @@ namespace ImportProducts.Services
 
         private static string ParentImportProduct(string groupSkus, List<Descriptions> descriptions, string reff, DataRow dr, string reffColour, IEnumerable<string> t2TreFs)
         {
-            var result = FetchDescription(descriptions, reff);
+            //var result = FetchDescription(descriptions, reff);
 
-            if (result == null)
-                return null;
+            //if (result == null)
+            //    return null;
 
-            var description = result.Description?.TrimEnd();
+            //var description = result.Description?.TrimEnd();
 
-            if (string.IsNullOrEmpty(description))
-                return null;
+            //if (string.IsNullOrEmpty(description))
+            //    return null;
             return new Model.ImportProducts()
                                           .Setattribut_set("Default")
                                           .SetStore("admin")
@@ -200,16 +213,16 @@ namespace ImportProducts.Services
                                           .Settype("configurable")
                                           .Setsku(groupSkus?.TrimEnd())
                                           .SethasOption("1")
-                                          .SetName(result.Descriptio.TrimEnd() + " in " + dr["MasterColour"].ToString().Trim())
+                                          .SetName("Test Name")
                                           .SetpageLayout("No layout updates.")
                                           .SetoptionsContainer("Product Info Column")
                                           .Setprice(dr["BASESELL"].ToString().Trim())
                                           .Setweight("0.01")
                                           .Setstatus("Enabled")
                                           .Setvisibility(null)
-                                          .SetshortDescription(BuildShortDescription(result))
+                                          .SetshortDescription("Test Desc")
                                           .Setgty("")
-                                          .SetproductName(result.Descriptio.Trim())
+                                          .SetproductName("Test product name")
                                           .Setcolor(dr["MasterColour"].ToString().Trim())
                                           .SetsizeRange(null)
                                           .SettaxClass("Taxable Goods")
@@ -219,22 +232,22 @@ namespace ImportProducts.Services
                                           .SetsubCategory(dr["STYPE"].ToString())
                                           .Setseason("")
                                           .SetstockType(dr["MasterStocktype"].ToString())
-                                          .Setimage(reffColour + ".jpg")
-                                          .SetsmallImage(reffColour + ".jpg")
-                                          .Setthumbnail(reffColour + ".jpg")
+                                          .Setimage("test.jpg")
+                                          .SetsmallImage("test.jpg")
+                                          .Setthumbnail("test.jpg")
                                           .Setgallery(t2TreFs, groupSkus.Substring(0, 9))
                                           .Setcondition("new")
                                           .Setinfocare("")
                                           .Setsizeguide("")
                                           .Setrrp(dr["SELL"].ToString())
-                                          .Seturl_key((result.Descriptio.Trim() + " in " + dr["MasterColour"].ToString().Trim()).Replace(" ", "-").Replace("'", "").ToLower() + "-" + groupSkus)
-                                          .Seturl_path((result.Descriptio.Trim() + " in " + dr["MasterColour"].ToString().Trim()).Replace(" ", "-").Replace("'", "").ToLower() + ".html")
+                                          .Seturl_key("test")
+                                          .Seturl_path("test")
                                           .Setean(null)
                                           .Setrem1(GetREMValue(dr["REM2"].ToString()))
                                           .Setrem2(GetREMValue(dr["REM"].ToString()))
                                           .Setmodel(dr["SUPPREF"].ToString())
                                           .SetsuSKU(GetSUSKU(reff, t2TreFs))
-                                          .SetDescription(Regex.Replace(description, @"\t|\n|\r", ""))
+                                          .SetDescription("Test Decription")
                                           .SetUDef(String.IsNullOrEmpty(dr["MasterSubDept"].ToString()) ? "" : dr["MasterSubDept"].ToString())
                                           .SetSType(String.IsNullOrEmpty(dr["MasterDept"].ToString()) ? "" : dr["MasterDept"].ToString())
                                           .SetParentSku("")
@@ -243,15 +256,15 @@ namespace ImportProducts.Services
         private static string BuildChildImportProduct(string groupSkus2, DataRow dr, List<Descriptions> descriptions, string reff,
             string short_description, string actualStock, string descripto, string size, string reffColour, IEnumerable<string> t2TreFs, string eanCode, string parentSku)
         {
-            var result = FetchDescription(descriptions, reff);
-            if (result == null)
-                return null;
+            //var result = FetchDescription(descriptions, reff);
+            //if (result == null)
+            //    return null;
 
-            var description = result?.Description;
-            if (string.IsNullOrEmpty(description))
-                return null;
-            else
-                description = description.TrimEnd();
+            //var description = result?.Description;
+            //if (string.IsNullOrEmpty(description))
+            //    return null;
+            //else
+            //    description = description.TrimEnd();
             return new Model.ImportProducts()
                                           .Setattribut_set("Default")
                                           .SetStore("admin")
@@ -259,7 +272,7 @@ namespace ImportProducts.Services
                                           .Settype("simple")
                                           .Setsku(groupSkus2?.TrimEnd())
                                           .SethasOption("1")
-                                          .SetName(dr["MasterSupplier"] + " " + result.Descriptio.Trim() + " in " + dr["MasterColour"])
+                                          .SetName("test name")
                                           .SetpageLayout("No layout updates.")
                                           .SetoptionsContainer("Product Info Column")
                                           .Setprice(dr["BASESELL"].ToString().Trim())
@@ -278,22 +291,22 @@ namespace ImportProducts.Services
                                           .SetsubCategory(null)
                                           .Setseason("")
                                           .SetstockType(dr["MasterStocktype"].ToString())
-                                          .Setimage(reffColour + ".jpg")
-                                          .SetsmallImage(reffColour + ".jpg")
-                                          .Setthumbnail(reffColour + ".jpg")
+                                          .Setimage("test.jpg")
+                                          .SetsmallImage("test.jpg")
+                                          .Setthumbnail("test.jpg")
                                           .Setgallery(t2TreFs, groupSkus2.Substring(0, 9))
                                           .Setcondition("new")
                                           .Setinfocare("")
                                           .Setsizeguide("")
                                           .Setrrp(dr["SELL"].ToString())
-                                          .Seturl_key((dr["MasterSupplier"] + " " + result.Descriptio.Trim() + " in " + dr["MasterColour"]).Replace(" ", "-").ToLower() + groupSkus2)
-                                          .Seturl_path((dr["MasterSupplier"] + " " + result.Descriptio.Trim() + " in " + dr["MasterColour"]).Replace(" ", "-").ToLower() + ".html")
+                                          .Seturl_key("test.jpg")
+                                          .Seturl_path("test.jpg")
                                           .Setean(eanCode)
                                           .Setrem1(GetREMValue(dr["REM2"].ToString()))
                                           .Setrem2(GetREMValue(dr["REM"].ToString()))
                                           .Setmodel(dr["SUPPREF"].ToString())
                                           .SetsuSKU(GetSUSKU(reff, t2TreFs))
-                                          .SetDescription(Regex.Replace(description, @"\t|\n|\r", ""))
+                                          .SetDescription("test.jpg")
                                           .SetParentSku(parentSku)
                                           .SetSType("")
                                           .SetUDef("")

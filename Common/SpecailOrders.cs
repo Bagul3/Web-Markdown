@@ -25,6 +25,8 @@ namespace Common
 
         public string Sell { get; set; }
 
+        public string Size { get; set; }
+
         public string RRP { get; set; }
 
         public string SupRef { get; set; }

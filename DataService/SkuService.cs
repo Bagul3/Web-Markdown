@@ -69,6 +69,32 @@ namespace DataService
             return skus;
         }
 
+        public List<string> OnlineSKUSizes()
+        {
+            var fileList = new SkuService().GetCSV("https://www.cordners.co.uk/exportcsv/");
+            string[] tempStr;
+            var splitted = new List<string>();
+            tempStr = fileList.Split('\t');
+            var skus = new List<string>();
+            foreach (var item in tempStr)
+            {
+                if (!string.IsNullOrEmpty(item))
+                {
+                    if (item.Contains('\n') && item.Split('\n')[0].Length > 8)
+                    {
+                        var sku = item.Split('\n')[0].Substring(0, 9);
+                        if (!skus.Contains(sku))
+                        {
+                            splitted.Add(sku);
+                            skus.Add(sku);
+                        }
+                    }
+
+                }
+            }
+            return skus;
+        }
+
         public async Task<List<SpecailOrders>> GetOnlineStock()
         {
             var data = await _skuRepository.RetrieveQueryAsync(SqlQueries.OnlineStock);
@@ -96,6 +122,39 @@ namespace DataService
             return mongeto;
         }
 
+        public List<SizeRanges> GetOnlineSKuValuesWithSizes(List<string> SKU)
+        {
+            var mongeto = new List<SizeRanges>();
+            var data = _skuRepository.RetrieveQueryAsync(SqlQueries.StockQueryALL).Result;
+            for (var i = 0; i < SKU.Count; i++)
+            {
+                var rows = data.Tables[0].Select($"REF = {SKU[i]}");
+                foreach (DataRow reff in rows)
+                {
+                    this.BuildSize(ref mongeto, reff);
+                }
+            }
+
+            return mongeto;
+        }
+
+        public List<SizeRanges> GetOnlineSkuSize(List<string> SKU)
+        {
+            var mongeto = new List<SizeRanges>();
+            var data = _skuRepository.RetrieveQueryAsync(SqlQueries.StockQueryALL).Result;
+            for (var i = 0; i < SKU.Count; i++)
+            {
+                var rows = data.Tables[0].Select($"REF = {SKU[i]}");
+                foreach (DataRow reff in rows)
+                {
+                    this.BuildSizeOnline(ref mongeto, SKU[i], reff);
+                }
+                
+            }
+
+            return mongeto;
+        }
+
         public DataSet GetAllCordnersStock()
         {
             return _skuRepository.RetrieveQuery(SqlQueries.AllSkusQuery);
@@ -108,6 +167,17 @@ namespace DataService
             for (var i = 0; i < data.Tables[0].Rows.Count; i++)
             {
                 this.BuildMongetoObj(ref mongeto, data.Tables[0].Rows[i]);
+            }
+            return mongeto;
+        }
+
+        public async Task<List<SizeRanges>> GetStockWithSize()
+        {
+            var data = await _skuRepository.RetrieveQueryAsync(SqlQueries.StockQueryALL);
+            var mongeto = new List<SizeRanges>();
+            for (var i = 0; i < data.Tables[0].Rows.Count; i++)
+            {
+                this.BuildSize(ref mongeto, data.Tables[0].Rows[i]);
             }
             return mongeto;
         }
@@ -142,6 +212,14 @@ namespace DataService
             });
         }
 
+        public async Task<List<SizeRanges>> GetMissingSizes(List<SizeRanges> onlineStock, List<SizeRanges> stock)
+        {
+            return await Task.Run(() =>
+            {
+                return stock.Where(p => onlineStock.All(p2 => p2.SKUSize != p.SKUSize)).ToList();
+            });
+        }
+
         public List<SpecailOrders> GetMissingStockSync(List<SpecailOrders> onlineStock, List<SpecailOrders> stock)
         {
             return stock.Where(p => onlineStock.All(p2 => p2.Ref != p.Ref)).ToList();
@@ -167,6 +245,32 @@ namespace DataService
                     Qty = TotalStock(dr).ToString()
                 }
                );
+        }
+
+        private void BuildSize(ref List<SizeRanges> sizeRanges, DataRow dr)
+        {
+            for (int i = 1; i < 14; i++)
+            {
+                if (!string.IsNullOrEmpty(dr["QTY" + i].ToString()))
+                {
+                    sizeRanges.Add(new SizeRanges()
+                    {
+                        NEWSTYLE = dr["NEWSTYLE"].ToString(),
+                        Season = dr["User1"].ToString(),
+                        SKUSize = dr["NEWSTYLE"].ToString() + (i < 10 ? dr["S0" + i].ToString() : dr["S" + i].ToString())
+                    });
+                }
+            }
+        }
+
+        private void BuildSizeOnline(ref List<SizeRanges> sizeRanges, string sku, DataRow dr)
+        {
+            sizeRanges.Add(new SizeRanges()
+            {
+                NEWSTYLE = sku.Substring(0,6),
+                Season = dr["User1"].ToString(),
+                SKUSize = sku
+            });
         }
 
         private int TotalStock(DataRow dr)
