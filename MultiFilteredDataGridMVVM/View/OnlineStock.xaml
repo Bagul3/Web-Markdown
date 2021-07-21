@@ -9,10 +9,9 @@
              xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              mc:Ignorable="d" >
     <UserControl.Resources>
-        <viewModel:MainViewModelLocator x:Key="MainViewModelLocatorDataSource" d:IsDataSource="True"/>
+        <viewModel:ContainerLocator x:Key="MainViewModelLocatorDataSource" d:IsDataSource="True"/>
         <!-- This next line instantiates a CollectionViewSource with the collection of Things as its collection of objects-->
         <CollectionViewSource Source="{Binding Things}" x:Key="X_CVS"/>
-        <CollectionViewSource Source="{Binding Online}" x:Key="X_Online"/>
     </UserControl.Resources>
 
     <UserControl.DataContext>
@@ -59,7 +58,7 @@
             <TextBlock HorizontalAlignment="Left" Margin="321,11.04,0,0" TextWrapping="Wrap" Text="Category" FontSize="13.333" VerticalAlignment="Top"/>
 
             <!-- *** The ItemsSource of the data grid is bound to the CollectionViewSource object that was instantiated above -->
-            <wpfElements:CustomDataGrid CanUserReorderColumns="True" CanUserResizeColumns="True" 
+            <wpfElements:CustomDataGrid CanUserReorderColumns="True" CanUserResizeColumns="True"  Style="{StaticResource MaterialDesignDataGrid}"
                                     CanUserResizeRows="False" CanUserSortColumns="True" ItemsSource="{Binding Source={StaticResource X_CVS}}" Margin="8" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" AutoGenerateColumns="True"  IsReadOnly="True"></wpfElements:CustomDataGrid>
             <Button Grid.Row="2" Grid.Column="2" Content="Refresh" Width="109" HorizontalAlignment="Right" Margin="1" Command="{Binding StartCommand}"></Button>
             <Button Grid.Row="2" Grid.Column="1" Content="Export CSV" Width="110" HorizontalAlignment="Right" Margin="0,0.667,115,0.333" Command="{Binding CsvCommand}" Height="Auto"/>

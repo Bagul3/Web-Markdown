@@ -13,14 +13,14 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace MultiFilteredDataGridMVVM.View
+namespace Cordners.View.Common
 {
     /// <summary>
-    /// Interaction logic for StockFile.xaml
+    /// Interaction logic for Modal.xaml
     /// </summary>
-    public partial class StockFile : UserControl
+    public partial class Modal : UserControl
     {
-        public StockFile()
+        public Modal()
         {
             InitializeComponent();
         }

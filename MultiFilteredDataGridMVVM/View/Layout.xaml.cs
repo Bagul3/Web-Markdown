@@ -1,6 +1,5 @@
-﻿using System;
+﻿using System.Diagnostics;
 using System.Windows;
-using MultiFilteredDataGridMVVM.ViewModel;
 
 namespace MultiFilteredDataGridMVVM.View
 {
@@ -34,14 +33,27 @@ namespace MultiFilteredDataGridMVVM.View
             DataContext = new OnlineStock();
         }
 
-        private void GenerateStockFile_Clicked(object sender, RoutedEventArgs e)
-        {
-            DataContext = new StockFile();
-        }
-
         private void Configuration_Clicked(object sender, RoutedEventArgs e)
         {
             DataContext = new Configuration();
+        }    
+
+        private void Generate_Simple_CSV(object sender, RoutedEventArgs e)
+        {
+            Process.Start(System.Configuration.ConfigurationManager.AppSettings["ExecuteSimpleJob"]);
+            MessageBox.Show("Simple Job has been executed. Please check C:\\WebUpdates for Simple files.");
+        }
+
+        private void Generate_Config_CSV(object sender, RoutedEventArgs e)
+        {
+            Process.Start(System.Configuration.ConfigurationManager.AppSettings["ExecuteConfigJob"]);
+            MessageBox.Show("Config Job has been executed. Please check C:\\WebUpdates\\Config for Configurable files.");
+        }
+
+        private void Generate_Euro_CSV(object sender, RoutedEventArgs e)
+        {
+            Process.Start(System.Configuration.ConfigurationManager.AppSettings["ExecuteEuroJob"]);
+            MessageBox.Show("Config Job has been executed. Please check C:\\WebUpdates\\Euro for Euro files.");
         }
     }
 }

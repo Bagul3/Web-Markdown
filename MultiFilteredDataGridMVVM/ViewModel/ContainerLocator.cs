@@ -3,16 +3,14 @@ using DataService;
 using GalaSoft.MvvmLight;
 using Microsoft.Practices.Unity;
 using MultiFilteredDataGridMVVM.Design;
-using MultiFilteredDataGridMVVM.View;
 
 namespace MultiFilteredDataGridMVVM.ViewModel
 {
-    public class MainViewModelLocator
+    public class ContainerLocator
     {
-        static MainViewModelLocator()
+        static ContainerLocator()
         {
             Container = new UnityContainer();
-
             if (ViewModelBase.IsInDesignModeStatic)
             {
                 // if in design mode, use design data service
@@ -23,11 +21,10 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 // otherwise for runtime use real data source
                 Container.RegisterType<IDataService, DummyService>();
             }
-
             // register as a singleton
-            Container.RegisterType<MainViewModel>(new ContainerControlledLifetimeManager());
+            Container.RegisterType<SalesViewModel>(new ContainerControlledLifetimeManager());
             Container.RegisterType<ImportProductViewModel>(new ContainerControlledLifetimeManager());
-            Container.RegisterType<SkuViewModel>(new ContainerControlledLifetimeManager());
+            //Container.RegisterType<MissingOnline>(new ContainerControlledLifetimeManager());
         }
 
         public static IUnityContainer Container
@@ -36,11 +33,11 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             private set;
         }
 
-        public MainViewModel MainVM
+        public SalesViewModel MainVM
         {
             get
             {
-                var vm = Container.Resolve<MainViewModel>();
+                var vm = Container.Resolve<SalesViewModel>();
                 return vm;
             }
         }
@@ -54,11 +51,11 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             }
         }
 
-        public SkuViewModel SKUVM
+        public MissingOnline SKUVM
         {
             get
             {
-                var vm = Container.Resolve<SkuViewModel>();
+                var vm = Container.Resolve<MissingOnline>();
                 return vm;
             }
         }
@@ -68,15 +65,6 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             get
             {
                 var vm = Container.Resolve<OnlineViewModel>();
-                return vm;
-            }
-        }
-
-        public GenerateStockFileViewModel StockVM
-        {
-            get
-            {
-                var vm = Container.Resolve<GenerateStockFileViewModel>();
                 return vm;
             }
         }
@@ -92,7 +80,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
 
         public static void Cleanup()
         {
-            Container.Resolve<SkuViewModel>().Cleanup();
+            Container.Resolve<MissingOnline>().Cleanup();
         }
     }
 }

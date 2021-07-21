@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Data;
 using System.Data.OleDb;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
@@ -24,7 +21,7 @@ using ServiceStack;
 namespace MultiFilteredDataGridMVVM.ViewModel
 {
 
-    public class SkuViewModel : ViewModelBase
+    public class MissingOnline : ViewModelBase
     {
         #region Members
 
@@ -59,14 +56,13 @@ namespace MultiFilteredDataGridMVVM.ViewModel
         private BackgroundWorker worker;
         private double _progressValue;
         private bool _isBusy;
-
-        public SkuViewModel(IDataService dataService)
+        private SkuService _skuService;
+        public MissingOnline(IDataService dataService)
         {
             this.worker = new BackgroundWorker();
             this.worker.WorkerReportsProgress = true;
-            this.worker.DoWork += this.DoWork;
             this.worker.ProgressChanged += this.ProgressChanged;
-
+            _skuService = new SkuService();
             InitializeCommands();
             DataService = dataService;
             LoadData();
@@ -434,100 +430,46 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             RemoveStockTypeFilterCommand = new RelayCommand(RemoveStockTypeFilter, () => CanRemoveStockTypeFilter);
         }
 
-        private void DoWork(object sender, DoWorkEventArgs e)
-        {
-            var splitted = new List<string>();
-            var fileList = new SkuService().GetCSV("https://www.cordners.co.uk/exportcsv/");
-            string[] tempStr;
-            tempStr = fileList.Split('\t');
-            var skus = new List<string>();
-
-            foreach (var item in tempStr)
-            {
-                if (!string.IsNullOrEmpty(item))
-                {
-                    if (item.Contains('\n') && item.Split('\n')[0].Length > 6)
-                    {
-                        var sku = item.Split('\n')[0].Substring(0, 6);
-                        if (!skus.Contains(sku))
-                        {
-                            splitted.Add(sku);
-                            skus.Add(sku);
-                        }
-                    }
-
-                }
-            }
-
-            var skuService = new SkuService();
-            skuService.DeleteDescriptions();
-
-            var count = 0;
-            var check = splitted.Count / 100;
-            var loop = 0;
-
-            for (var i = 0; i < splitted.Count; i++)
-            {
-                if (check == count)
-                {
-                    loop++;
-                    worker.ReportProgress(loop);
-                    count = 0;
-                }
-                else
-                    count++;
-                Insert(splitted[i], SqlQueries.InsertSKU);
-            }
-
-            var things = new SkuService().GetStockSync();
-            var online = new SkuService().GetOnlineStockSync();
-            var missing = new SkuService().GetMissingStockSync(online, things);
-            Things = new ObservableCollection<SpecailOrders>(missing.OrderBy(x => x.MasterSupplier));
-            worker.ReportProgress(100);
-        }
-
         private async Task LoadData()
         {
             IsBusy = true;
 
             await Task.Factory.StartNew(() =>
             {
-                var things = new SkuService().GetStock().Result;
-                var online = new SkuService().GetOnlineStock().Result;
-                var missing = new SkuService().GetMissingStock(online, things).Result;
+                var allstock = _skuService.GetStock().Result;
+                var onlineSKUs = _skuService.OnlineSKUs();                
+                var online = _skuService.GetOnlineSKuValues(onlineSKUs);
+                var missing = _skuService.GetMissingStock(online, allstock).Result;
 
-                var q1 = from t in things
-                    select t.MasterSupplier;
+                var q1 = from t in missing
+                         select t.MasterSupplier;
                 Authors = new ObservableCollection<string>(q1.Distinct().OrderBy(x => x));
 
-                var q2 = from t in things
-                    select t.Category;
+                var q2 = from t in missing
+                         select t.Category;
                 Countries = new ObservableCollection<string>(q2.Distinct().OrderBy(x => x));
 
-                var q3 = from t in things
-                    select t.Season;
+                var q3 = from t in missing
+                         select t.Season;
                 Years = new ObservableCollection<string>(q3.Distinct().OrderBy(x => x));
 
-                var q4 = from t in things
-                    select t.Color;
+                var q4 = from t in missing
+                         select t.Color;
                 Colour = new ObservableCollection<string>(q4.Distinct().OrderBy(x => x));
 
-                var q5 = from t in things
-                    select t.Style;
+                var q5 = from t in missing
+                         select t.Style;
                 Style = new ObservableCollection<string>(q5.Distinct().OrderBy(x => x));
 
-                var q6 = from t in things
-                    select t.StockType;
+                var q6 = from t in missing
+                         select t.StockType;
                 StockType = new ObservableCollection<string>(q6.Distinct().OrderBy(x => x));
 
                 Things = new ObservableCollection<SpecailOrders>(missing.OrderBy(x => x.MasterSupplier));
-            }).ContinueWith((task) =>
+        }).ContinueWith((task) =>
             {
-                IsBusy = false;
-            }, TaskScheduler.FromCurrentSynchronizationContext());
-
-
-            //Online = new ObservableCollection<SpecailOrders>(online);
+            IsBusy = false;
+        }, TaskScheduler.FromCurrentSynchronizationContext());
         }
         /// <summary>
         /// This method handles a message recieved from the View which enables a reference to the

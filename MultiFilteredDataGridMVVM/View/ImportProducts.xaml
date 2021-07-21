@@ -10,7 +10,7 @@
              xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              mc:Ignorable="d">
     <UserControl.Resources>
-        <viewModel:MainViewModelLocator x:Key="ProductVM" d:IsDataSource="True"/>
+        <viewModel:ContainerLocator x:Key="ProductVM" d:IsDataSource="True"/>
         <CollectionViewSource Source="{Binding ImageName}" x:Key="ImageName"/>
         <CollectionViewSource Source="{Binding Errors}" x:Key="Errors"/>
     </UserControl.Resources>
@@ -31,8 +31,8 @@
                 <ColumnDefinition Width="10"></ColumnDefinition>
                 <ColumnDefinition></ColumnDefinition>
             </Grid.ColumnDefinitions>
-            <wpfElements:CustomDataGrid Margin="10,9.667,9.667,46" AutoGenerateColumns="True"  IsReadOnly="True" ItemsSource="{Binding Source={StaticResource ImageName}}" Grid.Row="1" />
-            <wpfElements:CustomDataGrid Margin="10,9.667,10,46" Grid.Column="2" AutoGenerateColumns="True"  IsReadOnly="True" ItemsSource="{Binding Source={StaticResource Errors}}" Grid.Row="1" />
+            <wpfElements:CustomDataGrid Margin="10,9.667,9.667,46" AutoGenerateColumns="True"  IsReadOnly="True" ItemsSource="{Binding Source={StaticResource ImageName}}" Grid.Row="1" Style="{StaticResource MaterialDesignDataGrid}" />
+            <wpfElements:CustomDataGrid Margin="10,9.667,10,46" Grid.Column="2" AutoGenerateColumns="True"  IsReadOnly="True" ItemsSource="{Binding Source={StaticResource Errors}}" Grid.Row="1" Style="{StaticResource MaterialDesignDataGrid}" />
 
             <ProgressBar Value="{Binding ProgressValue}" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Height="Auto" Margin="0,0,0.333,0.333" />
             <Button HorizontalAlignment="Left" Width="94" Grid.Column="2" Grid.Row="2" Command="{Binding GenerateCommand, Mode=OneWay}" Content="Generate" Margin="10,14,0,14"/>

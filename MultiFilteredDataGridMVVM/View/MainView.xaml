@@ -6,12 +6,10 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
     xmlns:Custom="http://schemas.microsoft.com/wpf/2008/toolkit"
     xmlns:wpfElements="clr-namespace:MultiFilteredDataGridMVVM.WpfElements"
-    xmlns:viewModel="clr-namespace:MultiFilteredDataGridMVVM.ViewModel"
     xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
-    mc:Ignorable="d" x:Class="MultiFilteredDataGridMVVM.View.MainView">
+    mc:Ignorable="d" x:Class="MultiFilteredDataGridMVVM.View.MainView" d:DesignWidth="1465" d:DesignHeight="501">
     <UserControl.Resources>
-        <MultiFilteredDataGridMVVM_ViewModel:MainViewModelLocator x:Key="MainViewModelLocatorDataSource" d:IsDataSource="True"/>
-        <!-- This next line instantiates a CollectionViewSource with the collection of Things as its collection of objects-->
+        <MultiFilteredDataGridMVVM_ViewModel:ContainerLocator x:Key="MainViewModelLocatorDataSource" d:IsDataSource="True"/>
         <CollectionViewSource Source="{Binding Cordners}" x:Key="DiscountedStock"/>
         <CollectionViewSource Source="{Binding SpecailOrders}" x:Key="X_CVS" />
     </UserControl.Resources>
@@ -35,44 +33,238 @@
                 <ColumnDefinition></ColumnDefinition>
                 <ColumnDefinition Width="125"></ColumnDefinition>
                 <ColumnDefinition></ColumnDefinition>
-                <!---->
             </Grid.ColumnDefinitions>
 
-            <wpfElements:MultiSelectComboBox HorizontalAlignment="Left" Margin="101,0,0,7" Width="105" VerticalAlignment="Bottom" Text="-- Season --"
-                                             ItemsSource="{Binding Season, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SelectedItems="{Binding SelectedSeasons, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Height="28" Grid.Column="1" Grid.ColumnSpan="2"/>
-            <Button Margin="307,20,0,5" HorizontalAlignment="Left" Width="136" Grid.Column="2" Command="{Binding GetStock, Mode=OneWay}" Content="Retrieve Stock"/>
-            <Button Margin="361,19,0,6" HorizontalAlignment="Left" Width="94" Grid.Column="2" Grid.Row="6" Command="{Binding Generate, Mode=OneWay}" Content="{Binding GenerateButton}"/>
-            <Custom:DatePicker Grid.Column="0" Grid.Row="6" Name="endDate" BorderBrush="Transparent" SelectedDate="{Binding EndDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="410,20,40,5" Grid.ColumnSpan="2" Foreground="Black" />
-            <Custom:DatePicker Grid.Column="0" Grid.Row="6" Name="startDate" BorderBrush="Transparent" SelectedDate="{Binding StartDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="45,20,265,5" Foreground="Black"/>
-            <TextBlock HorizontalAlignment="Left" Margin="385,25,0,0"  TextWrapping="Wrap" Text="End" FontSize="13.333" VerticalAlignment="Top" Grid.Column="0" Grid.Row="6"/>
-            <TextBlock HorizontalAlignment="Left" Margin="10,25,0,0" TextWrapping="Wrap" Text="Start" FontSize="13.333" VerticalAlignment="Top" Grid.Column="0" Grid.Row="6"/>
+            <wpfElements:MultiSelectComboBox HorizontalAlignment="Left" 
+                                             Margin="524,0,0,7" 
+                                             Width="105" 
+                                             VerticalAlignment="Bottom" 
+                                             Text="-- Season --"
+                                             ItemsSource="{Binding Season, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                             SelectedItems="{Binding SelectedSeasons, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                             Height="28"
+                                             Grid.ColumnSpan="2"/>
+            <Button Margin="390,20,0,5" 
+                    HorizontalAlignment="Left" 
+                    Width="136" Grid.Column="2" 
+                    Command="{Binding GetStock, Mode=OneWay}" 
+                    Content="Retrieve Stock"/>
+            <Button Margin="361,19,0,6" 
+                    HorizontalAlignment="Left" 
+                    Width="94" 
+                    Grid.Column="2" 
+                    Grid.Row="6" 
+                    Command="{Binding Generate, Mode=OneWay}" 
+                    Content="{Binding GenerateButton}"/>
+            <Custom:DatePicker 
+                Grid.Column="0" 
+                Grid.Row="6" 
+                Name="endDate" 
+                BorderBrush="Transparent" 
+                SelectedDate="{Binding EndDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                Margin="410,20,40,5" 
+                Grid.ColumnSpan="2" 
+                Foreground="Black" />
+            <Custom:DatePicker 
+                Grid.Column="0" 
+                Grid.Row="6" 
+                Name="startDate" 
+                BorderBrush="Transparent" 
+                SelectedDate="{Binding StartDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                Margin="45,20,265,5"
+                Foreground="Black"/>
+            <TextBlock 
+                HorizontalAlignment="Left" 
+                Margin="385,25,0,0"  
+                TextWrapping="Wrap" 
+                Text="End" 
+                FontSize="13.333" 
+                VerticalAlignment="Top" 
+                Grid.Column="0" 
+                Grid.Row="6"/>
+            <TextBlock 
+                HorizontalAlignment="Left" 
+                Margin="10,25,0,0" 
+                TextWrapping="Wrap" 
+                Text="Start" 
+                FontSize="13.333" 
+                VerticalAlignment="Top" 
+                Grid.Column="0" 
+                Grid.Row="6"/>
             <!-- *** The ItemsSource of the data grid is bound to the CollectionViewSource object that was instantiated above -->
-            <wpfElements:CustomDataGrid CanUserReorderColumns="True" CanUserResizeColumns="True" 
-                                        CanUserResizeRows="False" CanUserSortColumns="True" ItemsSource="{Binding Source={StaticResource X_CVS}}" Margin="6,3,10,43" Grid.Row="1" Grid.Column="2" Grid.RowSpan="5" AutoGenerateColumns="True"  IsReadOnly="True" SelectedItemsList="{Binding SpecailSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-            <wpfElements:CustomDataGrid CanUserReorderColumns="True" CanUserResizeColumns="True" 
-                                        CanUserResizeRows="False" CanUserSortColumns="True" ItemsSource="{Binding Source={StaticResource DiscountedStock}}" Margin="10,5,5.5,41" Grid.Row="1" Grid.RowSpan="5" Grid.Column="0" AutoGenerateColumns="True"  IsReadOnly="True" SelectedItemsList="{Binding CordnersCordnersSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-            <Button HorizontalAlignment="Center" Width="58" MaxHeight="25"  Grid.Row="4" Grid.Column="1" Command="{Binding AddSelectedItems, Mode=OneWay}" Content=">>" Height="Auto"/>
-            <Button HorizontalAlignment="Center" Width="58" MaxHeight="25" Grid.Row="3" Grid.Column="1" Command="{Binding RemoveSelectedItems, Mode=OneWay}" Content="&lt;&lt;" Height="Auto"/>
-            <ProgressBar Value="{Binding ProgressValue}" Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="3" Height="Auto" Margin="0,11,0,46" Grid.RowSpan="2" />
-            <TextBlock HorizontalAlignment="Left" Margin="20,0,0,39" TextWrapping="Wrap" Text="Supplier" FontSize="13.333"/>
-            <TextBlock HorizontalAlignment="Left" Margin="102,0,0,39" TextWrapping="Wrap" Text="Season" FontSize="13.333" Grid.Column="1"/>
-            <TextBlock HorizontalAlignment="Left" Margin="359,0,0,39" TextWrapping="Wrap" Text="Depart" FontSize="13.333"/>
-            <TextBlock HorizontalAlignment="Left" Margin="191,1,0,38" TextWrapping="Wrap" Text="Type" FontSize="13.333"/>
-            <wpfElements:MultiSelectComboBox HorizontalAlignment="Left" Margin="20,0,0,7" Width="105" VerticalAlignment="Bottom" Text="-- Supplier --"
-                                             ItemsSource="{Binding Supplier, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SelectedItems="{Binding SelectedSupplier, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Height="28" Foreground="Black" />
-            <wpfElements:MultiSelectComboBox HorizontalAlignment="Left" Margin="191,0,0,7" Width="105" VerticalAlignment="Bottom" Foreground="Black" Text="-- Type --"
-                                             ItemsSource="{Binding Style,Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SelectedItems="{Binding SelectedStyle, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Height="28"/>
-            <wpfElements:MultiSelectComboBox HorizontalAlignment="Left" Margin="136,0,0,7" Width="105" VerticalAlignment="Bottom" Foreground="Black" Text="-- Categories --"
-                                             ItemsSource="{Binding  Category, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SelectedItems="{Binding SelectedCategory, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Height="28" Grid.Column="2"/>
-            <Label Content="Adjust Price by £" Grid.Column="2" HorizontalAlignment="Left" Margin="37,25,0,0" Grid.Row="6" VerticalAlignment="Top" />
-            <TextBox Grid.Column="2" HorizontalAlignment="Left" Height="25" Margin="141,25,0,0" Grid.Row="6" TextWrapping="Wrap" Text="{Binding AdjustPrice}" VerticalAlignment="Top" Width="31" Background="White" Foreground="Black"/>
-            <Label Content="Adjust Price by %" Grid.Column="2" HorizontalAlignment="Left" Margin="192,25,0,0" Grid.Row="6" VerticalAlignment="Top" />
-            <TextBox Grid.Column="2" HorizontalAlignment="Left" Height="25" Margin="299,25,0,0" Grid.Row="6" TextWrapping="Wrap" Text="{Binding AdjustPricePercentage}" VerticalAlignment="Top" Width="31" Background="White" Foreground="Black"/>
-            <TextBlock HorizontalAlignment="Left" Margin="136,4,0,35" TextWrapping="Wrap" Text="Categories" FontSize="13.333" Grid.Column="2"/>
-            <wpfElements:MultiSelectComboBox HorizontalAlignment="Left" Margin="356,0,0,7" Width="105" VerticalAlignment="Bottom" Foreground="Black" Text="-- Depart --"
-                                             ItemsSource="{Binding StockType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SelectedItems="{Binding SelectedStockType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Height="28" Grid.ColumnSpan="2"/>
-            <!--<Button Margin="5.333,255.667,0,363.333" HorizontalAlignment="Left" Width="90" Grid.Row="1" Grid.Column="1" Content="Add All" Height="Auto"/>
-        <Button Margin="5.333,297.667,0,321.333" HorizontalAlignment="Left" Width="90" Grid.Row="1" Grid.Column="1" Content="Remove All" Height="Auto"/>-->
+            <wpfElements:CustomDataGrid CanUserReorderColumns="True" 
+                                        CanUserResizeColumns="True" 
+                                        CanUserResizeRows="False" 
+                                        CanUserSortColumns="True" 
+                                        ItemsSource="{Binding Source={StaticResource X_CVS}}" 
+                                        Margin="6,3,10,43"
+                                        Grid.Row="1"
+                                        Grid.Column="2"
+                                        Grid.RowSpan="5"
+                                        AutoGenerateColumns="True"
+                                        IsReadOnly="True"
+                                        SelectedItemsList="{Binding SpecailSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                        Style="{StaticResource MaterialDesignDataGrid}"/>
+            <wpfElements:CustomDataGrid CanUserReorderColumns="True"
+                                        CanUserResizeColumns="True" 
+                                        CanUserResizeRows="False"
+                                        CanUserSortColumns="True"
+                                        ItemsSource="{Binding Source={StaticResource DiscountedStock}}"
+                                        Margin="10,5,5.5,41" Grid.Row="1" Grid.RowSpan="5" Grid.Column="0"
+                                        AutoGenerateColumns="True"
+                                        IsReadOnly="True"
+                                        SelectedItemsList="{Binding CordnersCordnersSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                        Style="{StaticResource MaterialDesignDataGrid}">
+                
+                <DataGrid.ContextMenu>
+                    <ContextMenu Background="WhiteSmoke">
+                        <MenuItem Height="Auto" Width="Auto" StaysOpenOnClick="True" Background="WhiteSmoke" Style="{StaticResource RemoveHover}">
+                            <MenuItem.Header>                                
+                                <StackPanel>
+                                    <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Start Date" FontSize="13.333" Foreground="Black"/>
+                                    <Custom:DatePicker BorderBrush="Transparent" Foreground="Black" SelectedDate="{Binding StartDateApi, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                    <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="End Date" FontSize="13.333" Foreground="Black"/>
+                                    <Custom:DatePicker BorderBrush="Transparent" Foreground="Black" SelectedDate="{Binding EndDateApi, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Discount Price (£)" FontSize="13.333" Foreground="Black"/>
+                                    <TextBox HorizontalAlignment="Left" Height="35" Width="30" TextWrapping="Wrap" Foreground="Black" Background="White" BorderThickness="1" Text="{Binding AdjustPriceApi}"/>
+                                    <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Discount Price (%)" FontSize="13.333" Foreground="Black"/>
+                                    <TextBox HorizontalAlignment="Left" Height="35" Width="30" TextWrapping="Wrap" Foreground="Black" Background="White" BorderThickness="1" Text="{Binding AdjustPricePercentageApi}"/>
+                                    <Button HorizontalAlignment="Left" Content="Set Sales price" Command="{Binding SalesPrice, Mode=OneWay}"/>
+                                </StackPanel>
+                            </MenuItem.Header>
+                        </MenuItem>
+                    </ContextMenu>
+                </DataGrid.ContextMenu>
+            </wpfElements:CustomDataGrid>
+            <Button HorizontalAlignment="Center"
+                    Width="58" MaxHeight="25"
+                    Grid.Row="4"
+                    Grid.Column="1"
+                    Command="{Binding AddSelectedItems, Mode=OneWay}"
+                    Content=">>"
+                    Height="Auto"/>
+            <Button HorizontalAlignment="Center"
+                    Width="58"
+                    MaxHeight="25"
+                    Grid.Row="4"
+                    Grid.Column="1"
+                    Command="{Binding RemoveSelectedItems, Mode=OneWay}"
+                    Content="&lt;&lt;"
+                    Height="Auto" Margin="34,95,33,187"/>
+            <ProgressBar Value="{Binding ProgressValue}"
+                         Grid.Row="5"
+                         Grid.Column="0"
+                         Grid.ColumnSpan="3"
+                         Height="Auto"
+                         Margin="0,11,0,46"
+                         Grid.RowSpan="2" />
+            <TextBlock HorizontalAlignment="Left"
+                       Margin="20,0,0,39"
+                       TextWrapping="Wrap"
+                       Text="Supplier"
+                       FontSize="13.333"/>
+            <TextBlock HorizontalAlignment="Left"
+                       Margin="527,0,0,39"
+                       TextWrapping="Wrap"
+                       Text="Season"
+                       FontSize="13.333"/>
+            <TextBlock HorizontalAlignment="Left"
+                       Margin="359,0,0,39"
+                       TextWrapping="Wrap"
+                       Text="Depart"
+                       FontSize="13.333"/>
+            <TextBlock HorizontalAlignment="Left"
+                       Margin="191,1,0,38"
+                       TextWrapping="Wrap"
+                       Text="Type"
+                       FontSize="13.333"/>
+            <wpfElements:MultiSelectComboBox HorizontalAlignment="Left"
+                                             Margin="20,0,0,7"
+                                             Width="105"
+                                             VerticalAlignment="Bottom"
+                                             Text="-- Supplier --"
+                                             ItemsSource="{Binding Supplier, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             SelectedItems="{Binding SelectedSupplier, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             Height="28"
+                                             Foreground="Black" />
+            <wpfElements:MultiSelectComboBox HorizontalAlignment="Left"
+                                             Margin="191,0,0,7"
+                                             Width="105"
+                                             VerticalAlignment="Bottom"
+                                             Foreground="Black"
+                                             Text="-- Type --"
+                                             ItemsSource="{Binding Style,Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             SelectedItems="{Binding SelectedStyle, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             Height="28"/>
+            <wpfElements:MultiSelectComboBox HorizontalAlignment="Left" Margin="60,0,0,7"
+                                             Width="105"
+                                             VerticalAlignment="Bottom"
+                                             Foreground="Black" Text="-- Categories --"
+                                             ItemsSource="{Binding  Category, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             SelectedItems="{Binding SelectedCategory, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             Height="28" Grid.Column="2"/>
+            <Label Content="Adjust Price by £"
+                   Grid.Column="2"
+                   HorizontalAlignment="Left"
+                   Margin="37,25,0,0"
+                   Grid.Row="6"
+                   VerticalAlignment="Top" />
+            <TextBox Grid.Column="2"
+                     HorizontalAlignment="Left"
+                     Height="25"
+                     Margin="141,25,0,0"
+                     Grid.Row="6"
+                     TextWrapping="Wrap"
+                     Text="{Binding AdjustPrice}"
+                     VerticalAlignment="Top"
+                     Width="31"
+                     Background="White"
+                     Foreground="Black"/>
+            <Label Content="Adjust Price by %"
+                   Grid.Column="2" 
+                   HorizontalAlignment="Left"
+                   Margin="192,25,0,0" 
+                   Grid.Row="6" 
+                   VerticalAlignment="Top" />
+            <TextBox Grid.Column="2" 
+                     HorizontalAlignment="Left" 
+                     Height="25"
+                     Margin="299,25,0,0"
+                     Grid.Row="6" 
+                     TextWrapping="Wrap" 
+                     Text="{Binding AdjustPricePercentage}" 
+                     VerticalAlignment="Top" 
+                     Width="31" 
+                     Background="White" 
+                     Foreground="Black"/>
+            <TextBlock HorizontalAlignment="Left"
+                       Margin="65,4,0,35"
+                       TextWrapping="Wrap"
+                       Text="Categories"
+                       FontSize="13.333"
+                       Grid.Column="2"/>
+            <wpfElements:MultiSelectComboBox HorizontalAlignment="Left"
+                                             Margin="356,0,0,7"
+                                             Width="105"
+                                             VerticalAlignment="Bottom" 
+                                             Foreground="Black" 
+                                             Text="-- Depart --"
+                                             ItemsSource="{Binding StockType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             SelectedItems="{Binding SelectedStockType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             Height="28" />
+            <wpfElements:MultiSelectComboBox HorizontalAlignment="Left" Margin="225,0,0,7"
+                Width="105"
+                VerticalAlignment="Bottom"
+                Foreground="Black" Text="-- Colour --"
+                ItemsSource="{Binding Colour, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                SelectedItems="{Binding SelectedColour, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                Height="28" Grid.Column="2"/>
+            <TextBlock HorizontalAlignment="Left"
+                Margin="230,4,0,35"
+                TextWrapping="Wrap"
+                Text="Colour"
+                FontSize="13.333"
+                Grid.Column="2"/>
         </Grid>
     </xctk:BusyIndicator>
 

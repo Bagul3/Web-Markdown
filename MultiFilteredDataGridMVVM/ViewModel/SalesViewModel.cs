@@ -12,6 +12,8 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
 using Common;
+using Cordners.Api;
+using Cordners.Model;
 using DataService;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
@@ -21,12 +23,15 @@ using MultiFilteredDataGridMVVM.WpfElements;
 
 namespace MultiFilteredDataGridMVVM.ViewModel
 {
-    public class MainViewModel : ViewModelBase
+    public class SalesViewModel : ViewModelBase
     {
         #region Members
 
         private DateTime _startDate;
         private DateTime _endDate;
+
+        private DateTime _startDateApi = DateTime.Now;
+        private DateTime _endDateApi = DateTime.Now;
 
         private Dictionary<string, object> _category;
         private Dictionary<string, object> _supplier;
@@ -34,6 +39,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
         private Dictionary<string, object> _season;
         private Dictionary<string, object> _stockType;
         private Dictionary<string, object> _size;
+        private Dictionary<string, object> _colour;
 
         private Dictionary<string, object> _selectedSize;
         private Dictionary<string, object> _selectedSupplier;
@@ -53,7 +59,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
 
         private double _progressValue;
 
-        private SpecailOrdersService _specailOrdersService;
+        private SalesService _specailOrdersService;
         private BackgroundWorker worker;
 
         private Dictionary<string, object> _items;
@@ -64,6 +70,9 @@ namespace MultiFilteredDataGridMVVM.ViewModel
         private double _adjustmentPrice = 0.0;
         private int _adjustPricePercentage = 0;
 
+        private double _adjustmentPriceApi = 0.0;
+        private int _adjustPricePercentageApi = 0;
+
         public ICommand StartCommand { get; private set; }
 
 
@@ -73,6 +82,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
         private Dictionary<string, object> _seasonLoader;
         private Dictionary<string, object> _stockTypeLoader;
         private Dictionary<string, object> _styleLoader;
+        private Dictionary<string, object> _colourLoader;
 
         public double AdjustPrice
         {
@@ -99,6 +109,34 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             {
                 _adjustPricePercentage = value;
                 RaisePropertyChanged("AdjustPricePercentage");
+            }
+        }
+
+        public double AdjustPriceApi
+        {
+            get
+            {
+                return _adjustmentPriceApi;
+
+            }
+            set
+            {
+                _adjustmentPriceApi = value;
+                RaisePropertyChanged("AdjustPriceApi");
+            }
+        }
+
+        public int AdjustPricePercentageApi
+        {
+            get
+            {
+                return _adjustPricePercentageApi;
+
+            }
+            set
+            {
+                _adjustPricePercentageApi = value;
+                RaisePropertyChanged("AdjustPricePercentageApi");
             }
         }
 
@@ -144,7 +182,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
 
         #endregion
 
-        public MainViewModel()
+        public SalesViewModel()
         {
             try
             {
@@ -168,7 +206,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                     Season = _seasonLoader;
                     Size = _sizeLoader;
                     Style = _styleLoader;
-                    
+                    Colour = _colourLoader;
                     IsBusy = false;
                 }, TaskScheduler.FromCurrentSynchronizationContext());
 
@@ -186,7 +224,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             IsBusy = true;
             StartDate = DateTime.Now;
             EndDate = DateTime.Now;
-            _specailOrdersService = new SpecailOrdersService();
+            _specailOrdersService = new SalesService();
             ProgressValue = 0;
             InitializeCommands();
             Messenger.Default.Register<ViewCollectionViewSourceMessageToken>(this,
@@ -282,6 +320,26 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             }
         }
 
+        public DateTime StartDateApi
+        {
+            get { return _startDateApi; }
+            set
+            {
+                _startDateApi = value;
+                RaisePropertyChanged("StartDateApi");
+            }
+        }
+
+        public DateTime EndDateApi
+        {
+            get { return _endDateApi; }
+            set
+            {
+                _endDateApi = value;
+                RaisePropertyChanged("EndDateApi");
+            }
+        }
+
         private IList _specailOrdersSelectedModels = new ArrayList();
 
         public IList SpecailSelected
@@ -358,23 +416,6 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             }
         }
 
-
-        //        public Dictionary<string, object> SelectedSupplier
-        //        {
-        //            get { return _selectedSupplier; }
-        //            set
-        //            {
-        //                if (_selectedSupplier == value)
-        //                    return;
-        //                _selectedSupplier = value;
-        //                RaisePropertyChanged("SelectedSupplier");
-        //                //ApplyFilter(!string.IsNullOrEmpty(_selectedSupplier) ? FilterField.Supplier : FilterField.None);
-        //            }
-        //        }
-
-        /// <summary>
-        /// Gets or sets the selected author in the list years to filter the collection
-        /// </summary>
         public Dictionary<string, object> SelectedStyle
         {
             get { return _selectedStyle; }
@@ -383,8 +424,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 if (_selectedStyle == value)
                     return;
                 _selectedStyle = value;
-                RaisePropertyChanged("SelectedStyle");
-                //ApplyFilter(!string.IsNullOrEmpty(_selectedStyle) ? FilterField.Style : FilterField.None);
+                RaisePropertyChanged("SelectedStyle");                
             }
         }
 
@@ -397,7 +437,6 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                     return;
                 _selectedColour = value;
                 RaisePropertyChanged("SelectedColour");
-                //ApplyFilter(!string.IsNullOrEmpty(_selectedColour) ? FilterField.Colour : FilterField.None);
             }
         }
 
@@ -410,7 +449,6 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                     return;
                 _selectedStockType = value;
                 RaisePropertyChanged("SelectedStockType");
-                //ApplyFilter(!string.IsNullOrEmpty(_selectedStockType) ? FilterField.StockType : FilterField.None);
             }
         }
 
@@ -423,14 +461,9 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                     return;
                 _selectedSeason = value;
                 RaisePropertyChanged("SelectedSeasons");
-                //ApplyFilter(!string.IsNullOrEmpty(_selectedStockType) ? FilterField.StockType : FilterField.None);
             }
         }
 
-        /// <summary>
-        /// Gets or sets a list of authors which is used to populate the author filter
-        /// drop down list.
-        /// </summary>
         public Dictionary<string, object> Season
         {
             get { return _season; }
@@ -465,21 +498,6 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 RaisePropertyChanged("GenerateButton");
             }
         }
-        /// <summary>
-        /// Gets or sets a list of authors which is used to populate the country filter
-        /// drop down list.
-        /// </summary>
-        //        public ObservableCollection<string> Supplier
-        //        {
-        //            get { return _supplier; }
-        //            set
-        //            {
-        //                if (_supplier == value)
-        //                    return;
-        //                _supplier = value;
-        //                RaisePropertyChanged("Supplier");
-        //            }
-        //        }
 
         public Dictionary<string, object> Supplier
         {
@@ -504,11 +522,6 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 RaisePropertyChanged("Category");
             }
         }
-
-        /// <summary>
-        /// Gets or sets a list of authors which is used to populate the year filter
-        /// drop down list.
-        /// </summary>
         public Dictionary<string, object> Style
         {
             get { return _style; }
@@ -518,6 +531,18 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                     return;
                 _style = value;
                 RaisePropertyChanged("Style");
+            }
+        }
+
+        public Dictionary<string, object> Colour
+        {
+            get { return _colour; }
+            set
+            {
+                if (_colour == value)
+                    return;
+                _colour = value;
+                RaisePropertyChanged("Colour");
             }
         }
 
@@ -533,10 +558,6 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             }
         }
 
-
-        /// <summary>
-        /// Gets or sets a flag indicating if the Country filter, if applied, can be removed.
-        /// </summary>
         public bool CanRemoveSizeFilter
         {
             get { return _canCanRemoveSizeFilter; }
@@ -547,9 +568,6 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             }
         }
 
-        /// <summary>
-        /// Gets or sets a flag indicating if the Author filter, if applied, can be removed.
-        /// </summary>
         public bool CanRemoveSupplierFilter
         {
             get { return _canCanRemoveSupplierFilter; }
@@ -559,9 +577,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 RaisePropertyChanged("CanRemoveSupplierFilter");
             }
         }
-        /// <summary>
-        /// Gets or sets a flag indicating if the Year filter, if applied, can be removed.
-        /// </summary>
+
         public bool CanRemoveStyleFilter
         {
             get { return _canCanRemoveStyleFilter; }
@@ -662,6 +678,12 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             private set;
         }
 
+        public ICommand SalesPrice
+        {
+            get;
+            private set;
+        }
+
         public ICommand GetStock
         {
             get;
@@ -672,7 +694,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
 
         private void InitializeCommands()
         {
-                ResetFiltersCommand = new RelayCommand(ResetFilters, null);
+            ResetFiltersCommand = new RelayCommand(ResetFilters, null);
             RemoveSizeFilterCommand = new RelayCommand(RemoveSizeFilter, () => CanRemoveSizeFilter);
             RemoveSupplierFilterCommand = new RelayCommand(RemoveSupplierFilter, () => CanRemoveSupplierFilter);
             RemoveStyleFilterCommand = new RelayCommand(RemoveStyleFilter, () => CanRemoveStyleFilter);
@@ -681,6 +703,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             AddSelectedItems = new RelayCommand(AddSelectedListItems, null);
             RemoveSelectedItems = new RelayCommand(RemoveSelectedListItems, null);
             GetStock = new RelayCommand(UpdateStockList, null);
+            SalesPrice = new RelayCommand(SetSalesPrice, null);
 
             Generate = new CommandHandler(() =>
             {
@@ -710,7 +733,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 IsBusy = true;
                 Task.Factory.StartNew(() =>
                 {
-                    selectedList = _specailOrdersService.GetSaleStock(SelectedSupplier, SelectedCategory, SelectedSeasons, SelectedStyle, SelectedStockType);
+                    selectedList = _specailOrdersService.GetSaleStock(SelectedSupplier, SelectedCategory, SelectedSeasons, SelectedStyle, SelectedStockType, SelectedColour);
                 }).ContinueWith((task) =>
                 {
                     foreach (var o in selectedList.ToArray().Distinct())
@@ -728,14 +751,14 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             }
         }
 
-        public async void GenerateSpecailOrders(object sender, DoWorkEventArgs e)
+        public void GenerateSpecailOrders(object sender, DoWorkEventArgs e)
         {
             try
             {
                 GenerateButton = "Generating...";
                 var count = 0;
                 var csv = new StringBuilder();
-                var headers = $"{"sku"},{"special_price"},{"special_from_date"},{"special_to_date"},{"RRP"}";
+                var headers = $"{"sku"},{"special_price"},{"special_price-1"},{"special_from_date"},{"special_from_date-1"},{"special_to_date"},{"special_to_date-1"},{"RRP"}";
                 csv.AppendLine(headers);
                 var stamp = DateTime.Now.Millisecond;
                 File.AppendAllText(System.Configuration.ConfigurationManager.AppSettings["SalesPriceOutput"] + stamp + ".csv", csv.ToString());
@@ -758,7 +781,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                     count++;
                     List<DataRow> dataRows = skuData.Tables[0].AsEnumerable().Where(x => (string)x["NEWSTYLE"] == specailOrder.NEWSTYLE).Distinct().ToList();
 
-                    _specailOrdersService.GenerateCSVAsync(specailOrder, StartDate.ToString("yyyy-MM-dd"), EndDate.ToString("yyyy-MM-dd"), 
+                    _specailOrdersService.GenerateCSVAsync(StartDate.ToString("yyyy-MM-dd"), EndDate.ToString("yyyy-MM-dd"), 
                         stamp,
                         dataRows,
                         Convert.ToDecimal(AdjustPrice), AdjustPricePercentage);
@@ -775,6 +798,72 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             }           
         }
 
+        public void SetSalesPrice()
+        {
+            var successful = true;
+            IList selectedList = new ArrayList();
+            IsBusy = true;
+            DataSet skuData = new DataSet();
+            Task.Factory.StartNew(() =>
+            {
+                selectedList = CordnersCordnersSelected;
+                skuData = _specailOrdersService.RetrieveAllSkuData();
+            }).ContinueWith((task) =>
+            {
+                var specialPriceList = new List<SpecialPrice>();
+                var time = DateTime.Now.Second;
+                var headers = $"{"sku"},{"special_price"},{"special_price-1"},{"special_from_date"},{"special_from_date-1"},{"special_to_date"},{"special_to_date-1"},{"RRP"}";
+                File.AppendAllText(System.Configuration.ConfigurationManager.AppSettings["SalesPriceOutput"] + time + ".csv", headers + Environment.NewLine);
+                foreach (var item in selectedList)
+                {
+                    for (int i = 1; i <= 13; i++)
+                    {
+                        var size = "";
+                        if (i < 10)
+                        {
+                            size += "00" + i;
+                        }
+                        else
+                        {
+                            size += "0" + i;
+                        }
+                        specialPriceList.Add(BuildSpecialPriceObj((item as SpecailOrders).NEWSTYLE + size, (item as SpecailOrders).Sell));
+                    }
+                    List<DataRow> dataRows = skuData.Tables[0].AsEnumerable().Where(x => (string)x["NEWSTYLE"] == (item as SpecailOrders).NEWSTYLE).Distinct().ToList();
+
+                    _specailOrdersService.GenerateCSVAsync(StartDateApi.ToString("yyyy-MM-dd"), EndDateApi.ToString("yyyy-MM-dd"),
+                        time,
+                        dataRows,
+                        Convert.ToDecimal(AdjustPriceApi), AdjustPricePercentageApi);
+                }
+                successful =
+                    new MagentoSpecialPrice().UpdateSpecialPrice(specialPriceList.ToArray());
+
+                IsBusy = false;
+                if (successful)
+                {
+                    MessageBox.Show($"Success! Sales price updated for {CordnersCordnersSelected.Count} item(s)!");
+                }
+                else
+                {
+                    MessageBox.Show("An error occurred setting sales price.");
+                }
+
+            }, TaskScheduler.FromCurrentSynchronizationContext());
+        }
+
+        private SpecialPrice BuildSpecialPriceObj(string sku, string sell)
+        {
+            var salesService = new SalesService();
+            return new SpecialPrice()
+            {
+                sku = sku,
+                price = salesService.GenerateSalesPrice(Convert.ToDecimal(_adjustmentPriceApi), Convert.ToInt32(_adjustPricePercentageApi), sell),
+                price_from = _startDateApi.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss"),
+                price_to = _endDateApi.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss")
+            };
+        }
+
         public void RemoveSelectedListItems()
         {
             var selectedList = new ArrayList(SpecailSelected);
@@ -787,7 +876,6 @@ namespace MultiFilteredDataGridMVVM.ViewModel
 
         public void ResetFilters()
         {
-            // clear filters 
             RemoveSizeFilter();
             RemoveSupplierFilter();
             RemoveStyleFilter();
@@ -805,7 +893,6 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             CVS.Filter -= new FilterEventHandler(FilterBySupplier);
             SelectedSupplier = null;
             CanRemoveSupplierFilter = false;
-            //Cordner.View.Refresh();
         }
         public void RemoveStyleFilter()
         {
@@ -831,89 +918,87 @@ namespace MultiFilteredDataGridMVVM.ViewModel
         private void LoadData()
         {
             IsBusy = true;
-
-            //await Task.Factory.StartNew(() =>
-            //{
                 
-                _sizeLoader = new Dictionary<string, object>();
-                _supplierLoader = new Dictionary<string, object>();
-                _seasonLoader = new Dictionary<string, object>();
-                _categoryLoader = new Dictionary<string, object>();
-                _styleLoader = new Dictionary<string, object>();
-                _stockTypeLoader = new Dictionary<string, object>();
-                Cordners = new ObservableCollection<SpecailOrders>();
+            _sizeLoader = new Dictionary<string, object>();
+            _supplierLoader = new Dictionary<string, object>();
+            _seasonLoader = new Dictionary<string, object>();
+            _categoryLoader = new Dictionary<string, object>();
+            _styleLoader = new Dictionary<string, object>();
+            _stockTypeLoader = new Dictionary<string, object>();
+            _colourLoader = new Dictionary<string, object>();
+            Cordners = new ObservableCollection<SpecailOrders>();
 
-                var things = new SpecailOrdersService().GetCordners();
+            var things = new SalesService().GetCordners();
 
-                var q1 = from t in things
-                            select t.Season;
-                var obj = q1.Distinct().Zip(q1.Distinct(), (k, v) => new { k, v })
-                    .ToDictionary(x => x.k, x => x.v).OrderBy(x => x.Key);
+            var q1 = from t in things
+                        select t.Season;
+            var obj = q1.Distinct().Zip(q1.Distinct(), (k, v) => new { k, v })
+                .ToDictionary(x => x.k, x => x.v).OrderBy(x => x.Key);
 
-                foreach (var ob in obj)
-                {
-                    _seasonLoader.Add(ob.Key, ob.Value);
-                }
+            foreach (var ob in obj)
+            {
+                _seasonLoader.Add(ob.Key, ob.Value);
+            }
 
-                var q2 = from t in things
-                            select t.MasterSupplier;
-                obj = q2.Distinct().Zip(q2.Distinct(), (k, v) => new { k, v })
-                    .ToDictionary(x => x.k, x => x.v).OrderBy(x => x.Key);
+            var q2 = from t in things
+                        select t.MasterSupplier;
+            obj = q2.Distinct().Zip(q2.Distinct(), (k, v) => new { k, v })
+                .ToDictionary(x => x.k, x => x.v).OrderBy(x => x.Key);
 
-                foreach (var ob in obj)
-                {
-                    _supplierLoader.Add(ob.Key, ob.Value);
-                }
+            foreach (var ob in obj)
+            {
+                _supplierLoader.Add(ob.Key, ob.Value);
+            }
 
-                var q3 = from t in things
-                            select t.Category;
-                obj = q3.Distinct().Zip(q3.Distinct(), (k, v) => new { k, v })
-                    .ToDictionary(x => x.k, x => x.v).OrderBy(x => x.Key);
+            var q3 = from t in things
+                        select t.Category;
+            obj = q3.Distinct().Zip(q3.Distinct(), (k, v) => new { k, v })
+                .ToDictionary(x => x.k, x => x.v).OrderBy(x => x.Key);
 
-                foreach (var ob in obj)
-                {
-                    _categoryLoader.Add(ob.Key, ob.Value);
-                }
+            foreach (var ob in obj)
+            {
+                _categoryLoader.Add(ob.Key, ob.Value);
+            }
 
-                var q4 = from t in things
-                            select t.Style;
-                obj = q4.Distinct().Zip(q4.Distinct(), (k, v) => new { k, v })
-                    .ToDictionary(x => x.k, x => x.v).OrderBy(x => x.Key);
+            var q4 = from t in things
+                        select t.Style;
+            obj = q4.Distinct().Zip(q4.Distinct(), (k, v) => new { k, v })
+                .ToDictionary(x => x.k, x => x.v).OrderBy(x => x.Key);
 
-                foreach (var ob in obj)
-                {
-                    _styleLoader.Add(ob.Key, ob.Value);
-                }
+            foreach (var ob in obj)
+            {
+                _styleLoader.Add(ob.Key, ob.Value);
+            }
 
-                var q5 = from t in things
-                            select t.StockType;
-                obj = q5.Distinct().Zip(q5.Distinct(), (k, v) => new { k, v })
-                    .ToDictionary(x => x.k, x => x.v).OrderBy(x => x.Key);
+            var q5 = from t in things
+                        select t.StockType;
+            obj = q5.Distinct().Zip(q5.Distinct(), (k, v) => new { k, v })
+                .ToDictionary(x => x.k, x => x.v).OrderBy(x => x.Key);
 
-                foreach (var ob in obj)
-                {
-                    _stockTypeLoader.Add(ob.Key, ob.Value);
-                }
-            //}).ContinueWith((task) =>
-            //{
-            //    IsBusy = false;
-            //}, TaskScheduler.FromCurrentSynchronizationContext());
+            foreach (var ob in obj)
+            {
+                _stockTypeLoader.Add(ob.Key, ob.Value);
+            }
+
+            var q6 = from t in things
+                     select t.Color;
+            obj = q6.Distinct().Zip(q6.Distinct(), (k, v) => new { k, v })
+                .ToDictionary(x => x.k, x => x.v).OrderBy(x => x.Key);
+
+            foreach (var ob in obj)
+            {
+                _colourLoader.Add(ob.Key, ob.Value);
+            }
         }
-        /// <summary>
-        /// This method handles a message recieved from the View which enables a reference to the
-        /// instantiated CollectionViewSource to be used in the ViewModel.
-        /// </summary>
+
         private void Handle_ViewCollectionViewSourceMessageToken(ViewCollectionViewSourceMessageToken token)
         {
             CVS = token.CVS;
             DiscountedStock = token.DiscountedStock;
         }
 
-        // Command methods (called by the commands) ===============
-
         public void AddSizeFilter()
-        {
-            // see Notes on Adding Filters:
+        {            
             if (CanRemoveSizeFilter)
             {
                 CVS.Filter -= new FilterEventHandler(FilterBySize);
@@ -926,8 +1011,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             }
         }
         public void AddSupplierFilter()
-        {
-            // see Notes on Adding Filters:
+        {            
             if (CanRemoveSupplierFilter)
             {
                 CVS.Filter -= new FilterEventHandler(FilterBySupplier);
@@ -940,8 +1024,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             }
         }
         public void AddStyleFilter()
-        {
-            // see Notes on Adding Filters:
+        {            
             if (CanRemoveStyleFilter)
             {
                 CVS.Filter -= new FilterEventHandler(FilterByStyle);
@@ -955,8 +1038,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
         }
 
         public void AddColourFilter()
-        {
-            // see Notes on Adding Filters:
+        {            
             if (CanRemoveColourFilter)
             {
                 CVS.Filter -= new FilterEventHandler(FilterByColour);
@@ -970,8 +1052,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
         }
 
         public void AddStockTypeFilter()
-        {
-            // see Notes on Adding Filters:
+        {            
             if (CanRemoveStockTypeFilter)
             {
                 CVS.Filter -= new FilterEventHandler(FilterByStockType);
@@ -984,25 +1065,14 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             }
         }
 
-        /* Notes on Filter Methods:
-         * When using multiple filters, do not explicitly set anything to true.  Rather,
-         * only hide things which do not match the filter criteria
-         * by setting e.Accepted = false.  If you set e.Accept = true, if effectively
-         * clears out any previous filters applied to it.  
-         */
-
         private void FilterBySize(object sender, FilterEventArgs e)
         {
-            // see Notes on Filter Methods:
             var src = e.Item as SpecailOrders;
             if (src == null)
                 e.Accepted = false;
-            //            else if (string.Compare(SelectedSize, src.Size) != 0)
-            //                e.Accepted = false;
         }
         private void FilterBySupplier(object sender, FilterEventArgs e)
-        {
-            // see Notes on Filter Methods:
+        {            
             var src = e.Item as SpecailOrders;
             if (src == null)
                 e.Accepted = false;
@@ -1015,30 +1085,21 @@ namespace MultiFilteredDataGridMVVM.ViewModel
         }
         private void FilterByStyle(object sender, FilterEventArgs e)
         {
-            // see Notes on Filter Methods:
             var src = e.Item as SpecailOrders;
             if (src == null)
                 e.Accepted = false;
-            //else if (string.Compare(SelectedStyle, src.Style) != 0)
-            //    e.Accepted = false;
         }
         private void FilterByColour(object sender, FilterEventArgs e)
         {
-            // see Notes on Filter Methods:
             var src = e.Item as SpecailOrders;
             if (src == null)
                 e.Accepted = false;
-            //else if (string.Compare(SelectedColour, src.Color) != 0)
-            //    e.Accepted = false;
         }
         private void FilterByStockType(object sender, FilterEventArgs e)
         {
-            // see Notes on Filter Methods:
             var src = e.Item as SpecailOrders;
             if (src == null)
                 e.Accepted = false;
-            //else if (string.Compare(SelectedStockType, src.StockType) != 0)
-            //    e.Accepted = false;
         }
 
         private enum FilterField

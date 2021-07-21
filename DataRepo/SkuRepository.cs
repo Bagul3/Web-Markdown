@@ -104,6 +104,28 @@ namespace DataRepo
             }
         }
 
+        public DataSet FetcheQuery(List<string> reff, string query)
+        {
+            using (var connectionHandler = new OleDbConnection(System.Configuration.ConfigurationManager.AppSettings["AccessConnectionString"]))
+            {
+                connectionHandler.Open();
+                var dataset = new DataSet();
+                var myAccessCommand = new OleDbCommand(query, connectionHandler);
+                if (reff != null)
+                {
+                    myAccessCommand.Parameters.AddWithValue("?", reff);
+                }
+
+                for (var i = 0; i < reff.Count; i++)
+                {
+                    myAccessCommand.Parameters.AddWithValue("?", reff[i]);
+                    var myDataAdapter = new OleDbDataAdapter(myAccessCommand);
+                    myDataAdapter.Fill(dataset);
+                }
+                return dataset;
+            }
+        }
+
         public void PackTable()
         {
             using (OleDbConnection connection = new OleDbConnection(System.Configuration.ConfigurationManager.AppSettings["AccessConnectionString"]))
