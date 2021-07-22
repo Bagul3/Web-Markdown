@@ -10,7 +10,7 @@ namespace Cordners.Api
 {
     public class MagentoSpecialPrice
     {
-        private const string URL = "https://staging.cordners.co.uk/";
+        private const string URL = "https://cordners.co.uk/";
 
         public bool UpdateSpecialPrice(SpecialPrice[] prices)
         {
