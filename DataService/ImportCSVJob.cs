@@ -235,8 +235,8 @@ namespace ImportProducts.Services
                                           .Setmodel(dr["SUPPREF"].ToString())
                                           .SetsuSKU(GetSUSKU(reff, t2TreFs))
                                           .SetDescription(Regex.Replace(description, @"\t|\n|\r", ""))
-                                          .SetUDef(String.IsNullOrEmpty(dr["MasterSubDept"].ToString()) ? "" : dr["MasterSubDept"].ToString())
-                                          .SetSType(String.IsNullOrEmpty(dr["MasterDept"].ToString()) ? "" : dr["MasterDept"].ToString())
+                                          .SetSType("")
+                                          .SetUDef("")
                                           .SetParentSku("")
                                           .ToString();
         }
@@ -295,8 +295,8 @@ namespace ImportProducts.Services
                                           .SetsuSKU(GetSUSKU(reff, t2TreFs))
                                           .SetDescription(Regex.Replace(description, @"\t|\n|\r", ""))
                                           .SetParentSku(parentSku)
-                                          .SetSType("")
-                                          .SetUDef("")
+                                          .SetUDef(String.IsNullOrEmpty(dr["MasterSubDept"].ToString()) ? "" : dr["MasterSubDept"].ToString())
+                                          .SetSType(String.IsNullOrEmpty(dr["MasterDept"].ToString()) ? "" : dr["MasterDept"].ToString())                                          
                                           .ToString();
         }
         private static string GetREMValue(string rem)

@@ -353,7 +353,7 @@ namespace ImportProducts.Model
         {
             if (udef2 == "")
             {
-                this.udef2 = "\"\"";
+                this.udef2 = "\" \"";
             }
             else
             {
@@ -367,7 +367,7 @@ namespace ImportProducts.Model
         {
             if (stype == "")
             {
-                this.stype = "\"\"";
+                this.stype = "\" \"";
             }
             else
             {
@@ -383,7 +383,7 @@ namespace ImportProducts.Model
                           $"{shortDescription},{gty},{productName},{color}," +
                           $"{sizeRange},{taxClass},{configurableAttribute},{manufactor}," +
                           $"{category},{subCategory},{season},{stockType},{image},{smallImage},{thumbnail},{gallery},{condition},{ean}," +
-                          $"{description},{model},{infocare},{sizeguide},{rrp},{url_key},{url_path},{rem1},{rem2},{suSKU},{udef2},{stype},{parentSku}";
+                          $"{description},{model},{infocare},{sizeguide},{rrp},{url_key},{url_path},{rem1},{rem2},{suSKU},{parentSku},{udef2},{stype}";
         }
 
         public string RemoveLineEndings(string value)

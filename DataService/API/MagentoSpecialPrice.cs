@@ -1,5 +1,6 @@
 ﻿using Common;
 using Cordners.Model;
+using DataService.Helper;
 using DataService.Models;
 using System;
 using System.Net;
@@ -27,7 +28,10 @@ namespace Cordners.Api
                 client.BaseAddress = new Uri(URL);
                 var response = client.PostAsJsonAsync("rest/default/V1/products/special-price", requestContent).Result;
                 if (response.IsSuccessStatusCode)
-                    return true;                
+                    return true;
+                new LogWriter().LogWrite(response.ReasonPhrase);
+                new LogWriter().LogWrite(response.Content.ReadAsStringAsync().Result);
+                new LogWriter().LogWrite(response.StatusCode.ToString());
             }
             catch(Exception ex)
             {
