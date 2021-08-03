@@ -82,7 +82,7 @@ namespace DataService
 
             var decimalPart = actualPrice - Math.Truncate(actualPrice);
 
-            if (((decimalPart * 100) <= 50) && (decimalPart != 0))
+            if (((decimalPart * 100) < 50) && (decimalPart != 0))
             {
                 actualPrice += 1.00m;
             }

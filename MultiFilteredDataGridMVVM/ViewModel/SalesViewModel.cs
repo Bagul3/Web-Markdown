@@ -831,7 +831,11 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                     }
                     List<DataRow> dataRows = skuData.Tables[0].AsEnumerable().Where(x => (string)x["NEWSTYLE"] == (item as SpecailOrders).NEWSTYLE).Distinct().ToList();
 
-                    _specailOrdersService.GenerateCSVAsync(StartDateApi.ToString("yyyy-MM-dd"), EndDateApi.ToString("yyyy-MM-dd"),
+                    var endDate = EndDateApi;
+                    if (endDate.Day == DateTime.Now.Day)
+                        endDate = endDate.AddDays(-1);
+
+                    _specailOrdersService.GenerateCSVAsync(StartDateApi.ToString("yyyy-MM-dd"), endDate.ToString("yyyy-MM-dd"),
                         time,
                         dataRows,
                         Convert.ToDecimal(AdjustPriceApi), AdjustPricePercentageApi);
@@ -854,13 +858,17 @@ namespace MultiFilteredDataGridMVVM.ViewModel
 
         private SpecialPrice BuildSpecialPriceObj(string sku, string sell)
         {
+            var endDate = _endDateApi;
+            if (endDate.Day == DateTime.Now.Day)
+                endDate = endDate.AddDays(-1);
+
             var salesService = new SalesService();
             return new SpecialPrice()
             {
                 sku = sku,
                 price = salesService.GenerateSalesPrice(Convert.ToDecimal(_adjustmentPriceApi), Convert.ToInt32(_adjustPricePercentageApi), sell),
                 price_from = _startDateApi.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss"),
-                price_to = _endDateApi.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss")
+                price_to = endDate.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss")
             };
         }
 

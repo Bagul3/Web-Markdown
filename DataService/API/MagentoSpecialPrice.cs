@@ -23,12 +23,17 @@ namespace Cordners.Api
                 SpecialPriceAPIRequest requestContent = new SpecialPriceAPIRequest();
                 requestContent.prices = prices;
                 //Prod  m4beidhfgv0bizp6g5v6qso6uj7uqid1
-                //Staging j3yd488tm6ldgb1a7ranb5pu659zndj3
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "pj1c7qo2ce6301lassshrdnyme0ffl69");
+                //Staging dmgye318kdfqqohcb3wf9uv8cumtvkcz
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "m4beidhfgv0bizp6g5v6qso6uj7uqid1");
                 client.BaseAddress = new Uri(URL);
-                var response = client.PostAsJsonAsync("rest/default/V1/products/special-price", requestContent).Result;
+                var response = client.PostAsJsonAsync("/rest/default/V1/products/special-price-delete", requestContent).Result;
                 if (response.IsSuccessStatusCode)
-                    return true;
+                {
+                    response = client.PostAsJsonAsync("rest/default/V1/products/special-price", requestContent).Result;
+                    if (response.IsSuccessStatusCode)
+                        return true;
+                }
+
                 new LogWriter().LogWrite(response.ReasonPhrase);
                 new LogWriter().LogWrite(response.Content.ReadAsStringAsync().Result);
                 new LogWriter().LogWrite(response.StatusCode.ToString());
