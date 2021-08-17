@@ -8,13 +8,14 @@ using System.Threading.Tasks;
 using Common;
 using DataRepo;
 using System.Windows;
+using Cordners.Api;
+using Cordners.Model;
 
 namespace DataService
 {
     public class SalesService
     {
         private readonly SkuRepository _skuRepository;
-
         public SalesService()
         {
             _skuRepository = new SkuRepository();
@@ -35,13 +36,81 @@ namespace DataService
             return new DataSet();
         }
 
-        public void GenerateCSVAsync(string startDate, string endDate, int stamp, List<DataRow> dataRows, decimal adjustmentPrice = 0, int adjustmentPercentage = 0)
+        public decimal GetEuroPrice()
         {
             try
             {
-                var csv = new StringBuilder();
-                //var items = _skuRepository.RetrieveQuery(specailOrders.Ref, SqlQueries.SingleSkuSmaller);
+                var dr = _skuRepository.RetrieveQuery(SqlQueries.FetchEUROPrice);
+                var euro_price = Convert.ToDecimal(dr.Tables[0].Rows[0]["Price"].ToString());
+                return euro_price;
+            }
+            catch (Exception e)
+            {
+                new LogWriter(e.Message);
+                new LogWriter(e.StackTrace);
+                MessageBox.Show(e.Message);
+                throw e;
+            }            
+        }
+
+        public SpecialPrice BuildSpecialPriceObj(string sku, string sell, int storeId, string start, string end, decimal adjustmentPrice, int adjustmentPercentage)
+        {
+            var salesService = new SalesService();
+            var price = salesService.GenerateSalesPrice(adjustmentPrice, adjustmentPercentage, sell);
+
+            return new SpecialPrice()
+            {
+                sku = sku,
+                store_id = storeId,
+                price = price,
+                price_from = start,
+                price_to = end
+            };
+        }
+
+        public List<SpecialPrice> DeleteSKU(string sku, DataSet CurrentSales, int store)
+        {
+            var prices = new List<SpecialPrice>();
+            var doesExist = CurrentSales.Tables[0].Select($"SKU = {sku} AND STOREID = {store}");
+            if (doesExist.Length != 0)
+            {
+                for (int i = 1; i <= 13; i++)
+                {
+                    var size = "";
+                    if (i < 10)
+                    {
+                        size += "00" + i;
+                    }
+                    else
+                    {
+                        size += "0" + i;
+                    }
+                    foreach (DataRow row in doesExist)
+                    {
+                        prices.Add(new SpecialPrice()
+                        {
+                            price = Convert.ToDecimal(row["PRICE"]),
+                            price_from = row["START"].ToString(),
+                            price_to = row["START"].ToString(),
+                            sku = (row["SKU"] + size).ToString(),
+                            store_id = Convert.ToInt32(row["STOREID"])
+                        });
+                    }
+                }
+
+            }
+            return prices;
+        }
+
+
+        public void GenerateCSVAsync(string startDate, string endDate, int stamp, List<DataRow> dataRows, decimal adjustmentPrice = 0, int adjustmentPercentage = 0, decimal euro = 0)
+        {
+            try
+            {
+                var csv = new StringBuilder();                
                 var specailsOrders = new List<SpecailOrders>();
+                var prices = new List<SpecialPrice>();
+                var hasInserted = new List<string>();
 
                 foreach (DataRow item in dataRows)
                 {
@@ -52,19 +121,84 @@ namespace DataService
                 {
                     if (count == (specailsOrders.Count - 1))
                         break;
-                    decimal actualPrice = GenerateSalesPrice(adjustmentPrice, adjustmentPercentage, o.Sell);
+                    
+                    decimal actualPrice = 0;
+                    var newLine = "";
+                    if (euro != 0)
+                    {
+                        actualPrice = GenerateSalesPrice(adjustmentPrice, adjustmentPercentage, GenerateEuroPrice(Convert.ToDecimal(o.Sell), euro));
+                        newLine = $"{"\"" + (o).Ref + "\""},{"\"" + Convert.ToInt16(actualPrice) + "\""},{"\"" + (Convert.ToDateTime(startDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\"" + (Convert.ToDateTime(endDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\" \""},{"\" \""},{"\" \""},{"\"" + GenerateEuroPrice(Convert.ToDecimal(o.RRP), euro).ToString() + "\""}";
+                        if (!hasInserted.Contains((o).Ref.Substring(0, 9)))
+                        {
+                            prices.Add(new SpecialPrice()
+                            {
+                                store_id = 2,
+                                sku = (o).Ref.Substring(0, 9),
+                                price = Convert.ToDecimal(actualPrice.ToString()),
+                                price_from = startDate,
+                                price_to = endDate
 
-                    var newLine = $"{"\"" + (o).Ref + "\""},{"\"" + Convert.ToInt16(actualPrice) + "\""},{"\" \""},{"\"" + (Convert.ToDateTime(startDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\" \""},{"\"" + (Convert.ToDateTime(endDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\" \""},{"\"" + (o).RRP + "\""}";
+                            });
+                            hasInserted.Add((o).Ref.Substring(0, 9));
+                        }
+                    }
+                    else
+                    {
+                        actualPrice = GenerateSalesPrice(adjustmentPrice, adjustmentPercentage, o.Sell);
+                        newLine = $"{"\"" + (o).Ref + "\""},{"\"" + Convert.ToInt16(actualPrice) + "\""},{"\"" + (Convert.ToDateTime(startDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\"" + (Convert.ToDateTime(endDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\" \""},{"\" \""},{"\" \""},{"\"" + o.RRP + "\""}";
+                        if (!hasInserted.Contains((o).Ref.Substring(0, 9)))
+                        {
+                            prices.Add(new SpecialPrice()
+                            {
+                                store_id = 1,
+                                sku = (o).Ref.Substring(0, 9),
+                                price = Convert.ToDecimal(actualPrice.ToString()),
+                                price_from = startDate,
+                                price_to = endDate
+
+                            });
+                            hasInserted.Add((o).Ref.Substring(0, 9));
+                        }                        
+                    }
+                    
                     csv.AppendLine(newLine);
                     count++;
                 }
 
-                File.AppendAllText(ConfigurationManager.AppSettings["SalesPriceOutput"] + stamp + ".csv", csv.ToString());
+                if (euro != 0)
+                {
+                    File.AppendAllText(ConfigurationManager.AppSettings["SalesPriceOutput"] + stamp + "-euro.csv", csv.ToString());
+                }
+                else
+                {
+                    File.AppendAllText(ConfigurationManager.AppSettings["SalesPriceOutput"] + stamp + ".csv", csv.ToString());
+                }                
+                _skuRepository.InsertSale(prices);
             }
             catch(Exception e)
             {
                 MessageBox.Show(e.Message);
             }
+        }
+
+        public string GenerateEuroPrice(decimal gbp, decimal conversion_rate)
+        {
+            var rounding = true;
+            var euros = gbp * conversion_rate;
+            var decimalPart = euros - Math.Truncate(euros);
+            if ((decimalPart * 100) < 50)
+            {
+                if (gbp < 20)
+                {
+                    var additional = 0.5m - decimalPart;
+                    euros += additional;
+                    rounding = false;
+                }
+                else
+                    euros++;
+
+            }
+            return rounding? Math.Round(euros).ToString() : euros.ToString();
         }
 
         public decimal GenerateSalesPrice(decimal adjustmentPrice, int adjustmentPercentage, string sell)

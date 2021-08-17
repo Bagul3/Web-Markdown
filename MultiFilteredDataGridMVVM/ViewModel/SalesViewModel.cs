@@ -14,6 +14,7 @@ using System.Windows.Input;
 using Common;
 using Cordners.Api;
 using Cordners.Model;
+using DataRepo;
 using DataService;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
@@ -49,6 +50,9 @@ namespace MultiFilteredDataGridMVVM.ViewModel
         private Dictionary<string, object> _selectedStyle;
         private Dictionary<string, object> _selectedColour;
 
+        private bool _euroSite = true;
+        private bool _gbpSite = true;
+
         private ObservableCollection<SpecailOrders> _cordners;
         private ObservableCollection<SpecailOrders> _specailOrders = new ObservableCollection<SpecailOrders>();
         private bool _canCanRemoveSizeFilter;
@@ -83,6 +87,33 @@ namespace MultiFilteredDataGridMVVM.ViewModel
         private Dictionary<string, object> _stockTypeLoader;
         private Dictionary<string, object> _styleLoader;
         private Dictionary<string, object> _colourLoader;
+        public bool EuroSite
+        {
+            get
+            {
+                return _euroSite;
+
+            }
+            set
+            {
+                _euroSite = value;
+                RaisePropertyChanged("EuroSite");
+            }
+        }
+
+        public bool GbpSite
+        {
+            get
+            {
+                return _gbpSite;
+
+            }
+            set
+            {
+                _gbpSite = value;
+                RaisePropertyChanged("GbpSite");
+            }
+        }
 
         public double AdjustPrice
         {
@@ -758,12 +789,10 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 GenerateButton = "Generating...";
                 var count = 0;
                 var csv = new StringBuilder();
-                var headers = $"{"sku"},{"special_price"},{"special_price-1"},{"special_from_date"},{"special_from_date-1"},{"special_to_date"},{"special_to_date-1"},{"RRP"}";
+                var headers = $"{"sku"},{"special_price"},{"special_from_date"},{"special_to_date"},{"special_price-1"},{"special_to_date-1"},{"special_from_date-1"},{"RRP"}";
                 csv.AppendLine(headers);
                 var stamp = DateTime.Now.Millisecond;
-                File.AppendAllText(System.Configuration.ConfigurationManager.AppSettings["SalesPriceOutput"] + stamp + ".csv", csv.ToString());
 
-                // Load all sku data;
                 var skuData = _specailOrdersService.RetrieveAllSkuData();
 
                 if (SpecailOrders.Count() == 0)
@@ -772,21 +801,51 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                     return;
                 }
 
-                foreach (var specailOrder in SpecailOrders)
+                for (int i = 0; i < 2; i ++)
                 {
-                    if (count >= 100)
+                    if(i == 1)
                     {
-                        count = 1;
-                    }
-                    count++;
-                    List<DataRow> dataRows = skuData.Tables[0].AsEnumerable().Where(x => (string)x["NEWSTYLE"] == specailOrder.NEWSTYLE).Distinct().ToList();
+                        File.AppendAllText(System.Configuration.ConfigurationManager.AppSettings["SalesPriceOutput"] + stamp + ".csv", csv.ToString());
+                        foreach (var specailOrder in SpecailOrders)
+                        {
+                            if (count >= 100)
+                            {
+                                count = 1;
+                            }
+                            count++;
+                            List<DataRow> dataRows = skuData.Tables[0].AsEnumerable().Where(x => (string)x["NEWSTYLE"] == specailOrder.NEWSTYLE).Distinct().ToList();
 
-                    _specailOrdersService.GenerateCSVAsync(StartDate.ToString("yyyy-MM-dd"), EndDate.ToString("yyyy-MM-dd"), 
-                        stamp,
-                        dataRows,
-                        Convert.ToDecimal(AdjustPrice), AdjustPricePercentage);
-                    worker.ReportProgress(count);
-                }
+                            _specailOrdersService.GenerateCSVAsync(StartDate.ToString("yyyy-MM-dd"), EndDate.ToString("yyyy-MM-dd"),
+                                stamp,
+                                dataRows,
+                                Convert.ToDecimal(AdjustPrice), AdjustPricePercentage);
+                            worker.ReportProgress(count);
+                        }                        
+                    }
+                    else
+                    {
+                        File.AppendAllText(System.Configuration.ConfigurationManager.AppSettings["SalesPriceOutput"] + stamp + "-euro.csv", csv.ToString());
+                        var euro_price = _specailOrdersService.GetEuroPrice();
+                        foreach (var specailOrder in SpecailOrders)
+                        {
+                            if (count >= 100)
+                            {
+                                count = 1;
+                            }
+                            count++;
+                            List<DataRow> dataRows = skuData.Tables[0].AsEnumerable().Where(x => (string)x["NEWSTYLE"] == specailOrder.NEWSTYLE).Distinct().ToList();
+
+                            _specailOrdersService.GenerateCSVAsync(StartDate.ToString("yyyy-MM-dd"), EndDate.ToString("yyyy-MM-dd"),
+                                stamp,
+                                dataRows,
+                                Convert.ToDecimal(AdjustPrice), AdjustPricePercentage, euro_price);
+                            worker.ReportProgress(count);
+                        }                        
+                    }
+                    csv = new StringBuilder();
+                    csv.AppendLine(headers);
+                }               
+               
                 worker.ReportProgress(100);
                 AdjustPrice = 0;
                 GenerateButton = "Generate";
@@ -808,41 +867,23 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             {
                 selectedList = CordnersCordnersSelected;
                 skuData = _specailOrdersService.RetrieveAllSkuData();
-            }).ContinueWith((task) =>
-            {
                 var specialPriceList = new List<SpecialPrice>();
                 var time = DateTime.Now.Second;
-                var headers = $"{"sku"},{"special_price"},{"special_price-1"},{"special_from_date"},{"special_from_date-1"},{"special_to_date"},{"special_to_date-1"},{"RRP"}";
+                var headers = $"{"sku"},{"special_price"},{"special_from_date"},{"special_to_date"},{"special_price-1"},{"special_to_date-1"},{"special_from_date-1"},{"RRP"}";
                 File.AppendAllText(System.Configuration.ConfigurationManager.AppSettings["SalesPriceOutput"] + time + ".csv", headers + Environment.NewLine);
-                foreach (var item in selectedList)
+                var currentSales = new SkuRepository().RetrieveQuery(SqlQueries.FetchAllSales);
+                if (EuroSite)
                 {
-                    for (int i = 1; i <= 13; i++)
-                    {
-                        var size = "";
-                        if (i < 10)
-                        {
-                            size += "00" + i;
-                        }
-                        else
-                        {
-                            size += "0" + i;
-                        }
-                        specialPriceList.Add(BuildSpecialPriceObj((item as SpecailOrders).NEWSTYLE + size, (item as SpecailOrders).Sell));
-                    }
-                    List<DataRow> dataRows = skuData.Tables[0].AsEnumerable().Where(x => (string)x["NEWSTYLE"] == (item as SpecailOrders).NEWSTYLE).Distinct().ToList();
-
-                    var endDate = EndDateApi;
-                    if (endDate.Day == DateTime.Now.Day)
-                        endDate = endDate.AddDays(-1);
-
-                    _specailOrdersService.GenerateCSVAsync(StartDateApi.ToString("yyyy-MM-dd"), endDate.ToString("yyyy-MM-dd"),
-                        time,
-                        dataRows,
-                        Convert.ToDecimal(AdjustPriceApi), AdjustPricePercentageApi);
+                    var euro_price = _specailOrdersService.GetEuroPrice();
+                    specialPriceList.AddRange(BuildApiRequest(selectedList, skuData, time, 2, euro_price, currentSales));   
                 }
-                successful =
-                    new MagentoSpecialPrice().UpdateSpecialPrice(specialPriceList.ToArray());
-
+                if (GbpSite)
+                {
+                    specialPriceList.AddRange(BuildApiRequest(selectedList, skuData, time, 1, 0, currentSales));
+                }
+                successful = new MagentoSpecialPrice().UpdateSpecialPrice(specialPriceList.ToArray());
+            }).ContinueWith((task) =>
+            {
                 IsBusy = false;
                 if (successful)
                 {
@@ -856,21 +897,74 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             }, TaskScheduler.FromCurrentSynchronizationContext());
         }
 
-        private SpecialPrice BuildSpecialPriceObj(string sku, string sell)
+        private List<SpecialPrice> BuildApiRequest(IList selectedList, DataSet skuData, int time, int storeId, decimal euro, DataSet currentSales)
         {
-            var endDate = _endDateApi;
-            if (endDate.Day == DateTime.Now.Day)
-                endDate = endDate.AddDays(-1);
-
+            List<SpecialPrice> specialPriceList = new List<SpecialPrice>();
             var salesService = new SalesService();
-            return new SpecialPrice()
+            var prices = new List<SpecialPrice>();
+            foreach (var item in selectedList)
             {
-                sku = sku,
-                price = salesService.GenerateSalesPrice(Convert.ToDecimal(_adjustmentPriceApi), Convert.ToInt32(_adjustPricePercentageApi), sell),
-                price_from = _startDateApi.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss"),
-                price_to = endDate.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss")
-            };
-        }
+                var startDate = _startDateApi.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss");
+                var endDate = _endDateApi;
+                if (endDate.Day == DateTime.Now.Day)
+                    endDate = endDate.AddDays(-1);
+                var endDateString = endDate.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss");
+                for (int i = 1; i <= 13; i++)
+                {
+                    var size = "";
+                    if (i < 10)
+                    {
+                        size += "00" + i;
+                    }
+                    else
+                    {
+                        size += "0" + i;
+                    }
+                    if (euro != 0)
+                    {
+                        specialPriceList.Add(salesService.BuildSpecialPriceObj((item as SpecailOrders).NEWSTYLE + size, 
+                            _specailOrdersService.GenerateEuroPrice(Convert.ToDecimal((item as SpecailOrders).Sell), euro),
+                            storeId, 
+                            startDate, 
+                            endDateString,
+                            Convert.ToDecimal(_adjustmentPriceApi), 
+                            Convert.ToInt32(_adjustPricePercentageApi))
+                            );                 
+                    }
+                    else
+                    {
+                        specialPriceList.Add(salesService.BuildSpecialPriceObj((item as SpecailOrders).NEWSTYLE + size, 
+                            (item as SpecailOrders).Sell, 
+                            storeId, 
+                            startDate, 
+                            endDateString, 
+                            Convert.ToDecimal(_adjustmentPriceApi),
+                            Convert.ToInt32(_adjustPricePercentageApi))
+                            );
+                    }
+                }
+                List<DataRow> dataRows = skuData.Tables[0].AsEnumerable().Where(x => (string)x["NEWSTYLE"] == (item as SpecailOrders).NEWSTYLE).Distinct().ToList();
+
+                var sku = (item as SpecailOrders).NEWSTYLE;
+                prices.AddRange(salesService.DeleteSKU(sku, currentSales, storeId));                
+                if (euro != 0)
+                {
+                    _specailOrdersService.GenerateCSVAsync(startDate, endDateString,
+                    time,
+                    dataRows,
+                    Convert.ToDecimal(AdjustPriceApi), AdjustPricePercentageApi, euro);
+                }
+                else
+                {
+                    _specailOrdersService.GenerateCSVAsync(startDate, endDateString,
+                    time,
+                    dataRows,
+                    Convert.ToDecimal(AdjustPriceApi), AdjustPricePercentageApi);
+                }                
+            }
+            new MagentoSpecialPrice().DeleteSpecialPrice(prices.ToArray());
+            return specialPriceList;
+        }        
 
         public void RemoveSelectedListItems()
         {
@@ -997,6 +1091,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             {
                 _colourLoader.Add(ob.Key, ob.Value);
             }
+
         }
 
         private void Handle_ViewCollectionViewSourceMessageToken(ViewCollectionViewSourceMessageToken token)

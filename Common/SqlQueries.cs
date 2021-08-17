@@ -383,5 +383,15 @@ WHERE (((Left([T2_LOOK]![KEY],3))='CAT')) ORDER BY Trim(Mid([T2_LOOK].[KEY],4,6)
 
 		public static string PackREM => @"Pack [REM]";
 
+		public static string FetchEUROPrice => @"SELECT [PRICE] FROM [EURO]";
+
+		public static string FetchSaleInfo => @"SELECT * FROM [SALES] WHERE [SKU] = ?";
+
+		public static string FetchAllSales => @"SELECT * FROM [SALES]";
+
+		public static string InsertSalesSKU => @"INSERT INTO [SALES] ([STOREID], [SKU], [PRICE], [START], [END]) VALUES (@storeid, @sku, @price, @start, @end)";
+
+		public static string DeleteSales => @"DELETE FROM [SALES] WHERE [SKU] = ? AND [STOREID] = storeid";
+
 	}
 }

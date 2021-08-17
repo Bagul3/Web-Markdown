@@ -151,10 +151,12 @@
     </ApplicationDefinition>
     <Compile Include="Class1.cs" />
     <Compile Include="Design\DummyService.cs" />
+    <Compile Include="Model\DeleteSKU.cs" />
     <Compile Include="Model\REM2.cs" />
     <Compile Include="Model\REM1.cs" />
     <Compile Include="ViewModel\ConfigurationViewModel.cs" />
     <Compile Include="ViewModel\ImportProductViewModel.cs" />
+    <Compile Include="ViewModel\SalesOnlineViewModel.cs" />
     <Compile Include="ViewModel\SalesViewModel.cs" />
     <Compile Include="ViewModel\ContainerLocator.cs" />
     <Compile Include="Helpers\ViewCollectionViewSourceMessageToken.cs" />
@@ -182,6 +184,9 @@
     </Compile>
     <Compile Include="View\OnlineStock.xaml.cs">
       <DependentUpon>OnlineStock.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\SalesOnlineView.xaml.cs">
+      <DependentUpon>SalesOnlineView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\SkuChecker.xaml.cs">
       <DependentUpon>SkuChecker.xaml</DependentUpon>
@@ -232,6 +237,10 @@
     <Page Include="View\OnlineStock.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="View\SalesOnlineView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\SkuChecker.xaml">
       <Generator>MSBuild:Compile</Generator>

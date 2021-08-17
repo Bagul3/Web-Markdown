@@ -1,4 +1,5 @@
 ﻿using Common;
+using Cordners.ViewModel;
 using DataService;
 using GalaSoft.MvvmLight;
 using Microsoft.Practices.Unity;
@@ -77,6 +78,25 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 return vm;
             }
         }
+
+        public SalesViewModel SalesVM
+        {
+            get
+            {
+                var vm = Container.Resolve<SalesViewModel>();
+                return vm;
+            }
+        }
+
+        public SalesOnlineViewModel SalesOnlineVM
+        {
+            get
+            {
+                var vm = Container.Resolve<SalesOnlineViewModel>();
+                return vm;
+            }
+        }
+
 
         public static void Cleanup()
         {

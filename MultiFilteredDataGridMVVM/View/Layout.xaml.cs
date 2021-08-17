@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using Cordners.View;
+using System.Diagnostics;
 using System.Windows;
 
 namespace MultiFilteredDataGridMVVM.View
@@ -36,7 +37,12 @@ namespace MultiFilteredDataGridMVVM.View
         private void Configuration_Clicked(object sender, RoutedEventArgs e)
         {
             DataContext = new Configuration();
-        }    
+        }
+
+        private void OnSale_Clicked(object sender, RoutedEventArgs e)
+        {
+            DataContext = new SalesOnlineView();
+        }
 
         private void Generate_Simple_CSV(object sender, RoutedEventArgs e)
         {

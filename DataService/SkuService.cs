@@ -6,6 +6,8 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Common;
+using Common.Model;
+using Cordners.Model;
 using DataRepo;
 
 namespace DataService
@@ -30,6 +32,44 @@ namespace DataService
         public SkuService()
         {
             _skuRepository = new SkuRepository();
+        }
+
+        public List<SpecialPrice> GetItemsOnSale()
+        {
+            var data = _skuRepository.RetrieveQuery(SqlQueries.FetchAllSales);
+            return ParseSalesData(data);
+        }
+
+        private List<SpecialPrice> ParseSalesData(DataSet data)
+        {
+            var rows = data.Tables[0].Rows;
+            var skusToDelete = new List<DeleteSKU>();
+            var specialPrice = new List<SpecialPrice>();
+            foreach (DataRow row in rows)
+            {
+                if (Convert.ToDateTime(row["End"]) < DateTime.Now)
+                { 
+                    skusToDelete.Add(new DeleteSKU()
+                    {
+                        Sku = row["SKU"].ToString(),
+                        StoreId = Convert.ToInt32(row["STOREID"])
+                    });                        
+                }  
+                else
+                {
+                    specialPrice.Add(new SpecialPrice()
+                    {
+                        price = Convert.ToDecimal(row["Price"]),
+                        price_from = row["Start"].ToString(),
+                        price_to = row["End"].ToString(),
+                        sku = row["SKU"].ToString(),
+                        store_id = Convert.ToInt16(row["StoreId"])
+                    });
+                }
+            }
+
+            _skuRepository.RetrieveQuery(skusToDelete.ToArray(), SqlQueries.DeleteSales);
+            return specialPrice.Distinct().ToList();
         }
 
         public void DeleteDescriptions()
@@ -99,7 +139,43 @@ namespace DataService
         public DataSet GetAllCordnersStock()
         {
             return _skuRepository.RetrieveQuery(SqlQueries.AllSkusQuery);
-        }        
+        }
+
+
+        public DataSet GetImportProductsAllQuery()
+        {
+            return _skuRepository.RetrieveQuery(SqlQuery.ImportProductsAllQuery);
+        }
+
+
+        public List<Sales> GetSales(DataSet CordnersStock, List<SpecialPrice> specialPrices)
+        {
+            var sales = new List<Sales>();
+            foreach(var specialPrice in specialPrices)
+            {
+                var stocks = CordnersStock.Tables[0].Select($"NEWSTYLE = {specialPrice.sku}");
+                
+                foreach(DataRow dr in stocks)
+                {
+                    sales.Add(new Sales()
+                    {
+                        MasterSupplier = dr["MasterSupplier"].ToString(),
+                        Color = dr["MasterColour"].ToString(),
+                        Style = dr["STYPE"].ToString(),
+                        StockType = dr["MasterStocktype"].ToString(),
+                        Category = dr["MasterSubDept"].ToString(),
+                        Season = dr["User1"].ToString(),
+                        Name = dr["SHORT"].ToString(),
+                        price = specialPrice.price,
+                        price_from = specialPrice.price_from,
+                        price_to = specialPrice.price_to,
+                        sku = specialPrice.sku,
+                        store = Convert.ToInt16(specialPrice.store_id) == 1 ? "UK" : "Ireland"
+                    });
+                }                
+            }
+            return sales;
+        }
 
         public async Task<List<SpecailOrders>> GetStock()
         {

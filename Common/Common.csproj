@@ -65,6 +65,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Model\DeleteSKU.cs" />
+    <Compile Include="Model\Sales.cs" />
     <Compile Include="Model\SpecialPrice.cs" />
     <Compile Include="Descriptions.cs" />
     <Compile Include="Error.cs" />
