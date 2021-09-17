@@ -198,20 +198,46 @@ namespace DataRepo
 
         public void InsertSale(List<SpecialPrice> specialPrices)
         {
-            using (var connectionHandler = new OleDbConnection(System.Configuration.ConfigurationManager.AppSettings["AccessConnectionString"]))
+            var sqlStatements = new List<string>();
+            foreach (var sku in specialPrices)
             {
-                foreach(var specialPrice in specialPrices)
-                {
-                    connectionHandler.Open();
-                    var myAccessCommand = new OleDbCommand(SqlQueries.InsertSalesSKU, connectionHandler);
-                    myAccessCommand.Parameters.AddWithValue("@storeid", specialPrice.store_id);
-                    myAccessCommand.Parameters.AddWithValue("@sku", specialPrice.sku);
-                    myAccessCommand.Parameters.AddWithValue("@price", specialPrice.price);
-                    myAccessCommand.Parameters.AddWithValue("@start", specialPrice.price_from);
-                    myAccessCommand.Parameters.AddWithValue("@end", specialPrice.price_to);
-                    myAccessCommand.ExecuteNonQuery();
-                }
+                var actualQuery = SqlQueries.InsertSalesSKU
+                    .Replace("@sku", "\"" + sku.sku + "\"")
+                    .Replace("@price", "\"" + sku.price.ToString() + "\"")
+                    .Replace("@start", "\"" + sku.price_from.ToString() + "\"")
+                    .Replace("@end", "\"" + sku.price_to.ToString() + "\"")
+                    .Replace("@storeid", "\"" + sku.store_id.ToString() + "\"") + ";";
+                sqlStatements.Add(actualQuery);
             }
+
+            using (OleDbConnection conn = new OleDbConnection(System.Configuration.ConfigurationManager.AppSettings["AccessConnectionString"]))
+            {
+                conn.Open();
+                OleDbTransaction transaction = conn.BeginTransaction();
+                foreach (string statement in sqlStatements)
+                {
+                    using (OleDbCommand cmd = new OleDbCommand(statement, conn, transaction))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                transaction.Commit();
+            }
+            //foreach (var specialPrice in specialPrices)
+            //{
+            //using (var connectionHandler = new OleDbConnection(System.Configuration.ConfigurationManager.AppSettings["AccessConnectionString"]))
+            //{
+            //    var myAccessCommand = new OleDbCommand(SqlQueries.InsertSalesSKU, connectionHandler);
+                
+            //        connectionHandler.Open();                    
+            //        myAccessCommand.Parameters.AddWithValue("@storeid", specialPrice.store_id);
+            //        myAccessCommand.Parameters.AddWithValue("@sku", specialPrice.sku);
+            //        myAccessCommand.Parameters.AddWithValue("@price", specialPrice.price);
+            //        myAccessCommand.Parameters.AddWithValue("@start", specialPrice.price_from);
+            //        myAccessCommand.Parameters.AddWithValue("@end", specialPrice.price_to);
+            //        myAccessCommand.ExecuteNonQuery();
+            //    }                
+            //}
         }
 
         public void InsertSeasonData(string season, string id, string top, string bottom)
@@ -253,6 +279,30 @@ namespace DataRepo
                 myDataAdapter.Fill(dataset);
             }
             return dataset;
+        }
+
+        public void RetrieveQuery(DeleteSKU sku, string query)
+        {
+            try
+            {
+                var dataset = new DataSet();
+                using (var connectionHandler =
+                    new OleDbConnection(System.Configuration.ConfigurationManager.AppSettings["AccessConnectionString"])
+                )
+                {
+                    connectionHandler.OpenAsync();
+                    var myAccessCommand = new OleDbCommand(query, connectionHandler);
+                    myAccessCommand.Parameters.AddWithValue("?", sku.Sku);
+                    myAccessCommand.Parameters.AddWithValue("@storeid", sku.StoreId);
+                    var myDataAdapter = new OleDbDataAdapter(myAccessCommand);
+                    myDataAdapter.Fill(dataset);
+                }
+            }
+            catch (Exception ex)
+            {
+                new LogWriter().LogWrite(ex.Message);
+                new LogWriter().LogWrite(ex.StackTrace);
+            }
         }
 
         public void RetrieveQuery(DeleteSKU[] skus, string query)

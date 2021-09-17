@@ -211,6 +211,38 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             }
         }
 
+        private string _searchText;
+        public string SearchText
+        {
+            get { return _searchText; }
+            set
+            {
+                if (_searchText == value)
+                    return;
+                _searchText = value;
+                RaisePropertyChanged("SearchText");
+                ApplyFilter(!string.IsNullOrEmpty(_searchText) ? FilterField.Search : FilterField.None);
+            }
+        }
+
+        public void Search(object sender, FilterEventArgs e)
+        {
+            // see Notes on Filter Methods:
+            var src = e.Item as SpecailOrders;
+            var searchTxt = _searchText.ToLower();
+            if (src == null)
+                e.Accepted = false;
+            else if
+                (
+                    src.Ref.ToLower().Contains(searchTxt) ||
+                    src.Name.ToLower().Contains(searchTxt) ||
+                    src.MasterSupplier.ToLower().Contains(searchTxt)
+                )
+                e.Accepted = true;
+            else
+                e.Accepted = false;
+        }
+
         #endregion
 
         public SalesViewModel()
@@ -867,21 +899,19 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             {
                 selectedList = CordnersCordnersSelected;
                 skuData = _specailOrdersService.RetrieveAllSkuData();
-                var specialPriceList = new List<SpecialPrice>();
                 var time = DateTime.Now.Second;
                 var headers = $"{"sku"},{"special_price"},{"special_from_date"},{"special_to_date"},{"special_price-1"},{"special_to_date-1"},{"special_from_date-1"},{"RRP"}";
                 File.AppendAllText(System.Configuration.ConfigurationManager.AppSettings["SalesPriceOutput"] + time + ".csv", headers + Environment.NewLine);
-                var currentSales = new SkuRepository().RetrieveQuery(SqlQueries.FetchAllSales);
                 if (EuroSite)
                 {
                     var euro_price = _specailOrdersService.GetEuroPrice();
-                    specialPriceList.AddRange(BuildApiRequest(selectedList, skuData, time, 2, euro_price, currentSales));   
+                    BuildApiRequest(selectedList, skuData, time, 2, euro_price);
                 }
                 if (GbpSite)
                 {
-                    specialPriceList.AddRange(BuildApiRequest(selectedList, skuData, time, 1, 0, currentSales));
+                    BuildApiRequest(selectedList, skuData, time, 1, 0);
+                    
                 }
-                successful = new MagentoSpecialPrice().UpdateSpecialPrice(specialPriceList.ToArray());
             }).ContinueWith((task) =>
             {
                 IsBusy = false;
@@ -897,13 +927,17 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             }, TaskScheduler.FromCurrentSynchronizationContext());
         }
 
-        private List<SpecialPrice> BuildApiRequest(IList selectedList, DataSet skuData, int time, int storeId, decimal euro, DataSet currentSales)
-        {
-            List<SpecialPrice> specialPriceList = new List<SpecialPrice>();
-            var salesService = new SalesService();
-            var prices = new List<SpecialPrice>();
+        private void BuildApiRequest(IList selectedList, DataSet skuData, int time, int storeId, decimal euro)
+        {            
+            var salesService = new SalesService();            
             foreach (var item in selectedList)
             {
+                List<SpecialPrice> specialPriceList = new List<SpecialPrice>();
+                var prices = new List<SpecialPrice>();
+                var sku = (item as SpecailOrders).NEWSTYLE;
+                prices.AddRange(salesService.DeleteSKU(sku, storeId));
+                //new MagentoSpecialPrice().DeleteSpecialPrice(prices.ToArray());
+
                 var startDate = _startDateApi.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss");
                 var endDate = _endDateApi;
                 if (endDate.Day == DateTime.Now.Day)
@@ -943,10 +977,10 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                             );
                     }
                 }
+                new MagentoSpecialPrice().UpdateSpecialPrice(specialPriceList.ToArray());
                 List<DataRow> dataRows = skuData.Tables[0].AsEnumerable().Where(x => (string)x["NEWSTYLE"] == (item as SpecailOrders).NEWSTYLE).Distinct().ToList();
 
-                var sku = (item as SpecailOrders).NEWSTYLE;
-                prices.AddRange(salesService.DeleteSKU(sku, currentSales, storeId));                
+                
                 if (euro != 0)
                 {
                     _specailOrdersService.GenerateCSVAsync(startDate, endDateString,
@@ -962,8 +996,6 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                     Convert.ToDecimal(AdjustPriceApi), AdjustPricePercentageApi);
                 }                
             }
-            new MagentoSpecialPrice().DeleteSpecialPrice(prices.ToArray());
-            return specialPriceList;
         }        
 
         public void RemoveSelectedListItems()
@@ -1030,7 +1062,8 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             _colourLoader = new Dictionary<string, object>();
             Cordners = new ObservableCollection<SpecailOrders>();
 
-            var things = new SalesService().GetCordners();
+            var onlineSKUs = new SkuService().OnlineSKUs();
+            var things = new SkuService().GetOnlineSKuValues(onlineSKUs);
 
             var q1 = from t in things
                         select t.Season;
@@ -1091,7 +1124,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             {
                 _colourLoader.Add(ob.Key, ob.Value);
             }
-
+            Cordners = new ObservableCollection<SpecailOrders>(things.OrderBy(x => x.Ref));
         }
 
         private void Handle_ViewCollectionViewSourceMessageToken(ViewCollectionViewSourceMessageToken token)
@@ -1205,6 +1238,11 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 e.Accepted = false;
         }
 
+        public void SearchFilter()
+        {
+            CVS.Filter += new FilterEventHandler(Search);
+        }
+
         private enum FilterField
         {
             Size,
@@ -1212,6 +1250,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             Style,
             Colour,
             StockType,
+            Search,
             None
         }
         private void ApplyFilter(FilterField field)
@@ -1232,6 +1271,9 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                     break;
                 case FilterField.StockType:
                     AddStockTypeFilter();
+                    break;
+                case FilterField.Search:
+                    SearchFilter();
                     break;
                 default:
                     break;

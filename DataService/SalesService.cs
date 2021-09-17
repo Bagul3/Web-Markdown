@@ -10,6 +10,7 @@ using DataRepo;
 using System.Windows;
 using Cordners.Api;
 using Cordners.Model;
+using System.Linq;
 
 namespace DataService
 {
@@ -68,36 +69,31 @@ namespace DataService
             };
         }
 
-        public List<SpecialPrice> DeleteSKU(string sku, DataSet CurrentSales, int store)
+        public List<SpecialPrice> DeleteSKU(string sku, int store)
         {
             var prices = new List<SpecialPrice>();
-            var doesExist = CurrentSales.Tables[0].Select($"SKU = {sku} AND STOREID = {store}");
-            if (doesExist.Length != 0)
+            var doesExist = new OnSaleRepository().GetBySku(sku, store);
+            if (doesExist == null)
+                return new List<SpecialPrice>();
+            for (int i = 1; i <= 13; i++)
             {
-                for (int i = 1; i <= 13; i++)
+                var size = "";
+                if (i < 10)
                 {
-                    var size = "";
-                    if (i < 10)
-                    {
-                        size += "00" + i;
-                    }
-                    else
-                    {
-                        size += "0" + i;
-                    }
-                    foreach (DataRow row in doesExist)
-                    {
-                        prices.Add(new SpecialPrice()
-                        {
-                            price = Convert.ToDecimal(row["PRICE"]),
-                            price_from = row["START"].ToString(),
-                            price_to = row["START"].ToString(),
-                            sku = (row["SKU"] + size).ToString(),
-                            store_id = Convert.ToInt32(row["STOREID"])
-                        });
-                    }
+                    size += "00" + i;
                 }
-
+                else
+                {
+                    size += "0" + i;
+                }
+                prices.Add(new SpecialPrice()
+                {
+                    price = Convert.ToDecimal(doesExist.Price),
+                    price_from = doesExist.Start.ToString(),
+                    price_to = doesExist.End.ToString(),
+                    sku = (doesExist.Sku + size).ToString(),
+                    store_id = Convert.ToInt32(doesExist.StoreId)
+                });                    
             }
             return prices;
         }
@@ -109,8 +105,7 @@ namespace DataService
             {
                 var csv = new StringBuilder();                
                 var specailsOrders = new List<SpecailOrders>();
-                var prices = new List<SpecialPrice>();
-                var hasInserted = new List<string>();
+                decimal actualPrice = 0;
 
                 foreach (DataRow item in dataRows)
                 {
@@ -122,49 +117,23 @@ namespace DataService
                     if (count == (specailsOrders.Count - 1))
                         break;
                     
-                    decimal actualPrice = 0;
+                    actualPrice = 0;
                     var newLine = "";
+
                     if (euro != 0)
                     {
                         actualPrice = GenerateSalesPrice(adjustmentPrice, adjustmentPercentage, GenerateEuroPrice(Convert.ToDecimal(o.Sell), euro));
-                        newLine = $"{"\"" + (o).Ref + "\""},{"\"" + Convert.ToInt16(actualPrice) + "\""},{"\"" + (Convert.ToDateTime(startDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\"" + (Convert.ToDateTime(endDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\" \""},{"\" \""},{"\" \""},{"\"" + GenerateEuroPrice(Convert.ToDecimal(o.RRP), euro).ToString() + "\""}";
-                        if (!hasInserted.Contains((o).Ref.Substring(0, 9)))
-                        {
-                            prices.Add(new SpecialPrice()
-                            {
-                                store_id = 2,
-                                sku = (o).Ref.Substring(0, 9),
-                                price = Convert.ToDecimal(actualPrice.ToString()),
-                                price_from = startDate,
-                                price_to = endDate
-
-                            });
-                            hasInserted.Add((o).Ref.Substring(0, 9));
-                        }
+                        newLine = $"{"\"" + (o).Ref + "\""},{"\"" + Convert.ToInt16(actualPrice) + "\""},{"\"" + (Convert.ToDateTime(startDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\"" + (Convert.ToDateTime(endDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\" \""},{"\" \""},{"\" \""},{"\"" + GenerateEuroPrice(Convert.ToDecimal(o.RRP), euro).ToString() + "\""}";                      
                     }
                     else
                     {
                         actualPrice = GenerateSalesPrice(adjustmentPrice, adjustmentPercentage, o.Sell);
-                        newLine = $"{"\"" + (o).Ref + "\""},{"\"" + Convert.ToInt16(actualPrice) + "\""},{"\"" + (Convert.ToDateTime(startDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\"" + (Convert.ToDateTime(endDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\" \""},{"\" \""},{"\" \""},{"\"" + o.RRP + "\""}";
-                        if (!hasInserted.Contains((o).Ref.Substring(0, 9)))
-                        {
-                            prices.Add(new SpecialPrice()
-                            {
-                                store_id = 1,
-                                sku = (o).Ref.Substring(0, 9),
-                                price = Convert.ToDecimal(actualPrice.ToString()),
-                                price_from = startDate,
-                                price_to = endDate
-
-                            });
-                            hasInserted.Add((o).Ref.Substring(0, 9));
-                        }                        
+                        newLine = $"{"\"" + (o).Ref + "\""},{"\"" + Convert.ToInt16(actualPrice) + "\""},{"\"" + (Convert.ToDateTime(startDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\"" + (Convert.ToDateTime(endDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\" \""},{"\" \""},{"\" \""},{"\"" + o.RRP + "\""}";                        
                     }
                     
                     csv.AppendLine(newLine);
                     count++;
                 }
-
                 if (euro != 0)
                 {
                     File.AppendAllText(ConfigurationManager.AppSettings["SalesPriceOutput"] + stamp + "-euro.csv", csv.ToString());
@@ -172,8 +141,37 @@ namespace DataService
                 else
                 {
                     File.AppendAllText(ConfigurationManager.AppSettings["SalesPriceOutput"] + stamp + ".csv", csv.ToString());
+                }
+                var repo = new OnSaleRepository();
+
+                //TODO Delete here
+                if (euro != 0)
+                {
+                    var onSale = new OnSale()
+                    {
+                        StoreId = 2,
+                        Sku = specailsOrders.First().Ref.Substring(0, 9),
+                        Price = Convert.ToDecimal(actualPrice.ToString()).ToString(),
+                        Start = startDate,
+                        End = endDate
+                    };
+                    new MagentoSpecialPrice().DeleteSpecialPrice(specailsOrders.First().Ref.Substring(0, 9), 2);
+                    repo.Insert(onSale);
+                }
+                else
+                {
+                    var onSale = new OnSale()
+                    {
+                        StoreId = 1,
+                        Sku = specailsOrders.First().Ref.Substring(0, 9),
+                        Price = Convert.ToDecimal(actualPrice.ToString()).ToString(),
+                        Start = startDate,
+                        End = endDate
+                    };
+                    new MagentoSpecialPrice().DeleteSpecialPrice(specailsOrders.First().Ref.Substring(0, 9), 1);
+                    repo.Insert(onSale);
                 }                
-                _skuRepository.InsertSale(prices);
+                repo.Save();
             }
             catch(Exception e)
             {
@@ -376,6 +374,17 @@ namespace DataService
         {
             try
             {
+
+                //Check if season isn't before 2015
+                var season = dr["User1"].ToString();
+                if (season.Contains("S") || season.Contains("W"))
+                {
+                    var year = season.Substring(1, 2);
+                    if (Convert.ToInt32(year) <= 15)
+                        return;
+                }
+
+
                 skuRecords.Add(new SpecailOrders()
                 {
                     Ref = dr["Ref"].ToString(),

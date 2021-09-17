@@ -8,24 +8,26 @@ namespace Common
 {
     public class Sales
     {
-        public string store { get; set; }
-        public decimal price { get; set; }
-        public string sku { get; set; }
-        public string price_from { get; set; }
-        public string price_to { get; set; }
-
+        public string Season { get; set; }
+        public string StockType { get; set; }
         public string MasterSupplier { get; set; }
-
         public string Name { get; set; }
+        public string Style { get; set; }
+        public string Color { get; set; }
+        public string Store { get; set; }
+        public string RRP { get; set; }
+        public decimal Sales_Price { get; set; }
+        public int Discount { get; set; }
+        public string SKU { get; set; }
+        public string Price_From { get; set; }
+        public string Price_To { get; set; }                
 
         public string Category { get; set; }
 
-        public string Season { get; set; }
-
-        public string Style { get; set; }
-
-        public string StockType { get; set; }
-
-        public string Color { get; set; }
+        public override string ToString()
+        {
+            var str = $"{Season} {StockType} {MasterSupplier} {Name} {Style} {Color} {Store} {RRP}";
+            return str;
+        }
     }
 }

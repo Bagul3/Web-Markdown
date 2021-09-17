@@ -24,6 +24,7 @@
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="57"/>
+                <RowDefinition Height="57"/>
                 <RowDefinition/>
                 <RowDefinition Height="30"/>
                 <RowDefinition Height="57"/>
@@ -32,7 +33,7 @@
                 <ColumnDefinition></ColumnDefinition>
                 <ColumnDefinition></ColumnDefinition>
             </Grid.ColumnDefinitions>
-
+            <Button Grid.Row="3" Grid.Column="1" Content="Export CSV" Width="110" HorizontalAlignment="Right" Margin="0,0.667,115,0.333" Command="{Binding CsvCommand}" Height="Auto"/>
             <ComboBox HorizontalAlignment="Left" Margin="8,0,0,6.04" Width="75" VerticalAlignment="Bottom" Background="White" Text="--Season--" Foreground="Black"
             ItemsSource="{Binding Years}" SelectedItem="{Binding SelectedYear, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
             <Button HorizontalAlignment="Left" Margin="87,27.48,0,4.52" Width="16" Height="16" 
@@ -57,6 +58,10 @@
             <TextBlock HorizontalAlignment="Left" Margin="129,11.04,0,28.226" TextWrapping="Wrap" Text="Supplier" FontSize="13.333" d:LayoutOverrides="Height"/>
             <TextBlock HorizontalAlignment="Left" Margin="321,11.04,0,0" TextWrapping="Wrap" Text="Category" FontSize="13.333" VerticalAlignment="Top"/>
 
+
+            <TextBlock Grid.Row="1"><Run Text="   "/><Run Text="Search:"/></TextBlock>
+            <TextBox Background="White" Height="35" Grid.Row="1" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Margin="8,20,5,2"/>
+
             <!-- *** The ItemsSource of the data grid is bound to the CollectionViewSource object that was instantiated above -->
             <wpfElements:CustomDataGrid 
                 CanUserReorderColumns="True" 
@@ -66,7 +71,7 @@
                 CanUserSortColumns="True" 
                 ItemsSource="{Binding Source={StaticResource X_CVS}}" 
                 Margin="8" 
-                Grid.Row="1" 
+                Grid.Row="2" 
                 Grid.Column="0" 
                 Grid.ColumnSpan="2" 
                 AutoGenerateColumns="True"  
@@ -83,8 +88,8 @@
                         </MenuItem>
                     </ContextMenu>
                 </DataGrid.ContextMenu>
-            </wpfElements:CustomDataGrid>            
-            
+            </wpfElements:CustomDataGrid>
+
             <ComboBox HorizontalAlignment="Left" Margin="26.667,0,0,5.333" Width="120" VerticalAlignment="Bottom" Background="White"
             ItemsSource="{Binding Style}" SelectedItem="{Binding SelectedStyle, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Grid.Column="1"/>
             <Button HorizontalAlignment="Left" Margin="150.667,32,0,9.333" Width="16" Height="16" 
@@ -106,6 +111,13 @@
             <TextBlock HorizontalAlignment="Left" Margin="25.667,11,0,0" TextWrapping="Wrap" Text="Style" FontSize="13.333" VerticalAlignment="Top" Grid.Column="1"/>
             <TextBlock HorizontalAlignment="Left" Margin="197.667,11,0,0" TextWrapping="Wrap" FontSize="13.333" VerticalAlignment="Top" Grid.Column="1"><Run Text="Colour"/><LineBreak/><Run/><LineBreak/><Run/><LineBreak/><Run/></TextBlock>
             <TextBlock HorizontalAlignment="Left" Margin="369.667,11,0,0" TextWrapping="Wrap" FontSize="13.333" VerticalAlignment="Top" Grid.Column="1" Grid.RowSpan="2"><Run Text="StockType"/><LineBreak/><Run/><LineBreak/><Run/><LineBreak/><Run/></TextBlock>
+            <ComboBox HorizontalAlignment="Left" Margin="492,0,0,6" Width="120" VerticalAlignment="Bottom" Background="White"
+                ItemsSource="{Binding Store}" SelectedItem="{Binding SelectedStore}"/>
+            <Button HorizontalAlignment="Left" Margin="658,32,0,9" Width="16" Height="16" 
+                Command="{Binding CanRemoveStoreFilter, Mode=OneWay}">
+                <Image Width="10" Height="10" Style="{DynamicResource ImageStyleForButtons}"/>
+            </Button>
+            <TextBlock HorizontalAlignment="Left" Margin="534,11,0,0" TextWrapping="Wrap" Text="Store" FontSize="13.333" VerticalAlignment="Top"/>
         </Grid>
     </xctk:BusyIndicator>
 </UserControl>

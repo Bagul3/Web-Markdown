@@ -38,6 +38,7 @@ namespace Cordners.ViewModel
         private string _selectedStyle;
 
         private string _selectedStockType;
+        private string _selectedStore;
 
         private ObservableCollection<string> _authors;
         private ObservableCollection<string> _countries;
@@ -46,6 +47,7 @@ namespace Cordners.ViewModel
         private ObservableCollection<string> _colour;
         private ObservableCollection<string> _style;
         private ObservableCollection<string> _stockType;
+        private ObservableCollection<string> _store;
 
         ObservableCollection<Sales> _things;
         private bool _canCanRemoveCountryFilter;
@@ -55,12 +57,12 @@ namespace Cordners.ViewModel
         private bool _canCanRemoveColourFilter;
         private bool _canCanRemoveStyleFilter;
         private bool _canCanRemoveStockTypeFilter;
+        private bool _canCanRemoveStoreFilter;
         #endregion
         public ICommand StartCommand { get; private set; }
         private BackgroundWorker worker;
         private double _progressValue;
         private bool _isBusy;
-        private DataSet CurrentSales;
 
         public SalesOnlineViewModel(IDataService dataService)
         {
@@ -228,6 +230,33 @@ namespace Cordners.ViewModel
             }
         }
 
+        public string SelectedStore
+        {
+            get { return _selectedStore; }
+            set
+            {
+                if (_selectedStore == value)
+                    return;
+                _selectedStore = value;
+                RaisePropertyChanged("SelectedStore");
+                ApplyFilter(!string.IsNullOrEmpty(_selectedStore) ? FilterField.Store : FilterField.None);
+            }
+        }
+
+        private string _searchText;
+        public string SearchText
+        {
+            get { return _searchText; }
+            set
+            {
+                if (_searchText == value)
+                    return;
+                _searchText = value;
+                RaisePropertyChanged("SearchText");
+                ApplyFilter(!string.IsNullOrEmpty(_searchText) ? FilterField.Search : FilterField.None);
+            }
+        }
+
         /// <summary>
         /// Gets or sets a list of authors which is used to populate the author filter
         /// drop down list.
@@ -310,6 +339,18 @@ namespace Cordners.ViewModel
             }
         }
 
+        public ObservableCollection<string> Store
+        {
+            get { return _store; }
+            set
+            {
+                if (_store == value)
+                    return;
+                _store = value;
+                RaisePropertyChanged("Store");
+            }
+        }
+
         /// <summary>
         /// Gets or sets a flag indicating if the Country filter, if applied, can be removed.
         /// </summary>
@@ -377,6 +418,27 @@ namespace Cordners.ViewModel
             }
         }
 
+        public bool CanRemoveStoreFilter
+        {
+            get { return _canCanRemoveStoreFilter; }
+            set
+            {
+                _canCanRemoveStoreFilter = value;
+                RaisePropertyChanged("CanRemoveStoreFilter");
+            }
+        }
+
+        private string _searchString;
+        public string SearchString
+        {
+            get { return _searchString; }
+            set
+            {
+                _searchString = value;
+                RaisePropertyChanged("SearchString");
+            }
+        }
+
         #endregion
 
         #region Commands
@@ -423,11 +485,19 @@ namespace Cordners.ViewModel
             private set;
         }
 
+        public ICommand RemoveStoreCommand
+        {
+            get;
+            private set;
+        }
+
         public ICommand CsvCommand { get; private set; }
+
         #endregion
 
         private void InitializeCommands()
         {
+            CsvCommand = new RelayCommand(CsvGenerateCommand, null);
             ResetFiltersCommand = new RelayCommand(ResetFilters, null);
             RemoveCountryFilterCommand = new RelayCommand(RemoveCountryFilter, () => CanRemoveCountryFilter);
             RemoveAuthorFilterCommand = new RelayCommand(RemoveAuthorFilter, () => CanRemoveAuthorFilter);
@@ -435,7 +505,34 @@ namespace Cordners.ViewModel
             RemoveColourFilterCommand = new RelayCommand(RemoveColourFilter, () => CanRemoveColourFilter);
             RemoveStyleFilterCommand = new RelayCommand(RemoveStyleFilter, () => CanRemoveStyleFilter);
             RemoveStockTypeFilterCommand = new RelayCommand(RemoveStockTypeFilter, () => CanRemoveStockTypeFilter);
+            RemoveStoreCommand = new RelayCommand(RemoveStoreFilter, () => CanRemoveStoreFilter);
             RemoveSalesPriceCommand = new RelayCommand(RemoveSalesPrice, null);
+        }
+
+        public void CsvGenerateCommand()
+        {
+            if (File.Exists(System.Configuration.ConfigurationManager.AppSettings["OnSaleReport"]))
+            {
+                File.Delete(System.Configuration.ConfigurationManager.AppSettings["OnSaleReport"]);
+            }
+            File.AppendAllText(System.Configuration.ConfigurationManager.AppSettings["OnSaleReport"], CVS.Source.ToCsv());
+            MessageBox.Show("On Sale Report Generated");
+        }
+
+        public void Search(object sender, FilterEventArgs e)
+        {
+            var src = e.Item as Sales;
+            var searchTxt = _searchText.ToLower();
+            if (src == null)
+                e.Accepted = false;
+            else if
+                (
+                    src.SKU.ToLower().Contains(searchTxt) ||
+                    src.MasterSupplier.ToLower().Contains(searchTxt)
+                )
+                e.Accepted = true;
+            else
+                e.Accepted = false;
         }
 
         public void RemoveSalesPrice()
@@ -450,13 +547,12 @@ namespace Cordners.ViewModel
             //}
             Task.Factory.StartNew(() =>
             {
-                var prices = new List<SpecialPrice>();
+                var repo = new OnSaleRepository();
                 foreach (var item in selectedList)
                 {
-                    prices.AddRange(new SalesService().DeleteSKU((item as Sales).sku, CurrentSales, (item as Sales).store == "UK" ? 1 : 2));
+                    var sale = (item as Sales);
+                    new MagentoSpecialPrice().DeleteSpecialPrice(sale.SKU, sale.Store == "UK" ? 0 : 1);
                 }
-                new MagentoSpecialPrice().DeleteSpecialPrice(prices.ToArray());
-
             }).ContinueWith((task) =>
             {
                 IsBusy = false;                
@@ -500,8 +596,11 @@ namespace Cordners.ViewModel
                          select t.StockType;
                 StockType = new ObservableCollection<string>(q6.Distinct().OrderBy(x => x));
 
-                Things = new ObservableCollection<Sales>(sales.OrderBy(x => x.sku));
-                CurrentSales = new SkuRepository().RetrieveQuery(SqlQueries.FetchAllSales);
+                var q7 = from t in sales
+                         select t.Store;
+                Store = new ObservableCollection<string>(q7.Distinct().OrderBy(x => x));
+
+                Things = new ObservableCollection<Sales>(sales.OrderBy(x => x.SKU));
             }).ContinueWith((task) =>
             {
                 IsBusy = false;
@@ -531,6 +630,14 @@ namespace Cordners.ViewModel
             RemoveColourFilter();
             RemoveStyleFilter();
             RemoveStockTypeFilter();
+            RemoveStoreFilter();
+        }
+        public void RemoveStoreFilter()
+        {
+            CVS.Filter -= new FilterEventHandler(FilterByStore);
+            //X_Online.Filter -= new FilterEventHandler(FilterByCountry);
+            SelectedStore = null;
+            CanRemoveStoreFilter = false;
         }
         public void RemoveCountryFilter()
         {
@@ -584,6 +691,25 @@ namespace Cordners.ViewModel
                 _progressValue = value;
                 RaisePropertyChanged("ProgressValue");
             }
+        }
+        public void AddStoreFilter()
+        {
+            // see Notes on Adding Filters:
+            if (CanRemoveCountryFilter)
+            {
+                CVS.Filter -= new FilterEventHandler(FilterByStore);
+                CVS.Filter += new FilterEventHandler(FilterByStore);
+            }
+            else
+            {
+                CVS.Filter += new FilterEventHandler(FilterByStore);
+                CanRemoveStoreFilter = true;
+            }
+        }
+
+        public void SearchFilter()
+        {
+            CVS.Filter += new FilterEventHandler(Search);
         }
 
         public void AddCountryFilter()
@@ -683,7 +809,7 @@ namespace Cordners.ViewModel
         private void FilterByAuthor(object sender, FilterEventArgs e)
         {
             // see Notes on Filter Methods:
-            var src = e.Item as SpecailOrders;
+            var src = e.Item as Sales;
             if (src == null)
                 e.Accepted = false;
             else if (string.Compare(SelectedAuthor, src.MasterSupplier) != 0)
@@ -692,7 +818,7 @@ namespace Cordners.ViewModel
         private void FilterByYear(object sender, FilterEventArgs e)
         {
             // see Notes on Filter Methods:
-            var src = e.Item as SpecailOrders;
+            var src = e.Item as Sales;
             if (src == null)
                 e.Accepted = false;
             else if (string.Compare(SelectedYear, src.Season) != 0)
@@ -701,17 +827,27 @@ namespace Cordners.ViewModel
         private void FilterByCountry(object sender, FilterEventArgs e)
         {
             // see Notes on Filter Methods:
-            var src = e.Item as SpecailOrders;
+            var src = e.Item as Sales;
             if (src == null)
                 e.Accepted = false;
             else if (string.Compare(SelectedCountry, src.Category) != 0)
                 e.Accepted = false;
         }
 
+        private void FilterByStore(object sender, FilterEventArgs e)
+        {
+            // see Notes on Filter Methods:
+            var src = e.Item as Sales;
+            if (src == null)
+                e.Accepted = false;
+            else if (string.Compare(SelectedStore, src.Store) != 0)
+                e.Accepted = false;
+        }
+
         private void FilterByColour(object sender, FilterEventArgs e)
         {
             // see Notes on Filter Methods:
-            var src = e.Item as SpecailOrders;
+            var src = e.Item as Sales;
             if (src == null)
                 e.Accepted = false;
             else if (string.Compare(SelectedColour, src.Color) != 0)
@@ -720,7 +856,7 @@ namespace Cordners.ViewModel
         private void FilterByStyle(object sender, FilterEventArgs e)
         {
             // see Notes on Filter Methods:
-            var src = e.Item as SpecailOrders;
+            var src = e.Item as Sales;
             if (src == null)
                 e.Accepted = false;
             else if (string.Compare(SelectedStyle, src.Style) != 0)
@@ -730,7 +866,7 @@ namespace Cordners.ViewModel
         private void FilterByStockType(object sender, FilterEventArgs e)
         {
             // see Notes on Filter Methods:
-            var src = e.Item as SpecailOrders;
+            var src = e.Item as Sales;
             if (src == null)
                 e.Accepted = false;
             else if (string.Compare(SelectedStockType, src.StockType) != 0)
@@ -745,6 +881,8 @@ namespace Cordners.ViewModel
             Colour,
             Style,
             StockType,
+            Store,
+            Search,
             None
         }
         private void ApplyFilter(FilterField field)
@@ -768,6 +906,12 @@ namespace Cordners.ViewModel
                     break;
                 case FilterField.StockType:
                     AddStockTypeFilter();
+                    break;
+                case FilterField.Store:
+                    AddStoreFilter();
+                    break;
+                case FilterField.Search:
+                    SearchFilter();
                     break;
                 default:
                     break;

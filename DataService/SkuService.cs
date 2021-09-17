@@ -36,39 +36,33 @@ namespace DataService
 
         public List<SpecialPrice> GetItemsOnSale()
         {
-            var data = _skuRepository.RetrieveQuery(SqlQueries.FetchAllSales);
+            var data = new OnSaleRepository().GetAll().ToList();
             return ParseSalesData(data);
         }
 
-        private List<SpecialPrice> ParseSalesData(DataSet data)
+        private List<SpecialPrice> ParseSalesData(List<OnSale> data)
         {
-            var rows = data.Tables[0].Rows;
-            var skusToDelete = new List<DeleteSKU>();
             var specialPrice = new List<SpecialPrice>();
-            foreach (DataRow row in rows)
+            foreach (OnSale onSale in data)
             {
-                if (Convert.ToDateTime(row["End"]) < DateTime.Now)
-                { 
-                    skusToDelete.Add(new DeleteSKU()
-                    {
-                        Sku = row["SKU"].ToString(),
-                        StoreId = Convert.ToInt32(row["STOREID"])
-                    });                        
-                }  
+                if (Convert.ToDateTime(onSale.End) < DateTime.Now)
+                {
+                    var repo = new OnSaleRepository();
+                    repo.Delete(onSale);
+                    repo.Save();
+                }
                 else
                 {
                     specialPrice.Add(new SpecialPrice()
                     {
-                        price = Convert.ToDecimal(row["Price"]),
-                        price_from = row["Start"].ToString(),
-                        price_to = row["End"].ToString(),
-                        sku = row["SKU"].ToString(),
-                        store_id = Convert.ToInt16(row["StoreId"])
+                        price = Convert.ToDecimal(onSale.Price),
+                        price_from = onSale.Start,
+                        price_to = onSale.End,
+                        sku = onSale.Sku,
+                        store_id = Convert.ToInt32(onSale.StoreId)
                     });
                 }
             }
-
-            _skuRepository.RetrieveQuery(skusToDelete.ToArray(), SqlQueries.DeleteSales);
             return specialPrice.Distinct().ToList();
         }
 
@@ -151,30 +145,59 @@ namespace DataService
         public List<Sales> GetSales(DataSet CordnersStock, List<SpecialPrice> specialPrices)
         {
             var sales = new List<Sales>();
+            var euro = new SkuRepository().RetrieveQuery(SqlQueries.FetchEUROPrice);
             foreach(var specialPrice in specialPrices)
             {
                 var stocks = CordnersStock.Tables[0].Select($"NEWSTYLE = {specialPrice.sku}");
                 
                 foreach(DataRow dr in stocks)
                 {
+                    string rrp;
+                    if (specialPrice.store_id == 2)
+                        rrp = GenerateEuroPrice(Convert.ToDecimal(dr["SELL"].ToString()), Convert.ToDecimal(euro.Tables[0].Rows[0]["PRICE"]));
+                    else
+                        rrp = dr["SELL"].ToString();
+
                     sales.Add(new Sales()
                     {
-                        MasterSupplier = dr["MasterSupplier"].ToString(),
+                        MasterSupplier = dr["MasterSupplier"].ToString().Trim(),
                         Color = dr["MasterColour"].ToString(),
                         Style = dr["STYPE"].ToString(),
                         StockType = dr["MasterStocktype"].ToString(),
                         Category = dr["MasterSubDept"].ToString(),
                         Season = dr["User1"].ToString(),
-                        Name = dr["SHORT"].ToString(),
-                        price = specialPrice.price,
-                        price_from = specialPrice.price_from,
-                        price_to = specialPrice.price_to,
-                        sku = specialPrice.sku,
-                        store = Convert.ToInt16(specialPrice.store_id) == 1 ? "UK" : "Ireland"
+                        Name = dr["SHORT"].ToString(),                       
+                        Sales_Price = specialPrice.price,
+                        Price_From = specialPrice.price_from.Trim(),
+                        Price_To = specialPrice.price_to.Trim(),
+                        SKU = specialPrice.sku.Trim(),
+                        RRP = rrp,
+                        Discount = (int)Math.Floor((Convert.ToDecimal(rrp) -specialPrice.price) / Convert.ToDecimal(rrp)*100),
+                        Store = Convert.ToInt16(specialPrice.store_id) == 1 ? "UK" : "Ireland"
                     });
                 }                
             }
             return sales;
+        }
+
+        private string GenerateEuroPrice(decimal gbp, decimal conversion_rate)
+        {
+            var rounding = true;
+            var euros = gbp * conversion_rate;
+            var decimalPart = euros - Math.Truncate(euros);
+            if ((decimalPart * 100) < 50)
+            {
+                if (gbp < 20)
+                {
+                    var additional = 0.5m - decimalPart;
+                    euros += additional;
+                    rounding = false;
+                }
+                else
+                    euros++;
+
+            }
+            return rounding ? Math.Round(euros).ToString() : euros.ToString();
         }
 
         public async Task<List<SpecailOrders>> GetStock()
