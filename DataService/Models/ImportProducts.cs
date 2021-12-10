@@ -52,6 +52,8 @@ namespace ImportProducts.Model
         private string parentSku;
         private string stype;
         private string udef2;
+        private string euro_special_price;
+        private string usd_special_price;
 
         public ImportProducts SetParentSku(string parentSku)
         {
@@ -376,6 +378,32 @@ namespace ImportProducts.Model
             return this;
         }
 
+        public ImportProducts Seteuro_special_price(string euro_special_price)
+        {
+            if (euro_special_price == "")
+            {
+                this.euro_special_price = "\" \"";
+            }
+            else
+            {
+                this.euro_special_price = "\"" + euro_special_price + "\"";
+            }
+            return this;
+        }
+
+        public ImportProducts Setusd_special_price(string usd_special_price)
+        {
+            if (usd_special_price == "")
+            {
+                this.usd_special_price = "\" \"";
+            }
+            else
+            {
+                this.usd_special_price = "\"" + usd_special_price + "\"";
+            }
+            return this;
+        }
+
         public override string ToString()
         {
             return $"{sku},{store}," +
@@ -383,7 +411,7 @@ namespace ImportProducts.Model
                           $"{shortDescription},{gty},{productName},{color}," +
                           $"{sizeRange},{taxClass},{configurableAttribute},{manufactor}," +
                           $"{category},{subCategory},{season},{stockType},{image},{smallImage},{thumbnail},{gallery},{condition},{ean}," +
-                          $"{description},{model},{infocare},{sizeguide},{rrp},{url_key},{url_path},{rem1},{rem2},{suSKU},{parentSku},{udef2},{stype}";
+                          $"{description},{model},{infocare},{sizeguide},{rrp},{url_key},{url_path},{rem1},{rem2},{suSKU},{parentSku},{udef2},{stype},{euro_special_price},{usd_special_price}";
         }
 
         public string RemoveLineEndings(string value)

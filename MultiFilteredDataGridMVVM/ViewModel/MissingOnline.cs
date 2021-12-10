@@ -437,10 +437,11 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             await Task.Factory.StartNew(() =>
             {
                 var allstock = _skuService.GetStock().Result;
-                var onlineSKUs = _skuService.OnlineSKUs();                
-                var online = _skuService.GetOnlineSKuValues(onlineSKUs);
+                var onlineSKUs = _skuService.OnlineSKUWithColour();                
+                var online = _skuService.GetOnlineSKuValuesWithColour(onlineSKUs);
+                var derop = online.Where(x => x.SKU.Contains("023376"));
                 var missing = _skuService.GetMissingStock(online, allstock).Result;
-
+                var derop2 = missing.Where(x => x.SKU.Contains("023376"));
                 var q1 = from t in missing
                          select t.MasterSupplier;
                 Authors = new ObservableCollection<string>(q1.Distinct().OrderBy(x => x));

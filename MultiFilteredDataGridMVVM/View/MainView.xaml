@@ -118,11 +118,11 @@
                                         SelectedItemsList="{Binding CordnersCordnersSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                         Style="{StaticResource MaterialDesignDataGrid}">
 
-                
+
                 <DataGrid.ContextMenu>
                     <ContextMenu Background="WhiteSmoke">
                         <MenuItem Height="Auto" Width="Auto" StaysOpenOnClick="True" Background="WhiteSmoke" Style="{StaticResource RemoveHover}">
-                            <MenuItem.Header>                                
+                            <MenuItem.Header>
                                 <StackPanel>
                                     <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Start Date" FontSize="13.333" Foreground="Black"/>
                                     <Custom:DatePicker BorderBrush="Transparent" Foreground="Black" SelectedDate="{Binding StartDateApi, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
@@ -142,20 +142,21 @@
                 </DataGrid.ContextMenu>
             </wpfElements:CustomDataGrid>
             <Button HorizontalAlignment="Center"
+                    Width="58"
+                    MaxHeight="25"
+                    Grid.Row="5"
+                    Grid.Column="1"
+                    Command="{Binding RemoveSelectedItems, Mode=OneWay}"
+                    Content="&lt;&lt;"
+                    Height="Auto" Margin="34,70,33,139"/>
+            <Button HorizontalAlignment="Center"
                     Width="58" MaxHeight="25"
                     Grid.Row="5"
                     Grid.Column="1"
                     Command="{Binding AddSelectedItems, Mode=OneWay}"
                     Content=">>"
                     Height="Auto"/>
-            <Button HorizontalAlignment="Center"
-                    Width="58"
-                    MaxHeight="25"
-                    Grid.Row="4"
-                    Grid.Column="1"
-                    Command="{Binding RemoveSelectedItems, Mode=OneWay}"
-                    Content="&lt;&lt;"
-                    Height="Auto" Margin="34,95,33,187"/>
+
             <ProgressBar Value="{Binding ProgressValue}"
                          Grid.Row="6"
                          Grid.Column="0"

@@ -7,6 +7,7 @@ namespace Common
 {
     public class SpecailOrders
     {
+        public string SKU { get; set; }
         public string Ref { get; set; }
 
         public string MasterSupplier { get; set; }
@@ -31,8 +32,6 @@ namespace Common
 
         public string Desc { get; set; }
 
-        public string Qty { get; set; } 
-
-        public string NEWSTYLE { get; set; }
+        public string Qty { get; set; }         
     }
 }

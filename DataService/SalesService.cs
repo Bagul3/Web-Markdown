@@ -106,6 +106,7 @@ namespace DataService
                 var csv = new StringBuilder();                
                 var specailsOrders = new List<SpecailOrders>();
                 decimal actualPrice = 0;
+                var parentSKUs = new List<string>();
 
                 foreach (DataRow item in dataRows)
                 {
@@ -119,29 +120,51 @@ namespace DataService
                     
                     actualPrice = 0;
                     var newLine = "";
+                    var parentSku = o.Ref.Substring(0, 9);
+                    //TODO uncomment once API is fixed
+                    //if (euro != 0)
+                    //{
+                    //    actualPrice = GenerateSalesPrice(adjustmentPrice, adjustmentPercentage, GenerateEuroPrice(Convert.ToDecimal(o.Sell), euro));
+                    //    if (!parentSKUs.Contains(parentSku))
+                    //    {
+                    //        newLine = $"{"\"" + parentSku + "\""},{"\"" + Convert.ToInt16(actualPrice) + "\""},{"\"" + (Convert.ToDateTime(startDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\"" + (Convert.ToDateTime(endDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\" \""},{"\" \""},{"\" \""}";
+                    //        csv.AppendLine(newLine);
+                    //        parentSKUs.Add(parentSku);
+                    //    }                        
+                    //    newLine = $"{"\"" + (o).Ref + "\""},{"\"" + Convert.ToInt16(actualPrice) + "\""},{"\"" + (Convert.ToDateTime(startDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\"" + (Convert.ToDateTime(endDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\" \""},{"\" \""},{"\" \""}";                      
+                    //}
+                    //else
+                    //{
+                    //    actualPrice = GenerateSalesPrice(adjustmentPrice, adjustmentPercentage, o.Sell);
+                    //    if (!parentSKUs.Contains(parentSku))
+                    //    {
+                    //        newLine = $"{"\"" + parentSku + "\""},{"\"" + Convert.ToInt16(actualPrice) + "\""},{"\"" + (Convert.ToDateTime(startDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\"" + (Convert.ToDateTime(endDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\" \""},{"\" \""},{"\" \""}";
+                    //        csv.AppendLine(newLine);
+                    //        parentSKUs.Add(parentSku);
+                    //    }
+                    //    newLine = $"{"\"" + (o).Ref + "\""},{"\"" + Convert.ToInt16(actualPrice) + "\""},{"\"" + (Convert.ToDateTime(startDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\"" + (Convert.ToDateTime(endDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\" \""},{"\" \""},{"\" \""},{"\"" + GenerateEuroPrice(Convert.ToDecimal(o.Sell), euro) + "\""}";                        
+                    //}
 
-                    if (euro != 0)
+                    actualPrice = GenerateSalesPrice(adjustmentPrice, adjustmentPercentage, o.Sell);
+                    if (!parentSKUs.Contains(parentSku))
                     {
-                        actualPrice = GenerateSalesPrice(adjustmentPrice, adjustmentPercentage, GenerateEuroPrice(Convert.ToDecimal(o.Sell), euro));
-                        newLine = $"{"\"" + (o).Ref + "\""},{"\"" + Convert.ToInt16(actualPrice) + "\""},{"\"" + (Convert.ToDateTime(startDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\"" + (Convert.ToDateTime(endDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\" \""},{"\" \""},{"\" \""},{"\"" + GenerateEuroPrice(Convert.ToDecimal(o.RRP), euro).ToString() + "\""}";                      
+                        newLine = $"{"\"" + parentSku + "\""},{"\"" + Convert.ToInt16(actualPrice) + "\""},{"\"" + Convert.ToInt16(GenerateSalesPrice(adjustmentPrice, adjustmentPercentage, GenerateEuroPrice(Convert.ToDecimal(o.Sell), euro))) + "\""},{"\"1\""},{"\"" + (Convert.ToDateTime(startDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\"" + (Convert.ToDateTime(endDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\" \""},{"\" \""},{"\" \""},{"\" \""},{"\" \""},{"\"" + (o).Sell + "\""},{"\"" + GenerateEuroPrice(Convert.ToDecimal(o.Sell), euro) + "\""}";
+                        csv.AppendLine(newLine);
+                        parentSKUs.Add(parentSku);
                     }
-                    else
-                    {
-                        actualPrice = GenerateSalesPrice(adjustmentPrice, adjustmentPercentage, o.Sell);
-                        newLine = $"{"\"" + (o).Ref + "\""},{"\"" + Convert.ToInt16(actualPrice) + "\""},{"\"" + (Convert.ToDateTime(startDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\"" + (Convert.ToDateTime(endDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\" \""},{"\" \""},{"\" \""},{"\"" + o.RRP + "\""}";                        
-                    }
-                    
+                    newLine = $"{"\"" + (o).Ref + "\""},{"\"" + Convert.ToInt16(actualPrice) + "\""},{"\"" + Convert.ToInt16(GenerateSalesPrice(adjustmentPrice, adjustmentPercentage, GenerateEuroPrice(Convert.ToDecimal(o.Sell), euro))) + "\""},{"\"1\""},{"\"" + (Convert.ToDateTime(startDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\"" + (Convert.ToDateTime(endDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\" \""},{"\" \""},{"\" \""},{"\" \""},{"\" \""},{"\"" + (o).Sell + "\""},{"\"" + GenerateEuroPrice(Convert.ToDecimal(o.Sell), euro) + "\""}";
+
                     csv.AppendLine(newLine);
                     count++;
                 }
-                if (euro != 0)
-                {
-                    File.AppendAllText(ConfigurationManager.AppSettings["SalesPriceOutput"] + stamp + "-euro.csv", csv.ToString());
-                }
-                else
-                {
+                //if (euro != 0)
+                //{
+                //    File.AppendAllText(ConfigurationManager.AppSettings["SalesPriceOutput"] + stamp + "-euro.csv", csv.ToString());
+                //}
+                //else
+                //{
                     File.AppendAllText(ConfigurationManager.AppSettings["SalesPriceOutput"] + stamp + ".csv", csv.ToString());
-                }
+                //}
                 var repo = new OnSaleRepository();
 
                 //TODO Delete here
@@ -398,7 +421,7 @@ namespace DataService
                     SupRef = dr["SUPPREF"].ToString(),
                     RRP = dr["BASESELL"].ToString(),
                     Category = dr["MasterSubDept"].ToString(),
-                    NEWSTYLE = dr["NEWSTYLE"].ToString()
+                    SKU = dr["NEWSTYLE"].ToString()
                 });
                         
             }

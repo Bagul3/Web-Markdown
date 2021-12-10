@@ -10,6 +10,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Common;
 using DataRepo;
+using DataService;
+
 namespace ImportProducts.Services
 {
     public class ImportCsvJob
@@ -21,6 +23,8 @@ namespace ImportProducts.Services
         private string reffCode = "";
         private readonly DataSet data;
         private static List<string> sizes = new List<string>();
+        private static decimal conversion_rate;
+
         public ImportCsvJob(string excelConnection)
         {
             this._logger = new LogWriter();
@@ -28,6 +32,7 @@ namespace ImportProducts.Services
             descriptions = _mapper.MapToDescriptions(excelConnection);
             REMTable = new SkuRepository().RetrieveQuery(SqlQuery.FetchREM);
             data = Query(SqlQuery.ImportProductsAllQuery);
+            conversion_rate = new SalesService().GetEuroPrice();
         }
         public StringBuilder DoJob(string refff, IEnumerable<string> t2TreFs, ref ObservableCollection<Error> errors)
         {
@@ -238,6 +243,8 @@ namespace ImportProducts.Services
                                           .SetSType("")
                                           .SetUDef("")
                                           .SetParentSku("")
+                                          .Seteuro_special_price(GenerateEuroPrice(Convert.ToDecimal(dr["BASESELL"].ToString().Trim()), conversion_rate))
+                                          .Setusd_special_price("1")
                                           .ToString();
         }
         private static string BuildChildImportProduct(string groupSkus2, DataRow dr, List<Descriptions> descriptions, string reff,
@@ -296,9 +303,32 @@ namespace ImportProducts.Services
                                           .SetDescription(Regex.Replace(description, @"\t|\n|\r", ""))
                                           .SetParentSku(parentSku)
                                           .SetUDef(String.IsNullOrEmpty(dr["MasterSubDept"].ToString()) ? "" : dr["MasterSubDept"].ToString())
-                                          .SetSType(String.IsNullOrEmpty(dr["MasterDept"].ToString()) ? "" : dr["MasterDept"].ToString())                                          
+                                          .SetSType(String.IsNullOrEmpty(dr["MasterDept"].ToString()) ? "" : dr["MasterDept"].ToString())   
+                                          .Seteuro_special_price(GenerateEuroPrice(Convert.ToDecimal(dr["BASESELL"].ToString().Trim()), conversion_rate))
+                                          .Setusd_special_price("1")
                                           .ToString();
         }
+
+        public static string GenerateEuroPrice(decimal gbp, decimal conversion_rate)
+        {
+            var rounding = true;
+            var euros = gbp * conversion_rate;
+            var decimalPart = euros - Math.Truncate(euros);
+            if ((decimalPart * 100) < 50)
+            {
+                if (gbp < 20)
+                {
+                    var additional = 0.5m - decimalPart;
+                    euros += additional;
+                    rounding = false;
+                }
+                else
+                    euros++;
+
+            }
+            return rounding ? Math.Round(euros).ToString() : euros.ToString();
+        }
+
         private static string GetREMValue(string rem)
         {
             if (!string.IsNullOrEmpty(rem))

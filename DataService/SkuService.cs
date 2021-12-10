@@ -103,6 +103,48 @@ namespace DataService
             return skus;
         }
 
+        public List<string> OnlineSKUWithColour()
+        {
+            var fileList = new SkuService().GetCSV("https://www.cordners.co.uk/exportcsv/");
+            string[] tempStr;
+            var splitted = new List<string>();
+            tempStr = fileList.Split('\t');
+            var skus = new List<string>();
+            foreach (var item in tempStr)
+            {
+                if (!string.IsNullOrEmpty(item))
+                {
+                    if (item.Contains('\n') && item.Split('\n')[0].Length > 9)
+                    {
+                        var sku = item.Split('\n')[0].Substring(0, 9);
+                        if (!skus.Contains(sku))
+                        {
+                            splitted.Add(sku);
+                            skus.Add(sku);
+                        }
+                    }
+
+                }
+            }
+            return skus;
+        }
+
+        public List<SpecailOrders> GetOnlineSKuValuesWithColour(List<string> SKU)
+        {
+            var mongeto = new List<SpecailOrders>();
+            var data = _skuRepository.RetrieveQueryAsync(SqlQueries.StockQueryALL).Result;
+            for (var i = 0; i < SKU.Count; i++)
+            {
+                var rows = data.Tables[0].Select($"NEWSTYLE = {SKU[i]}");
+                foreach (DataRow reff in rows)
+                {
+                    this.BuildMongetoObj(ref mongeto, reff);
+                }
+            }
+
+            return mongeto;
+        }
+
         public async Task<List<SpecailOrders>> GetOnlineStock()
         {
             var data = await _skuRepository.RetrieveQueryAsync(SqlQueries.OnlineStock);
@@ -237,7 +279,7 @@ namespace DataService
         {
             return await Task.Run(() =>
             {
-                return stock.Where(p => onlineStock.All(p2 => p2.Ref != p.Ref)).ToList();
+                return stock.Where(p => onlineStock.All(p2 => p2.SKU != p.SKU)).ToList();
             });
         }
 
@@ -251,7 +293,7 @@ namespace DataService
             skuRecords.Add(
                 new SpecailOrders()
                 {
-                    NEWSTYLE = dr["NEWSTYLE"].ToString(),
+                    SKU = dr["NEWSTYLE"].ToString(),
                     Ref = dr["REF"].ToString(),
                     Sell = dr["Sell"].ToString(),
                     MasterSupplier = dr["MasterSupplier"].ToString(),

@@ -23,6 +23,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             REM1 = new ObservableCollection<REM1>(FetchREM1());
             REM2 = new ObservableCollection<REM2>(FetchREM2());
             var seasonalData = _skuRepository.RetrieveQuery(SqlQueries.FetchSeasonalData).Tables;
+            EuroPrice = FetcEuroLabel();
             _latestSeason = GetSeasonalDataFor(seasonalData, "TOPPAGE");
             _bottomSeason = GetSeasonalDataFor(seasonalData, "BOTTOMPAGE");
             InitializeCommands();
@@ -67,6 +68,22 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             {
                 _latestSeason = value;
                 RaisePropertyChanged("LastestSeason");
+            }
+        }
+
+        private string _euroPrice = "";
+
+        public string EuroPrice
+        {
+            get
+            {
+                return _euroPrice;
+
+            }
+            set
+            {
+                _euroPrice = value;
+                RaisePropertyChanged("EuroPrice");
             }
         }
 
@@ -268,6 +285,23 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 MessageBox.Show("An error occurred, if this continues please contact Conor.");
             }
             return new List<REM2>();
+        }
+
+        private string FetcEuroLabel()
+        {
+            try
+            {
+                var ds = _skuRepository.RetrieveQuery(SqlQueries.FetchEUROPrice);
+                var rem2 = new List<REM2>();
+                var euroPrice = "Current Euro Exchange rate: " + ds.Tables[0].Rows[0]["PRICE"].ToString();
+                return euroPrice;
+            }
+            catch (Exception ex)
+            {
+                new LogWriter().LogWrite("ERROR: " + ex.StackTrace);
+                MessageBox.Show("An error occurred, if this continues please contact Conor.");
+            }
+            return "";
         }
 
         private ObservableCollection<REM2> _rem2;
