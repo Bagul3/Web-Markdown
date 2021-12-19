@@ -20,7 +20,7 @@ namespace DataService
         {
             try
             {
-                var imageDetails = Directory.GetFiles(path, "*.jpg*", SearchOption.AllDirectories)
+                var imageDetails = Directory.GetFiles(path, "*.jpeg*", SearchOption.AllDirectories)
                     .ToList();
                 return ParseImageNames(imageDetails);
             }

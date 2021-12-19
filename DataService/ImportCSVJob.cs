@@ -69,61 +69,61 @@ namespace ImportProducts.Services
                                 break;
                             }
                         }
-                        for (var i = 1; i < 14; i++)
+                        for (var i = Convert.ToInt16(dr["MINSIZE"]); i <= Convert.ToInt16(dr["MAXSIZE"]); i++)
                         {
-                            if (!string.IsNullOrEmpty(dr["QTY" + i].ToString()))
+                            if (string.IsNullOrEmpty(dr["LY" + i].ToString()))
                             {
-                                if (string.IsNullOrEmpty(dr["LY" + i].ToString()))
-                                {
-                                    actualStock = dr["QTY" + i].ToString();
-                                }
-                                else
-                                {
-                                    actualStock =
-                                        (Convert.ToInt32(dr["QTY" + i]) - Convert.ToInt32(dr["LY" + i]))
-                                        .ToString();
-                                }
-
-                                var append = (1000 + i).ToString();
-                                var groupSkus2 = dr["NewStyle"] + append.Substring(1, 3);
-
-                                var shortDescription = BuildShortDescription(FetchDescription(descriptions, reff));
-                                var descripto = FetchDescription(descriptions, reff)?.Descriptio;
-
-                                var size = "";
-                                size = i < 10 ? dr["S0" + i].ToString() : dr["S" + i].ToString();
-                                if (size.Contains("½"))
-                                    size = size.Replace("½", ".5");
-                                var eanDataset = Query(groupSkus2, SqlQuery.GetEanCodes);
-                                string eanCode = null;
-                                if (eanDataset.Tables[0].Rows.Count != 0)
-                                {
-                                    eanCode = eanDataset.Tables[0].Rows[0]["EAN_CODE"].ToString();
-                                }
-
-                                string newLine = null;
-                                sizes.Add(dr["SIZERANGE"].ToString() + size);
-                                if (Convert.ToInt32(actualStock) != 0)
-                                {
-                                    newLine = BuildChildImportProduct(groupSkus2, dr, descriptions, reff, shortDescription, actualStock, descripto, size, imageLists, t2TreFs, eanCode, parentSKU);
-                                }
-
-                                if (newLine != null)
-                                {
-                                    csvLines.AppendLine(newLine);
-                                }
-                                else if (Convert.ToInt32(actualStock) != 0)
-                                {
-                                    errors.Add(new Error()
-                                    {
-                                        RefNumber = reff,
-                                        ErrorMessage = "No description found!"
-                                    });
-                                    break;
-                                }
-
-                                actualStock = "0";
+                                actualStock = dr["QTY" + i].ToString();
                             }
+                            else
+                            {
+                                actualStock =
+                                    (Convert.ToInt32(dr["QTY" + i]) - Convert.ToInt32(dr["LY" + i]))
+                                    .ToString();
+                            }
+
+                            if (actualStock == "" || actualStock == null)
+                                actualStock = "0";
+
+                            var append = (1000 + i).ToString();
+                            var groupSkus2 = dr["NewStyle"] + append.Substring(1, 3);
+
+                            var shortDescription = BuildShortDescription(FetchDescription(descriptions, reff));
+                            var descripto = FetchDescription(descriptions, reff)?.Descriptio;
+
+                            var size = "";
+                            size = i < 10 ? dr["S0" + i].ToString() : dr["S" + i].ToString();
+                            if (size.Contains("½"))
+                                size = size.Replace("½", ".5");
+                            var eanDataset = Query(groupSkus2, SqlQuery.GetEanCodes);
+                            string eanCode = null;
+                            if (eanDataset.Tables[0].Rows.Count != 0)
+                            {
+                                eanCode = eanDataset.Tables[0].Rows[0]["EAN_CODE"].ToString();
+                            }
+
+                            string newLine = null;
+                            sizes.Add(dr["SIZERANGE"].ToString() + size);
+                            //if (Convert.ToInt32(actualStock) != 0)
+                            //{
+                                newLine = BuildChildImportProduct(groupSkus2, dr, descriptions, reff, shortDescription, actualStock, descripto, size, imageLists, t2TreFs, eanCode, parentSKU);
+                            //}
+                            
+                            //if (newLine != null)
+                            //{
+                                csvLines.AppendLine(newLine);
+                            //}
+                            //else if (Convert.ToInt32(actualStock) != 0)
+                            //{
+                            //    errors.Add(new Error()
+                            //    {
+                            //        RefNumber = reff,
+                            //        ErrorMessage = "No description found!"
+                            //    });
+                            //    break;
+                            //}
+
+                            actualStock = "0";
 
                         }
                     }
