@@ -29,7 +29,7 @@ namespace ImportProducts.Services
         {
             this._logger = new LogWriter();
             this._mapper = new ExcelMapper();
-            descriptions = _mapper.MapToDescriptions(excelConnection);
+            //descriptions = _mapper.MapToDescriptions(excelConnection);
             REMTable = new SkuRepository().RetrieveQuery(SqlQuery.FetchREM);
             data = Query(SqlQuery.ImportProductsAllQuery);
             conversion_rate = new SalesService().GetEuroPrice();

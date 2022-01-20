@@ -129,6 +129,33 @@ namespace DataService
             return skus;
         }
 
+        public List<string> OnlineSKUWithColourAndSize()
+        {
+            var fileList = new SkuService().GetCSV("https://www.cordners.co.uk/exportcsv/");
+            string[] tempStr;
+            var splitted = new List<string>();
+            tempStr = fileList.Split('\t');
+            var skus = new List<string>();
+            foreach (var item in tempStr)
+            {
+                if (!string.IsNullOrEmpty(item))
+                {
+                    if (item.Contains('\n') && item.Split('\n')[0].Length > 10)
+                    {
+                        var sku = item.Split('\n')[0];
+                        if (!skus.Contains(sku))
+                        {
+                            splitted.Add(sku);
+                            skus.Add(sku);
+                        }
+                    }
+
+                }
+            }
+            return skus;
+        }
+
+
         public List<SpecailOrders> GetOnlineSKuValuesWithColour(List<string> SKU)
         {
             var mongeto = new List<SpecailOrders>();
@@ -174,7 +201,7 @@ namespace DataService
 
         public DataSet GetAllCordnersStock()
         {
-            return _skuRepository.RetrieveQuery(SqlQueries.AllSkusQuery);
+            return _skuRepository.RetrieveQuery(SqlQueries.StockQueryALL);
         }
 
 
