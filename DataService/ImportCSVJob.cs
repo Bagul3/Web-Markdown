@@ -240,11 +240,14 @@ namespace ImportProducts.Services
                                           .Setmodel(dr["SUPPREF"].ToString())
                                           .SetsuSKU(GetSUSKU(reff, t2TreFs))
                                           .SetDescription(Regex.Replace(description, @"\t|\n|\r", ""))
-                                          .SetSType("")
-                                          .SetUDef("")
+                                          .SetUDef(String.IsNullOrEmpty(dr["MasterSubDept"].ToString()) ? "" : dr["MasterSubDept"].ToString())
+                                          .SetSType(String.IsNullOrEmpty(dr["MasterDept"].ToString()) ? "" : dr["MasterDept"].ToString())
                                           .SetParentSku("")
                                           .Seteuro_special_price(GenerateEuroPrice(Convert.ToDecimal(dr["BASESELL"].ToString().Trim()), conversion_rate))
                                           .Setusd_special_price("1")
+                                          .Setnew_from_date(false)
+                                          .Setnew_to_date(false)
+                                          .Setcreation_date(false)
                                           .ToString();
         }
         private static string BuildChildImportProduct(string groupSkus2, DataRow dr, List<Descriptions> descriptions, string reff,
@@ -301,11 +304,14 @@ namespace ImportProducts.Services
                                           .Setmodel(dr["SUPPREF"].ToString())
                                           .SetsuSKU(GetSUSKU(reff, t2TreFs))
                                           .SetDescription(Regex.Replace(description, @"\t|\n|\r", ""))
-                                          .SetParentSku(parentSku)
-                                          .SetUDef(String.IsNullOrEmpty(dr["MasterSubDept"].ToString()) ? "" : dr["MasterSubDept"].ToString())
-                                          .SetSType(String.IsNullOrEmpty(dr["MasterDept"].ToString()) ? "" : dr["MasterDept"].ToString())   
+                                          .SetParentSku(parentSku) 
                                           .Seteuro_special_price(GenerateEuroPrice(Convert.ToDecimal(dr["BASESELL"].ToString().Trim()), conversion_rate))
                                           .Setusd_special_price("1")
+                                          .SetSType("")
+                                          .SetUDef("")
+                                          .Setnew_from_date(true)
+                                          .Setnew_to_date(true)
+                                          .Setcreation_date(true)
                                           .ToString();
         }
 

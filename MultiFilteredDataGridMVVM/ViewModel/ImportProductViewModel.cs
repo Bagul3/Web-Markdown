@@ -38,7 +38,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
         private bool _isBusy;
         private string headers = $"{"sku"},{"store_view_codes"},{"websites"},{"attribut_set"},{"type"},{"has_options"},{"name"},{"page_layout"},{"options_container"},{"price"},{"weight"},{"status"},{"visibility"},{"short_description"},{"qty"},{"product_name"},{"color"}," +
         $"{"size"},{"tax_class_id"},{"configurable_attributes"},{"manufacturer"},{"categories"},{"sub_categories"},{"season"},{"stock_type"},{"image"},{"small_image"},{"thumbnail"},{"gallery"}," +
-        $"{"condition"},{"ean"},{"description"},{"model"},{"infocare"},{"sizeguide"},{"RRP"},{"url_key"},{"url_path"},{"rem"},{"rem2"},{"susku"},{"parent_sku"},{"uDef2"},{"d_type"},{"euro_price"},{"usd_price"}";
+        $"{"condition"},{"ean"},{"description"},{"model"},{"infocare"},{"sizeguide"},{"RRP"},{"url_key"},{"url_path"},{"rem"},{"rem2"},{"susku"},{"parent_sku"},{"uDef2"},{"d_type"},{"euro_price"},{"usd_price"},{"new_from_date"},{"new_to_date"},{"created_date"}";
         public ImportProductViewModel()
         {
             InitializeCommands();
