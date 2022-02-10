@@ -195,7 +195,7 @@ namespace ImportProducts.Services
                 return null;
 
             var description = result.Description?.TrimEnd();
-
+            result.Descriptio = result.Descriptio.Replace("\n", "");
             if (string.IsNullOrEmpty(description))
                 return null;
             return new Model.ImportProducts()
@@ -205,7 +205,7 @@ namespace ImportProducts.Services
                                           .Settype("configurable")
                                           .Setsku(groupSkus?.TrimEnd())
                                           .SethasOption("1")
-                                          .SetName(result.Descriptio.TrimEnd() + " in " + dr["MasterColour"].ToString().Trim())
+                                          .SetName(result.Descriptio.Replace("\"", "").TrimEnd() + " in " + dr["MasterColour"].ToString().Trim())
                                           .SetpageLayout("No layout updates.")
                                           .SetoptionsContainer("Product Info Column")
                                           .Setprice(dr["BASESELL"].ToString().Trim())
@@ -262,6 +262,7 @@ namespace ImportProducts.Services
                 return null;
             else
                 description = description.TrimEnd();
+            result.Descriptio = result.Descriptio.Replace("\"", "");
             return new Model.ImportProducts()
                                           .Setattribut_set("Default")
                                           .SetStore("admin")
