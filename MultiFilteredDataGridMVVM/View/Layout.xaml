@@ -102,6 +102,9 @@
                                  Style="{StaticResource MenuButtonTheme}"
                                  Click="Generate_Euro_CSV">
                         </RadioButton>
+                        <Label Content="Version: 1.0.2" 
+                               Foreground="White"
+                               Margin="0,250,0,0"/>
                         <!--<RadioButton Content="Stock on Sales" Width="{Binding ActualWidth, ElementName=DockPanel}"
                                  Height="60"
                                  Margin="0,10,0,0"

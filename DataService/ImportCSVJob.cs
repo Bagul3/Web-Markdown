@@ -195,7 +195,7 @@ namespace ImportProducts.Services
                 return null;
 
             var description = result.Description?.TrimEnd();
-            result.Descriptio = result.Descriptio.Replace("\n", "");
+
             if (string.IsNullOrEmpty(description))
                 return null;
             return new Model.ImportProducts()
@@ -205,7 +205,7 @@ namespace ImportProducts.Services
                                           .Settype("configurable")
                                           .Setsku(groupSkus?.TrimEnd())
                                           .SethasOption("1")
-                                          .SetName(result.Descriptio.Replace("\"", "").TrimEnd() + " in " + dr["MasterColour"].ToString().Trim())
+                                          .SetName(result.Descriptio.TrimEnd() + " in " + dr["MasterColour"].ToString().Trim())
                                           .SetpageLayout("No layout updates.")
                                           .SetoptionsContainer("Product Info Column")
                                           .Setprice(dr["BASESELL"].ToString().Trim())
@@ -240,14 +240,14 @@ namespace ImportProducts.Services
                                           .Setmodel(dr["SUPPREF"].ToString())
                                           .SetsuSKU(GetSUSKU(reff, t2TreFs))
                                           .SetDescription(Regex.Replace(description, @"\t|\n|\r", ""))
-                                          .SetUDef(String.IsNullOrEmpty(dr["MasterSubDept"].ToString()) ? "" : dr["MasterSubDept"].ToString())
-                                          .SetSType(String.IsNullOrEmpty(dr["MasterDept"].ToString()) ? "" : dr["MasterDept"].ToString())
+                                          .SetSType("")
+                                          .SetUDef("")
                                           .SetParentSku("")
                                           .Seteuro_special_price(GenerateEuroPrice(Convert.ToDecimal(dr["BASESELL"].ToString().Trim()), conversion_rate))
                                           .Setusd_special_price("1")
-                                          .Setnew_from_date(false)
-                                          .Setnew_to_date(false)
                                           .Setcreation_date(false)
+                                          .Setnew_to_date(false)
+                                          .Setnew_from_date(false)
                                           .ToString();
         }
         private static string BuildChildImportProduct(string groupSkus2, DataRow dr, List<Descriptions> descriptions, string reff,
@@ -262,7 +262,6 @@ namespace ImportProducts.Services
                 return null;
             else
                 description = description.TrimEnd();
-            result.Descriptio = result.Descriptio.Replace("\"", "");
             return new Model.ImportProducts()
                                           .Setattribut_set("Default")
                                           .SetStore("admin")
@@ -305,14 +304,14 @@ namespace ImportProducts.Services
                                           .Setmodel(dr["SUPPREF"].ToString())
                                           .SetsuSKU(GetSUSKU(reff, t2TreFs))
                                           .SetDescription(Regex.Replace(description, @"\t|\n|\r", ""))
-                                          .SetParentSku(parentSku) 
+                                          .SetParentSku(parentSku)
+                                          .SetUDef(String.IsNullOrEmpty(dr["MasterSubDept"].ToString()) ? "" : dr["MasterSubDept"].ToString())
+                                          .SetSType(String.IsNullOrEmpty(dr["MasterDept"].ToString()) ? "" : dr["MasterDept"].ToString())   
                                           .Seteuro_special_price(GenerateEuroPrice(Convert.ToDecimal(dr["BASESELL"].ToString().Trim()), conversion_rate))
                                           .Setusd_special_price("1")
-                                          .SetSType("")
-                                          .SetUDef("")
-                                          .Setnew_from_date(true)
-                                          .Setnew_to_date(true)
                                           .Setcreation_date(true)
+                                          .Setnew_to_date(true)
+                                          .Setnew_from_date(true)
                                           .ToString();
         }
 
@@ -396,24 +395,25 @@ namespace ImportProducts.Services
         //For Conor make sure you add a 0 as somme reason it gets dropped for 
         private static Descriptions FetchDescription(List<Descriptions> descriptions, string reff)
         {
+            Descriptions actualDesc = null;
             foreach (var description in descriptions)
             {
                 if (description.T2TRef.ToString().ToCharArray()[0] != '0')
                 {
                     if ($"0{description.T2TRef}" == reff)
                     {
-                        return description;
+                        actualDesc = description;
                     }
                 }
                 else
                 {
                     if ($"{description.T2TRef}" == reff)
                     {
-                        return description;
+                        actualDesc = description;
                     }
                 }
             }
-            return null;
+            return actualDesc;
         }
     }
 }
