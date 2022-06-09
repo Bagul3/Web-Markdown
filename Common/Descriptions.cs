@@ -21,5 +21,10 @@
         public string Bullet6 { get; set; }
 
         public string Bullet7 { get; set; }
+
+        public override string ToString()
+        {
+            return $"{T2TRef},{Descriptio},{Description}";
+        }
     }
 }

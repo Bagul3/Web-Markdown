@@ -398,9 +398,15 @@ namespace ImportProducts.Services
             Descriptions actualDesc = null;
             foreach (var description in descriptions)
             {
+                new LogWriter().LogWrite(description.ToString());
                 if (description.T2TRef.ToString().ToCharArray()[0] != '0')
                 {
-                    if ($"0{description.T2TRef}" == reff)
+                    var desc = description.T2TRef;
+                    while (desc.ToString().ToCharArray().Count() != 6)
+                    {
+                        desc = "0" + desc;
+                    }
+                    if (desc.ToString() == reff)
                     {
                         actualDesc = description;
                     }
