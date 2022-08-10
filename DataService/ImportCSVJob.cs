@@ -399,25 +399,29 @@ namespace ImportProducts.Services
             foreach (var description in descriptions)
             {
                 new LogWriter().LogWrite(description.ToString());
-                if (description.T2TRef.ToString().ToCharArray()[0] != '0')
+                if (description.T2TRef.ToString() != "")
                 {
-                    var desc = description.T2TRef;
-                    while (desc.ToString().ToCharArray().Count() != 6)
+                    if (description.T2TRef.ToString().ToCharArray()[0] != '0')
                     {
-                        desc = "0" + desc;
+                        var desc = description.T2TRef;
+                        while (desc.ToString().ToCharArray().Count() != 6)
+                        {
+                            desc = "0" + desc;
+                        }
+                        if (desc.ToString() == reff)
+                        {
+                            actualDesc = description;
+                        }
                     }
-                    if (desc.ToString() == reff)
+                    else
                     {
-                        actualDesc = description;
+                        if ($"{description.T2TRef}" == reff)
+                        {
+                            actualDesc = description;
+                        }
                     }
                 }
-                else
-                {
-                    if ($"{description.T2TRef}" == reff)
-                    {
-                        actualDesc = description;
-                    }
-                }
+                
             }
             return actualDesc;
         }
