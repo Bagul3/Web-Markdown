@@ -69,31 +69,32 @@ namespace Cordners.Api
         {
             try
             {
-                var repo = new OnSaleRepository();
-                var onSale = repo.GetBySku(sku, storeId);
-                if (onSale == null)
-                    return true;
-                onSale.End = onSale.End.Trim();
-                onSale.Start = onSale.Start.Trim();
-                onSale.Sku = onSale.Sku.Trim();
-                onSale.Price = onSale.Price.Trim();
-                
-                var prices = MapToSpecialPrice(onSale);
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-                //HttpClient client = new HttpClient(new LoggingHandler(new HttpClientHandler()));
-                HttpClient client = new HttpClient();
-                SpecialPriceAPIRequest requestContent = new SpecialPriceAPIRequest();
-                requestContent.prices = prices;
-                new LogWriter().LogWrite("rest/default/V1/products/special-price-delete");
-                new LogWriter().LogWrite(Newtonsoft.Json.JsonConvert.SerializeObject(requestContent));
-                //Prod  pj1c7qo2ce6301lassshrdnyme0ffl69
-                //Staging dmgye318kdfqqohcb3wf9uv8cumtvkcz
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", APIKEY);
-                client.BaseAddress = new Uri(URL);
+                //var repo = new OnSaleRepository();
+                //var onSale = repo.GetBySku(sku, storeId);
+                //if (onSale == null)
+                //    return true;
+                //onSale.End = onSale.End.Trim();
+                //onSale.Start = onSale.Start.Trim();
+                //onSale.Sku = onSale.Sku.Trim();
+                //onSale.Price = onSale.Price.Trim();
 
-                var result = await client.PostAsJsonAsync("/rest/default/V1/products/special-price-delete", requestContent);
-                repo.Delete(onSale);
-                repo.Save();
+                //var prices = MapToSpecialPrice(onSale);
+                //ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+                ////HttpClient client = new HttpClient(new LoggingHandler(new HttpClientHandler()));
+                //HttpClient client = new HttpClient();
+                //SpecialPriceAPIRequest requestContent = new SpecialPriceAPIRequest();
+                //requestContent.prices = prices;
+                //new LogWriter().LogWrite("rest/default/V1/products/special-price-delete");
+                //new LogWriter().LogWrite(Newtonsoft.Json.JsonConvert.SerializeObject(requestContent));
+                ////Prod  pj1c7qo2ce6301lassshrdnyme0ffl69
+                ////Staging dmgye318kdfqqohcb3wf9uv8cumtvkcz
+                //client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", APIKEY);
+                //client.BaseAddress = new Uri(URL);
+
+                //var result = await client.PostAsJsonAsync("/rest/default/V1/products/special-price-delete", requestContent);
+                //repo.Delete(onSale);
+                //repo.Save();
+                //return true;
                 return true;
             }
             catch (Exception ex)

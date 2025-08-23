@@ -37,14 +37,13 @@ namespace MultiFilteredDataGridMVVM.ViewModel
         private BackgroundWorker worker;
         private bool _isBusy;
         private string headers = $"{"sku"},{"store_view_codes"},{"websites"},{"attribut_set"},{"type"},{"has_options"},{"name"},{"page_layout"},{"options_container"},{"price"},{"weight"},{"status"},{"visibility"},{"short_description"},{"qty"},{"product_name"},{"color"}," +
-        $"{"size"},{"tax_class_id"},{"configurable_attributes"},{"manufacturer"},{"categories"},{"sub_categories"},{"season"},{"stock_type"},{"image"},{"small_image"},{"thumbnail"},{"gallery"}," +
-        $"{"condition"},{"ean"},{"description"},{"model"},{"infocare"},{"sizeguide"},{"RRP"},{"url_key"},{"url_path"},{"rem"},{"rem2"},{"susku"},{"parent_sku"},{"uDef2"},{"d_type"},{"euro_price"},{"usd_price"},{"new_from_date"},{"new_to_date"},{"created_date"}";
+        $"{"size"},{"tax_class_id"},{"code"},{"configurable_attributes"},{"manufacturer"},{"categories"},{"sub_categories"},{"season"},{"stock_type"},{"image"},{"small_image"},{"thumbnail"},{"gallery"}," +
+        $"{"condition"},{"ean"},{"description"},{"model"},{"infocare"},{"sizeguide"},{"RRP"},{"url_key"},{"url_path"},{"rem"},{"rem2"},{"susku"},{"parent_sku"},{"uDef2"},{"d_type"},{"euro_price"},{"usd_price"},{"aud_price"},{"new_from_date"},{"new_to_date"},{"created_date"}";
         public ImportProductViewModel()
         {
             InitializeCommands();
             _fileNames = new ObservableCollection<Image>();
             _error = new ObservableCollection<Error>();
-            LoadData();
             _btnCancel = false;
             _btnLoadImages = true;
 
@@ -293,11 +292,8 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             BtnGenerateImportCsv = false;
             BtnCancel = true;
             var bodyContent = new StringBuilder();
-            var checkNumber = "00000";
-            var batchNumber = 0;
             var batchInc = 19;
             var recCount = 3;
-            var first = true;
             var usedSkuNums = new List<string>();
             _errors = new ObservableCollection<Error>();
             try
@@ -308,63 +304,27 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 TxtStatus = "Generating import product csv file, please wait this can take several minutes....";
                 var t2tRefs = new ImageService().ReadImageDetails(ImagePath);
                 worker.ReportProgress(1);
-
+                var dateFromFolder = ImagePath.Split('\\');
+                buildHeader(batchInc, dateFromFolder);
                 foreach (var refff in t2tRefs.Distinct())
                 {
-                    //_cancelToken.Token.ThrowIfCancellationRequested();
                     if (string.IsNullOrEmpty(_descriptionsPath))
                     {
                         MessageBox.Show("Please select a descriptions file");
                         return;
                     }
 
-                    if (!refff.Contains(checkNumber))
+                    if (!usedSkuNums.Contains(refff.Substring(0, 6)))
                     {
-                        if (!usedSkuNums.Contains(refff.Substring(0, 6)))
-                        {
-                            usedSkuNums.Add(refff.Substring(0, 6));
-                            batchNumber++;
-                            var dateFromFolder = ImagePath.Split('\\');
-                            var result = job.DoJob(refff, t2tRefs, ref _errors);
-                            if (result.Length != 0)
-                            {
-                                bodyContent.AppendLine(result.ToString());
-                            }
-                            if (bodyContent.Length != 0)
-                            {
-                                _csv.AppendLine(bodyContent.ToString());
-                                if (first)
-                                {
-                                    var heead = new StringBuilder();
-                                    heead.AppendLine(headers);
-                                    first = false;
-                                    File.AppendAllText(
-                                        System.Configuration.ConfigurationManager.AppSettings["ImportProductsOutput"] + " " + dateFromFolder[dateFromFolder.Length - 1].Trim() + "" + batchInc + ".csv",
-                                        heead.ToString() );
-
-                                }
-
-                                File.AppendAllText(
-                                    System.Configuration.ConfigurationManager.AppSettings["ImportProductsOutput"] + " " + dateFromFolder[dateFromFolder.Length - 1].Trim() + "" + batchInc + ".csv",
-                                    _csv.ToString().Trim() + Environment.NewLine);
-
-                            }
-                            _csv = new StringBuilder();
-                            bodyContent = new StringBuilder();
-                            checkNumber = refff.Substring(0, 9);
-                            worker.ReportProgress(recCount++);
-                        }
+                        usedSkuNums.Add(refff.Substring(0, 6));
+                        buildBody(bodyContent, batchInc, t2tRefs, dateFromFolder, refff);
+                        _csv = new StringBuilder();
+                        bodyContent = new StringBuilder();
+                        worker.ReportProgress(recCount++);
                     }
                 }
-                _csv.AppendLine(bodyContent.ToString());
                 worker.ReportProgress(100);
-                var unquieErrors = _errors.GroupBy(i => i.RefNumber).Select(i => i.First()).ToList();
-                foreach (var error in unquieErrors)
-                {
-                    error.ErrorMessage = error.ErrorMessage;
-                    _errors.Add(error);
-                }
-                Errors = _errors;
+                LogErrors();
                 MessageBox.Show("Import Product File Generated");
             }
             catch (OperationCanceledException ex)
@@ -384,12 +344,53 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             }
             finally
             {
+                job = null;
                 _cancelToken.Dispose();
                 BtnGenerateImportCsv = true;
                 BtnCancel = false;
                 BtnLoadImages = true;
             }
         }
+
+        private void LogErrors()
+        {
+            var unquieErrors = _errors.GroupBy(i => i.RefNumber).Select(i => i.First()).ToList();
+            foreach (var error in unquieErrors)
+            {
+                error.ErrorMessage = error.ErrorMessage;
+                _errors.Add(error);
+            }
+            Errors = _errors;
+        }
+
+        private void buildBody(StringBuilder bodyContent, int batchInc, IEnumerable<string> t2tRefs, string[] dateFromFolder, string refff)
+        {
+            var result = job.DoJob(refff, t2tRefs, ref _errors);
+
+            if (result.Length != 0)
+            {
+                bodyContent.AppendLine(result.ToString());
+            }
+            if (bodyContent.Length != 0)
+            {
+                _csv.AppendLine(bodyContent.ToString());
+
+                File.AppendAllText(
+                    System.Configuration.ConfigurationManager.AppSettings["ImportProductsOutput"] + " " + dateFromFolder[dateFromFolder.Length - 1].Trim() + "" + batchInc + ".csv",
+                    _csv.ToString().Trim() + Environment.NewLine);
+
+            }
+        }
+
+        private void buildHeader(int batchInc, string[] dateFromFolder)
+        {
+            var heead = new StringBuilder();
+            heead.AppendLine(headers);
+            File.AppendAllText(
+                System.Configuration.ConfigurationManager.AppSettings["ImportProductsOutput"] + " " + dateFromFolder[dateFromFolder.Length - 1].Trim() + "" + batchInc + ".csv",
+                heead.ToString());
+        }
+
         private void ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             this.ProgressValue = e.ProgressPercentage;

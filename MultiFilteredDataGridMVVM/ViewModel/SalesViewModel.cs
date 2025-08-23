@@ -821,7 +821,24 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 GenerateButton = "Generating...";
                 var count = 0;
                 var csv = new StringBuilder();
-                var headers = $"{"sku"},{"special_price"},{"euro_special_price"},{"usd_special_price"},{"special_from_date"},{"special_to_date"},{"special_price-no"},{"special_to_date-no"},{"special_from_date-no"},{"euro_special_price-no"},{"usd_special_price-no"},{"RRP"},{"RRP_Euro"}";
+                var headers = $"{"sku"}," +
+                    $"{"special_price"}," +
+                    $"{"euro_special_price"}," +
+                    $"{"usd_special_price"}," +
+                    $"{"aud_special_price"}," +
+                    $"{"special_from_date"}," +
+                    $"{"special_to_date"}," +
+                    $"{"special_price-no"}," +
+                    $"{"special_to_date-no"}," +
+                    $"{"special_from_date-no"}," +
+                    $"{"euro_special_price-no"}," +
+                    $"{"usd_special_price-no"}," +
+                    $"{"aud_special_price-no"}," +
+                    $"{"RRP"}," +
+                    $"{"RRP_Euro"}," +
+                    $"{"RRP_Dollar"}," +
+                    $"{"RRP_AUD"}," +
+                    $"{"on_sale"}";
                 csv.AppendLine(headers);
                 var stamp = DateTime.Now.Millisecond;
 
@@ -858,6 +875,9 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                     //{
                         File.AppendAllText(System.Configuration.ConfigurationManager.AppSettings["SalesPriceOutput"] + stamp + ".csv", csv.ToString());
                         var euro_price = _specailOrdersService.GetEuroPrice();
+                        var usd_price = _specailOrdersService.GetUSDPrice();
+                        var aud_price = _specailOrdersService.GetAUDPrice();
+
                         foreach (var specailOrder in SpecailOrders)
                         {
                             if (count >= 100)
@@ -870,7 +890,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                             _specailOrdersService.GenerateCSVAsync(StartDate.ToString("yyyy-MM-dd"), EndDate.ToString("yyyy-MM-dd"),
                                 stamp,
                                 dataRows,
-                                Convert.ToDecimal(AdjustPrice), AdjustPricePercentage, euro_price);
+                                Convert.ToDecimal(AdjustPrice), AdjustPricePercentage, euro_price, usd_price, aud_price);
                             worker.ReportProgress(count);
                         }
                     //}
@@ -957,7 +977,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                     if (euro != 0)
                     {
                         specialPriceList.Add(salesService.BuildSpecialPriceObj((item as SpecailOrders).SKU + size, 
-                            _specailOrdersService.GenerateEuroPrice(Convert.ToDecimal((item as SpecailOrders).Sell), euro),
+                            _specailOrdersService.GeneratExchangePrice(Convert.ToDecimal((item as SpecailOrders).Sell), euro),
                             storeId, 
                             startDate, 
                             endDateString,

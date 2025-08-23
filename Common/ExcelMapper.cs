@@ -6,6 +6,7 @@ using System.Data.OleDb;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
 
 namespace Common
 {
@@ -60,9 +61,10 @@ namespace Common
 
                     for (var i = 0; i < dataTable.Rows.Count; i++)
                     {
+                        Console.WriteLine(i);
                         var descrip = new Descriptions()
                         {
-                            T2TRef = (from DataRow row in dataTable.Rows select row["T2TREF"] != DBNull.Value ? row["T2TREF"].ToString() : "").ElementAt(i),
+                            T2TRef = GetT2TRef(dataTable, i),
                             Descriptio = (from DataRow row in dataTable.Rows select row["TITLE"] != DBNull.Value ? row["TITLE"].ToString() : "").ElementAt(i).ToString(),
                             Description = Regex.Replace((from DataRow row in dataTable.Rows select row["DESCRIPTION"] != DBNull.Value ? row["DESCRIPTION"].ToString() : "").ElementAt(i).ToString(), @"\t|\n|\r|’|™|®|é", ""),
                             Bullet1 = (from DataRow row in dataTable.Rows select row["BULLET 1"] != DBNull.Value ? row["BULLET 1"].ToString() : "").ElementAt(i).ToString(),
@@ -87,6 +89,25 @@ namespace Common
 
 
             return descriptions;
+        }
+
+        private string GetT2TRef(DataTable dataTable, int i)
+        {
+            var T2T = (from DataRow row in dataTable.Rows select row["T2TREF"] != DBNull.Value ? row["T2TREF"].ToString() : "").ElementAt(i);
+
+            var isNumeric = int.TryParse(T2T, out _);
+            if (T2T != "" && isNumeric == false)
+            {
+                MessageBox.Show("SKU on line " + i + " is not a valid SKU, import product program will continue to run once this window is closed.");
+                return "000000";
+            }
+                
+
+            while (T2T.ToCharArray().Count() != 6)
+            {
+                T2T = "0" + T2T;
+            }
+            return T2T;
         }
 
         private LogWriter _logger = new LogWriter();

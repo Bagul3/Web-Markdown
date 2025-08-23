@@ -13,51 +13,71 @@
         <Binding Mode="OneWay" Path="ConfigurationVM" Source="{StaticResource ConfigurationVM}"/>
     </UserControl.DataContext>
     <Grid>
+        <!-- Adjust the grid rows so there is one row for the data grids and separate rows for each currency label and the Save button -->
         <Grid.RowDefinitions>
             <RowDefinition Height="4*"/>
-            <RowDefinition Height="1*"/>
-            <RowDefinition Height="1*"/>
-            <RowDefinition Height="1*"/>
+            <!-- row 0: REM DataGrids and headers -->
+            <RowDefinition Height="Auto"/>
+            <!-- row 1: Euro Price -->
+            <RowDefinition Height="Auto"/>
+            <!-- row 2: USD Price -->
+            <RowDefinition Height="Auto"/>
+            <!-- row 3: AUS Price -->
+            <RowDefinition Height="Auto"/>
+            <!-- row 4: Save button -->
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition></ColumnDefinition>
-            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
         </Grid.ColumnDefinitions>
-        <Label Grid.Row="0" Grid.Column="0">REM 2</Label>
-        <Label Grid.Row="0" Grid.Column="1">REM 1</Label>
+
+        <!-- REM Headers -->
+        <Label Grid.Row="0" Grid.Column="0" Content="REM 2" 
+               HorizontalAlignment="Center" VerticalAlignment="Top"/>
+        <Label Grid.Row="0" Grid.Column="1" Content="REM 1" 
+               HorizontalAlignment="Center" VerticalAlignment="Top"/>
+
+        <!-- REM DataGrids -->
         <DataGrid Grid.Row="0" Grid.Column="0" ItemsSource="{Binding REM1}"
-          SelectedItem="{Binding SelectedREM1}" Style="{StaticResource MaterialDesignDataGrid}"
-              CanUserAddRows="True">
+                  SelectedItem="{Binding SelectedREM1}" 
+                  Style="{StaticResource MaterialDesignDataGrid}"
+                  CanUserAddRows="True">
             <DataGrid.Columns>
                 <DataGridTemplateColumn Header="Delete">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Button Content="Delete"
-                            Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGrid}},
-                                              Path=DataContext.DeleteCommandREM1}"
-                            CommandParameter="{Binding}"/>
+                                    Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}, Path=DataContext.DeleteCommandREM1}"
+                                    CommandParameter="{Binding}"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
-        <DataGrid Grid.Row="0" Grid.Column="1" ItemsSource="{Binding REM2}" Style="{StaticResource MaterialDesignDataGrid}"
-          SelectedItem="{Binding SelectedREM2}"
-              CanUserAddRows="True">
+        <DataGrid Grid.Row="0" Grid.Column="1" ItemsSource="{Binding REM2}"
+                  SelectedItem="{Binding SelectedREM2}" 
+                  Style="{StaticResource MaterialDesignDataGrid}"
+                  CanUserAddRows="True">
             <DataGrid.Columns>
                 <DataGridTemplateColumn Header="Delete">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Button Content="Delete"
-                            Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGrid}},
-                                              Path=DataContext.DeleteCommandREM2}"
-                            CommandParameter="{Binding}"/>
+                                    Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}, Path=DataContext.DeleteCommandREM2}"
+                                    CommandParameter="{Binding}"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
-        <Label Grid.Row="2" Grid.Column="0" Content="{Binding EuroPrice}" />
-        <Button Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding Add, Mode=OneWay}">Save</Button>
+
+        <!-- Currency Labels -->
+        <Label Grid.Row="1" Grid.Column="0" Content="{Binding EuroPrice}" Margin="5" />
+        <Label Grid.Row="2" Grid.Column="0" Content="{Binding USDPrice}" Margin="5" />
+        <Label Grid.Row="3" Grid.Column="0" Content="{Binding AUSPrice}" Margin="5" />
+
+        <!-- Save Button -->
+        <Button Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" 
+                Command="{Binding Add}" Content="Save" Margin="5" />
     </Grid>
 </UserControl>

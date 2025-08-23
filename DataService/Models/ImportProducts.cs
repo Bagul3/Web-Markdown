@@ -41,6 +41,7 @@ namespace ImportProducts.Model
         private string store;
         private string subCategory;
         private string taxClass;
+        private String code;
         private string thumbnail;
         private string type;
         private string url_key;
@@ -54,9 +55,11 @@ namespace ImportProducts.Model
         private string udef2;
         private string euro_special_price;
         private string usd_special_price;
+        private string aud_special_price;
         private string new_from_date;
         private string new_to_date;
         private string creation_date;
+        
 
         public ImportProducts()
         {
@@ -204,6 +207,12 @@ namespace ImportProducts.Model
             return this;
         }
 
+        public ImportProducts SettaxCode(string code)
+        {
+            this.code = "\"" + code + "\"";
+            return this;
+        }
+
         public ImportProducts SetconfigurableAttribute(string configurableAttribute)
         {
             this.configurableAttribute = "\"" + configurableAttribute + "\"";
@@ -275,7 +284,14 @@ namespace ImportProducts.Model
 
         public ImportProducts Setgallery(IEnumerable<string> t2TreFs, string gallery)
         {
-            this.gallery = "\"" + CordnersImportProductsBuilder.BuildGalleryImages(t2TreFs, gallery) + "\"";
+            if (t2TreFs == null)
+            {
+                this.gallery = "\"\"";
+            }
+            else
+            {
+                this.gallery = "\"" + CordnersImportProductsBuilder.BuildGalleryImages(t2TreFs, gallery) + "\"";
+            }            
             return this;
         }
 
@@ -411,6 +427,19 @@ namespace ImportProducts.Model
             return this;
         }
 
+        public ImportProducts Setaud_special_price(string aud_special_price)
+        {
+            if (aud_special_price == "")
+            {
+                this.aud_special_price = "\" \"";
+            }
+            else
+            {
+                this.aud_special_price = "\"" + aud_special_price + "\"";
+            }
+            return this;
+        }
+
         public ImportProducts Setnew_from_date(bool isEmpty)
         {
             if (isEmpty)
@@ -456,9 +485,9 @@ namespace ImportProducts.Model
             return $"{sku},{store}," +
                           $"{websites},{attribut_set},{type},{hasOption},{name.TrimEnd()},{pageLayout},{optionsContainer},{price},{weight},{status},{visibility}," +
                           $"{shortDescription},{gty},{productName},{color}," +
-                          $"{sizeRange},{taxClass},{configurableAttribute},{manufactor}," +
+                          $"{sizeRange},{taxClass},{code},{configurableAttribute},{manufactor}," +
                           $"{category},{subCategory},{season},{stockType},{image},{smallImage},{thumbnail},{gallery},{condition},{ean}," +
-                          $"{description},{model},{infocare},{sizeguide},{rrp},{url_key},{url_path},{rem1},{rem2},{suSKU},{parentSku},{udef2},{stype},{euro_special_price},{usd_special_price},{new_from_date},{new_to_date},{creation_date}";
+                          $"{description},{model},{infocare},{sizeguide},{rrp},{url_key},{url_path},{rem1},{rem2},{suSKU},{parentSku},{udef2},{stype},{euro_special_price},{usd_special_price},{aud_special_price},{new_from_date},{new_to_date},{creation_date}";
         }
 
         public string RemoveLineEndings(string value)

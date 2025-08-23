@@ -54,6 +54,40 @@ namespace DataService
             }            
         }
 
+        public decimal GetUSDPrice()
+        {
+            try
+            {
+                var dr = _skuRepository.RetrieveQuery(SqlQueries.FetchUSDPrice);
+                var usd_price = Convert.ToDecimal(dr.Tables[0].Rows[0]["Price"].ToString());
+                return usd_price;
+            }
+            catch (Exception e)
+            {
+                new LogWriter(e.Message);
+                new LogWriter(e.StackTrace);
+                MessageBox.Show(e.Message);
+                throw e;
+            }
+        }
+
+        public decimal GetAUDPrice()
+        {
+            try
+            {
+                var dr = _skuRepository.RetrieveQuery(SqlQueries.FetchAUDPrice);
+                var aud_price = Convert.ToDecimal(dr.Tables[0].Rows[0]["Price"].ToString());
+                return aud_price;
+            }
+            catch (Exception e)
+            {
+                new LogWriter(e.Message);
+                new LogWriter(e.StackTrace);
+                MessageBox.Show(e.Message);
+                throw e;
+            }
+        }
+
         public SpecialPrice BuildSpecialPriceObj(string sku, string sell, int storeId, string start, string end, decimal adjustmentPrice, int adjustmentPercentage)
         {
             var salesService = new SalesService();
@@ -71,35 +105,36 @@ namespace DataService
 
         public List<SpecialPrice> DeleteSKU(string sku, int store)
         {
-            var prices = new List<SpecialPrice>();
-            var doesExist = new OnSaleRepository().GetBySku(sku, store);
-            if (doesExist == null)
-                return new List<SpecialPrice>();
-            for (int i = 1; i <= 13; i++)
-            {
-                var size = "";
-                if (i < 10)
-                {
-                    size += "00" + i;
-                }
-                else
-                {
-                    size += "0" + i;
-                }
-                prices.Add(new SpecialPrice()
-                {
-                    price = Convert.ToDecimal(doesExist.Price),
-                    price_from = doesExist.Start.ToString(),
-                    price_to = doesExist.End.ToString(),
-                    sku = (doesExist.Sku + size).ToString(),
-                    store_id = Convert.ToInt32(doesExist.StoreId)
-                });                    
-            }
-            return prices;
+            //TODO fix this
+            //var prices = new List<SpecialPrice>();
+            //var doesExist = new OnSaleRepository().GetBySku(sku, store);
+            //if (doesExist == null)
+            //    return new List<SpecialPrice>();
+            //for (int i = 1; i <= 13; i++)
+            //{
+            //    var size = "";
+            //    if (i < 10)
+            //    {
+            //        size += "00" + i;
+            //    }
+            //    else
+            //    {
+            //        size += "0" + i;
+            //    }
+            //    prices.Add(new SpecialPrice()
+            //    {
+            //        price = Convert.ToDecimal(doesExist.Price),
+            //        price_from = doesExist.Start.ToString(),
+            //        price_to = doesExist.End.ToString(),
+            //        sku = (doesExist.Sku + size).ToString(),
+            //        store_id = Convert.ToInt32(doesExist.StoreId)
+            //    });                    
+            //}
+            return new List<SpecialPrice>();
         }
 
 
-        public void GenerateCSVAsync(string startDate, string endDate, int stamp, List<DataRow> dataRows, decimal adjustmentPrice = 0, int adjustmentPercentage = 0, decimal euro = 0)
+        public void GenerateCSVAsync(string startDate, string endDate, int stamp, List<DataRow> dataRows, decimal adjustmentPrice = 0, int adjustmentPercentage = 0, decimal euro = 0, decimal usd = 0, decimal aud = 0)
         {
             try
             {
@@ -148,11 +183,45 @@ namespace DataService
                     actualPrice = GenerateSalesPrice(adjustmentPrice, adjustmentPercentage, o.Sell);
                     if (!parentSKUs.Contains(parentSku))
                     {
-                        newLine = $"{"\"" + parentSku + "\""},{"\"" + Convert.ToInt16(actualPrice) + "\""},{"\"" + Convert.ToInt16(GenerateSalesPrice(adjustmentPrice, adjustmentPercentage, GenerateEuroPrice(Convert.ToDecimal(o.Sell), euro))) + "\""},{"\"1\""},{"\"" + (Convert.ToDateTime(startDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\"" + (Convert.ToDateTime(endDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\" \""},{"\" \""},{"\" \""},{"\" \""},{"\" \""},{"\"" + (o).Sell + "\""},{"\"" + GenerateEuroPrice(Convert.ToDecimal(o.Sell), euro) + "\""}";
+                        newLine = $"{"\"" + parentSku + "\""}," +
+                            $"{"\"" + Convert.ToInt16(actualPrice) + "\""}," +
+                            $"{"\"" + Convert.ToInt16(GenerateSalesPrice(adjustmentPrice, adjustmentPercentage, GeneratExchangePrice(Convert.ToDecimal(o.Sell), euro))) + "\""}," +
+                            $"{"\"" + Convert.ToInt16(GenerateSalesPrice(adjustmentPrice, adjustmentPercentage, GeneratExchangePrice(Convert.ToDecimal(o.Sell), usd))) + "\""}," +
+                            $"{"\"" + Convert.ToInt16(GenerateSalesPrice(adjustmentPrice, adjustmentPercentage, GeneratExchangePrice(Convert.ToDecimal(o.Sell), aud))) + "\""}," +
+                            $"{"\"" + (Convert.ToDateTime(startDate).ToString("yyyy/MM/dd") ?? "") + "\""}," +
+                            $"{"\"" + (Convert.ToDateTime(endDate).ToString("yyyy/MM/dd") ?? "") + "\""}," +
+                            $"{"\" \""}," +
+                            $"{"\" \""}," +
+                            $"{"\" \""}," +
+                            $"{"\" \""}," +
+                            $"{"\" \""}," +
+                            $"{"\" \""}," +
+                            $"{"\"" + (o).Sell + "\""}," +
+                            $"{"\"" + GeneratExchangePrice(Convert.ToDecimal(o.Sell), euro) + "\""}," +
+                            $"{"\"" + GeneratExchangePrice(Convert.ToDecimal(o.Sell), usd) + "\""}," +
+                            $"{"\"" + GeneratExchangePrice(Convert.ToDecimal(o.Sell), aud) + "\""}," +
+                            $"{"\"" + "Yes" + "\""}";
                         csv.AppendLine(newLine);
                         parentSKUs.Add(parentSku);
                     }
-                    newLine = $"{"\"" + (o).Ref + "\""},{"\"" + Convert.ToInt16(actualPrice) + "\""},{"\"" + Convert.ToInt16(GenerateSalesPrice(adjustmentPrice, adjustmentPercentage, GenerateEuroPrice(Convert.ToDecimal(o.Sell), euro))) + "\""},{"\"1\""},{"\"" + (Convert.ToDateTime(startDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\"" + (Convert.ToDateTime(endDate).ToString("yyyy/MM/dd") ?? "") + "\""},{"\" \""},{"\" \""},{"\" \""},{"\" \""},{"\" \""},{"\"" + (o).Sell + "\""},{"\"" + GenerateEuroPrice(Convert.ToDecimal(o.Sell), euro) + "\""}";
+                    newLine = $"{"\"" + (o).Ref + "\""}," +
+                        $"{"\"" + Convert.ToInt16(actualPrice) + "\""}," +
+                        $"{"\"" + Convert.ToInt16(GenerateSalesPrice(adjustmentPrice, adjustmentPercentage, GeneratExchangePrice(Convert.ToDecimal(o.Sell), euro))) + "\""}," +
+                        $"{"\"" + Convert.ToInt16(GenerateSalesPrice(adjustmentPrice, adjustmentPercentage, GeneratExchangePrice(Convert.ToDecimal(o.Sell), usd))) + "\""}," +
+                        $"{"\"" + Convert.ToInt16(GenerateSalesPrice(adjustmentPrice, adjustmentPercentage, GeneratExchangePrice(Convert.ToDecimal(o.Sell), aud))) + "\""}," +
+                        $"{"\"" + (Convert.ToDateTime(startDate).ToString("yyyy/MM/dd") ?? "") + "\""}," +
+                        $"{"\"" + (Convert.ToDateTime(endDate).ToString("yyyy/MM/dd") ?? "") + "\""}," +
+                        $"{"\" \""}," +
+                        $"{"\" \""}," +
+                        $"{"\" \""}," +
+                        $"{"\" \""}," +
+                        $"{"\" \""}," +
+                        $"{"\" \""}," +
+                        $"{"\"" + (o).Sell + "\""}," +
+                        $"{"\"" + GeneratExchangePrice(Convert.ToDecimal(o.Sell), euro) + "\""}," +
+                        $"{"\"" + GeneratExchangePrice(Convert.ToDecimal(o.Sell), usd) + "\""}," +
+                        $"{"\"" + GeneratExchangePrice(Convert.ToDecimal(o.Sell), aud) + "\""}," +
+                        $"{"\"" + "Yes" + "\""}";
 
                     csv.AppendLine(newLine);
                     count++;
@@ -165,36 +234,36 @@ namespace DataService
                 //{
                     File.AppendAllText(ConfigurationManager.AppSettings["SalesPriceOutput"] + stamp + ".csv", csv.ToString());
                 //}
-                var repo = new OnSaleRepository();
+                //var repo = new OnSaleRepository();
 
-                //TODO Delete here
-                if (euro != 0)
-                {
-                    var onSale = new OnSale()
-                    {
-                        StoreId = 2,
-                        Sku = specailsOrders.First().Ref.Substring(0, 9),
-                        Price = Convert.ToDecimal(actualPrice.ToString()).ToString(),
-                        Start = startDate,
-                        End = endDate
-                    };
-                    new MagentoSpecialPrice().DeleteSpecialPrice(specailsOrders.First().Ref.Substring(0, 9), 2);
-                    repo.Insert(onSale);
-                }
-                else
-                {
-                    var onSale = new OnSale()
-                    {
-                        StoreId = 1,
-                        Sku = specailsOrders.First().Ref.Substring(0, 9),
-                        Price = Convert.ToDecimal(actualPrice.ToString()).ToString(),
-                        Start = startDate,
-                        End = endDate
-                    };
-                    new MagentoSpecialPrice().DeleteSpecialPrice(specailsOrders.First().Ref.Substring(0, 9), 1);
-                    repo.Insert(onSale);
-                }                
-                repo.Save();
+                ////TODO Delete here
+                //if (euro != 0)
+                //{
+                //    var onSale = new OnSale()
+                //    {
+                //        StoreId = 2,
+                //        Sku = specailsOrders.First().Ref.Substring(0, 9),
+                //        Price = Convert.ToDecimal(actualPrice.ToString()).ToString(),
+                //        Start = startDate,
+                //        End = endDate
+                //    };
+                //    new MagentoSpecialPrice().DeleteSpecialPrice(specailsOrders.First().Ref.Substring(0, 9), 2);
+                //    repo.Insert(onSale);
+                //}
+                //else
+                //{
+                //    var onSale = new OnSale()
+                //    {
+                //        StoreId = 1,
+                //        Sku = specailsOrders.First().Ref.Substring(0, 9),
+                //        Price = Convert.ToDecimal(actualPrice.ToString()).ToString(),
+                //        Start = startDate,
+                //        End = endDate
+                //    };
+                //    new MagentoSpecialPrice().DeleteSpecialPrice(specailsOrders.First().Ref.Substring(0, 9), 1);
+                //    repo.Insert(onSale);
+                //}                
+                //repo.Save();
             }
             catch(Exception e)
             {
@@ -202,7 +271,7 @@ namespace DataService
             }
         }
 
-        public string GenerateEuroPrice(decimal gbp, decimal conversion_rate)
+        public string GeneratExchangePrice(decimal gbp, decimal conversion_rate)
         {
             var rounding = true;
             var euros = gbp * conversion_rate;
@@ -272,14 +341,15 @@ namespace DataService
                 queryBuilder.Append(" AND(");
                 foreach (var supplier in suppliers)
                 {
+                    var value = supplier.Value.ToString().Replace("'", "''");
                     if (isFirst)
                     {
-                        queryBuilder.Append(" MasterSupplier = '" + supplier.Value + "' ");
+                        queryBuilder.Append(" MasterSupplier = '" + value + "' ");
                         isFirst = false;
                     }
                     else
                     {
-                        queryBuilder.Append(" OR MasterSupplier = '" + supplier.Value + "' ");
+                        queryBuilder.Append(" OR MasterSupplier = '" + value + "' ");
                     }
                     
                 }

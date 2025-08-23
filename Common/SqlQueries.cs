@@ -38,7 +38,7 @@ WHERE (((Left([T2_LOOK]![KEY],3))='CAT'))
 									(SELECT Right(T2_LOOK.[KEY],3) AS SubDeptCode, T2_LOOK.F1 AS MasterSubDept
 										FROM T2_LOOK
 											WHERE (Left(T2_LOOK.[KEY],3))='US2') AS SubDept ON T2_HEAD.USER2 = SubDept.SubDeptCode)
-									WHERE T2_BRA.BRANCH in ('A', 'G')
+									WHERE T2_BRA.BRANCH in ('A', 'T', 'G')
 									GROUP BY ([T2_BRA].[REF] + [F7]), Suppliers.MasterSupplier, Dept.MasterDept, Colour.MasterColour, Colour.F7, T2_HEAD.LASTDELV,
 									 T2_HEAD.SHORT, T2_HEAD.[DESC], T2_HEAD.[GROUP], T2_HEAD.STYPE, T2_HEAD.SIZERANGE, T2_HEAD.SUPPLIER, T2_HEAD.SUPPREF,
 									  T2_HEAD.VAT, T2_HEAD.BASESELL, T2_HEAD.USER1,T2_HEAD.REM, T2_HEAD.REM2, T2_HEAD.MINSIZE, T2_HEAD.MAXSIZE,
@@ -173,7 +173,7 @@ WHERE (((Left([T2_LOOK]![KEY],3))='CAT'))
 									(SELECT Right(T2_LOOK.[KEY],3) AS SubDeptCode, T2_LOOK.F1 AS MasterSubDept
 										FROM T2_LOOK
 											WHERE (Left(T2_LOOK![KEY],3))='US2') AS SubDept ON T2_HEAD.USER2 = SubDept.SubDeptCode)
-                                   WHERE T2_BRA.BRANCH in ('A','G')";
+                                   WHERE T2_BRA.BRANCH in ('T','G')";
 
         public static string CoreStockQueryOrder => @"GROUP BY ([T2_BRA].[REF] + [F7]), [T2_BRA].[REF], Suppliers.MasterSupplier, Dept.MasterDept, Colour.MasterColour, Colour.F7, T2_HEAD.USER1,
 									 T2_HEAD.SHORT, T2_HEAD.[DESC], T2_HEAD.[GROUP], T2_HEAD.STYPE, T2_HEAD.SUPPLIER, T2_HEAD.SUPPREF,
@@ -209,7 +209,7 @@ WHERE (((Left([T2_LOOK]![KEY],3))='CAT'))
 									(SELECT Right(T2_LOOK.[KEY],3) AS SubDeptCode, T2_LOOK.F1 AS MasterSubDept
 										FROM T2_LOOK
 											WHERE (Left(T2_LOOK.[KEY],3))='US2') AS SubDept ON T2_HEAD.USER2 = SubDept.SubDeptCode)
-                                    WHERE T2_BRA.BRANCH in ('A','G')
+                                    WHERE T2_BRA.BRANCH in ('T','G')
 									GROUP BY ([T2_BRA].[REF] + [F7]), Suppliers.MasterSupplier, Dept.MasterDept, Colour.MasterColour, Colour.F7,
 									 T2_HEAD.SHORT, T2_HEAD.[GROUP], T2_HEAD.STYPE, T2_HEAD.SIZERANGE, T2_HEAD.SUPPLIER, T2_HEAD.SUPPREF,
 									  T2_HEAD.VAT, T2_HEAD.BASESELL,
@@ -385,6 +385,10 @@ WHERE (((Left([T2_LOOK]![KEY],3))='CAT')) ORDER BY Trim(Mid([T2_LOOK].[KEY],4,6)
 		public static string PackREM => @"Pack [REM]";
 
 		public static string FetchEUROPrice => @"SELECT [PRICE] FROM [EURO]";
+
+		public static string FetchUSDPrice => @"SELECT [PRICE] FROM [USD]";
+
+		public static string FetchAUDPrice => @"SELECT [PRICE] FROM [AUD]";
 
 		public static string FetchSaleInfo => @"SELECT * FROM [SALES] WHERE [SKU] = ?";
 

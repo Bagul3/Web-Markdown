@@ -75,7 +75,7 @@ WHERE (((Left([T2_LOOK]![KEY],3))='CAT'))
 									(SELECT Right(T2_LOOK.[KEY],3) AS SubDeptCode, T2_LOOK.F1 AS MasterSubDept
 										FROM T2_LOOK
 											WHERE (Left(T2_LOOK.[KEY],3))='US2') AS SubDept ON T2_HEAD.USER2 = SubDept.SubDeptCode)
-									WHERE T2_BRA.BRANCH in ('A','G')
+									WHERE T2_BRA.BRANCH in ('A','G','T')
 									GROUP BY ([T2_BRA].[REF] + [F7]), Suppliers.MasterSupplier, Dept.MasterDept, Colour.MasterColour, Colour.F7,
 									 T2_HEAD.SHORT, T2_HEAD.[DESC], T2_HEAD.[GROUP], T2_HEAD.STYPE, T2_HEAD.SIZERANGE, T2_HEAD.SUPPLIER, T2_HEAD.SUPPREF,
 									  T2_HEAD.VAT, T2_HEAD.BASESELL, T2_HEAD.USER1,T2_HEAD.REM, T2_HEAD.REM2,T2_HEAD.USER2,
@@ -85,7 +85,9 @@ WHERE (((Left([T2_LOOK]![KEY],3))='CAT'))
 
 		public static string GetEanCodes => "SELECT * from T2_EAN WHERE T2T_CODE = ?";
 
-        public static string FetchREM => @"SELECT * FROM [REM]";
+		public static string GetAllEanCodes => "SELECT * from T2_EAN";
+
+		public static string FetchREM => @"SELECT * FROM [REM]";
 
     }
 }

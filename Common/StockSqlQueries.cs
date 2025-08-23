@@ -19,7 +19,7 @@ namespace Common
 									(SELECT Right(t.[KEY],3) AS NewCol, t.F1 AS MasterColour, Left(t.[KEY],3) AS Col, t.F7 
 								FROM T2_LOOK t
 								WHERE (Left(t.[KEY],3))='COL') as Colour ON T2_BRA.COLOUR = Colour.NewCol) INNER JOIN [DESC] ON [T2_BRA].[REF] = [DESC].SKU)
-                                    WHERE T2_BRA.BRANCH in ('A','G')
+                                    WHERE T2_BRA.BRANCH in ('T','G', 'A')
 									GROUP BY ([T2_BRA].[REF] + [F7]),T2_HEAD.REF, T2_HEAD.LASTDELV, T2_HEAD.SELL, T2_HEAD.REM, T2_HEAD.REM2, T2_HEAD.USER1";
 
         public static string GetEanCodes => "SELECT * from T2_EAN WHERE EAN_CODE <> NULL";

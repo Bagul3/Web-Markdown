@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data;
 using System.Text;
-using System.Windows.Forms;
+using System.Windows;
 using System.Windows.Input;
 
 namespace MultiFilteredDataGridMVVM.ViewModel
@@ -20,12 +20,21 @@ namespace MultiFilteredDataGridMVVM.ViewModel
         public ConfigurationViewModel()
         {
             _skuRepository = new SkuRepository();
+
+            // Load REM collections from the repository.
             REM1 = new ObservableCollection<REM1>(FetchREM1());
             REM2 = new ObservableCollection<REM2>(FetchREM2());
-            var seasonalData = _skuRepository.RetrieveQuery(SqlQueries.FetchSeasonalData).Tables;
+
+            // Fetch the currency exchange rates.
             EuroPrice = FetcEuroLabel();
+            USDPrice = FetchUSDLabel();
+            AUSPrice = FetchAUSLabel();
+
+            // Seasonal data used for configuration.
+            var seasonalData = _skuRepository.RetrieveQuery(SqlQueries.FetchSeasonalData).Tables;
             _latestSeason = GetSeasonalDataFor(seasonalData, "TOPPAGE");
             _bottomSeason = GetSeasonalDataFor(seasonalData, "BOTTOMPAGE");
+
             InitializeCommands();
         }
 
@@ -37,16 +46,15 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 var remresult = _skuRepository.RetrieveQuery(SqlQueries.FetchSeasonalData).Tables;
                 if (remresult != null)
                 {
-                    for(int i = 0; i < remresult[0].Rows.Count;i++)
+                    for (int i = 0; i < remresult[0].Rows.Count; i++)
                     {
                         if (remresult[0].Rows[i][$"{type}"].ToString() == "true")
                         {
                             season.Append($"{remresult[0].Rows[i]["SEASON"]},");
-                        }                                                
+                        }
                     }
-                    
                 }
-                return season.ToString().Remove(season.ToString().Length - 1);
+                return season.ToString().TrimEnd(',');
             }
             catch (Exception ex)
             {
@@ -56,76 +64,52 @@ namespace MultiFilteredDataGridMVVM.ViewModel
         }
 
         private string _latestSeason = "";
-
         public string LastestSeason
         {
-            get
-            {
-                return _latestSeason;
-
-            }
-            set
-            {
-                _latestSeason = value;
-                RaisePropertyChanged("LastestSeason");
-            }
+            get { return _latestSeason; }
+            set { _latestSeason = value; RaisePropertyChanged("LastestSeason"); }
         }
 
         private string _euroPrice = "";
-
         public string EuroPrice
         {
-            get
-            {
-                return _euroPrice;
+            get { return _euroPrice; }
+            set { _euroPrice = value; RaisePropertyChanged("EuroPrice"); }
+        }
 
-            }
-            set
-            {
-                _euroPrice = value;
-                RaisePropertyChanged("EuroPrice");
-            }
+        private string _usdPrice = "";
+        public string USDPrice
+        {
+            get { return _usdPrice; }
+            set { _usdPrice = value; RaisePropertyChanged("USDPrice"); }
+        }
+
+        private string _ausPrice = "";
+        public string AUSPrice
+        {
+            get { return _ausPrice; }
+            set { _ausPrice = value; RaisePropertyChanged("AUSPrice"); }
         }
 
         private string _bottomSeason = "";
-
         public string BottomSeason
         {
-            get
-            {
-                return _bottomSeason;
-
-            }
-            set
-            {
-                _bottomSeason = value;
-                RaisePropertyChanged("BottomSeason");
-            }
+            get { return _bottomSeason; }
+            set { _bottomSeason = value; RaisePropertyChanged("BottomSeason"); }
         }
 
         private ObservableCollection<REM1> _results;
-
         public ObservableCollection<REM1> REM1
         {
             get { return _results; }
-            set
-            {
-                if (_results == value)
-                    return;
-                _results = value;
-                RaisePropertyChanged("REM1");
-            }
+            set { _results = value; RaisePropertyChanged("REM1"); }
         }
 
         private REM1 m_selectedREM1;
         public REM1 SelectedREM1
         {
             get { return m_selectedREM1; }
-            set
-            {
-                m_selectedREM1 = value;
-                RaisePropertyChanged("SelectedREM1");
-            }
+            set { m_selectedREM1 = value; RaisePropertyChanged("SelectedREM1"); }
         }
 
         private ICommand m_deleteCommandREM2;
@@ -156,47 +140,45 @@ namespace MultiFilteredDataGridMVVM.ViewModel
 
         private void DeleteREM1()
         {
-            REM1.Remove(m_selectedREM1);
+            if (m_selectedREM1 != null)
+                REM1.Remove(m_selectedREM1);
         }
 
         private void DeleteREM2()
         {
-            REM2.Remove(m_selectedREM2);
+            if (m_selectedREM2 != null)
+                REM2.Remove(m_selectedREM2);
         }
 
-        public ICommand Add
-        {
-            get;
-            private set;
-        }
+        public ICommand Add { get; private set; }
 
         private void InsertSeasonalData()
         {
-            var id = 0;
+            int id = 0;
             var latestSeasons = _latestSeason.Split(',');
             _skuRepository.RetrieveQuery(SqlQueries.DeleteConfigurables);
-            foreach (var season in latestSeasons) 
+            foreach (var season in latestSeasons)
             {
-                if (season != "")
+                if (!string.IsNullOrWhiteSpace(season))
                 {
                     id++;
                     _skuRepository.InsertSeasonData(season.Trim(), id.ToString(), "true", "false");
-                }                
+                }
             }
             var bottomSeasons = _bottomSeason.Split(',');
-            foreach(var season in bottomSeasons)
+            foreach (var season in bottomSeasons)
             {
-                if (season != "")
+                if (!string.IsNullOrWhiteSpace(season))
                 {
                     id++;
                     _skuRepository.InsertSeasonData(season.Trim(), id.ToString(), "false", "true");
-                }                
+                }
             }
         }
 
         private void InsertRems()
         {
-            _skuRepository.RetrieveQuery(SqlQueries.DeleteREM);            
+            _skuRepository.RetrieveQuery(SqlQueries.DeleteREM);
 
             foreach (var rem in REM1)
             {
@@ -216,12 +198,12 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 {
                     InsertSeasonalData();
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     new LogWriter().LogWrite("ERROR: Inserting seasonal data");
                     new LogWriter().LogWrite("ERROR: " + ex.Message);
                     new LogWriter().LogWrite("ERROR: " + ex.StackTrace);
-                    throw ex;
+                    throw;
                 }
                 try
                 {
@@ -232,7 +214,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                     new LogWriter().LogWrite("ERROR: Inserting REMs");
                     new LogWriter().LogWrite("ERROR: " + ex.Message);
                     new LogWriter().LogWrite("ERROR: " + ex.StackTrace);
-                    throw ex;
+                    throw;
                 }
                 MessageBox.Show("Successfully Saved.");
             }
@@ -242,7 +224,6 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 new LogWriter().LogWrite("ERROR: " + ex.StackTrace);
                 MessageBox.Show("An error occurred trying to save configurables, if this continues contact Conor");
             }
-            
         }
 
         private List<REM1> FetchREM1()
@@ -258,7 +239,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 }
                 return rem1;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 new LogWriter().LogWrite("ERROR: " + ex.StackTrace);
                 MessageBox.Show("An error occurred, if this continues please contact Conor.");
@@ -269,7 +250,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
         private List<REM2> FetchREM2()
         {
             try
-            { 
+            {
                 var ds = _skuRepository.RetrieveQuery("REM2", SqlQueries.FetchREM);
                 var rem2 = new List<REM2>();
 
@@ -279,7 +260,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
                 }
                 return rem2;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 new LogWriter().LogWrite("ERROR: " + ex.StackTrace);
                 MessageBox.Show("An error occurred, if this continues please contact Conor.");
@@ -292,8 +273,7 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             try
             {
                 var ds = _skuRepository.RetrieveQuery(SqlQueries.FetchEUROPrice);
-                var rem2 = new List<REM2>();
-                var euroPrice = "Current Euro Exchange rate: " + ds.Tables[0].Rows[0]["PRICE"].ToString();
+                string euroPrice = "Current Euro Exchange rate: " + ds.Tables[0].Rows[0]["PRICE"].ToString();
                 return euroPrice;
             }
             catch (Exception ex)
@@ -304,29 +284,50 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             return "";
         }
 
-        private ObservableCollection<REM2> _rem2;
+        private string FetchUSDLabel()
+        {
+            try
+            {
+                var ds = _skuRepository.RetrieveQuery(SqlQueries.FetchUSDPrice);
+                string usdPrice = "Current USD Exchange rate: " + ds.Tables[0].Rows[0]["PRICE"].ToString();
+                return usdPrice;
+            }
+            catch (Exception ex)
+            {
+                new LogWriter().LogWrite("ERROR: " + ex.StackTrace);
+                MessageBox.Show("An error occurred, if this continues please contact Conor.");
+            }
+            return "";
+        }
 
+        private string FetchAUSLabel()
+        {
+            try
+            {
+                var ds = _skuRepository.RetrieveQuery(SqlQueries.FetchAUDPrice);
+                string ausPrice = "Current AUD Exchange rate: " + ds.Tables[0].Rows[0]["PRICE"].ToString();
+                return ausPrice;
+            }
+            catch (Exception ex)
+            {
+                new LogWriter().LogWrite("ERROR: " + ex.StackTrace);
+                MessageBox.Show("An error occurred, if this continues please contact Conor.");
+            }
+            return "";
+        }
+
+        private ObservableCollection<REM2> _rem2;
         public ObservableCollection<REM2> REM2
         {
             get { return _rem2; }
-            set
-            {
-                if (_rem2 == value)
-                    return;
-                _rem2 = value;
-                RaisePropertyChanged("REM2");
-            }
+            set { _rem2 = value; RaisePropertyChanged("REM2"); }
         }
 
         private REM2 m_selectedREM2;
         public REM2 SelectedREM2
         {
             get { return m_selectedREM2; }
-            set
-            {
-                m_selectedREM2 = value;
-                RaisePropertyChanged("SelectedREM2");
-            }
+            set { m_selectedREM2 = value; RaisePropertyChanged("SelectedREM2"); }
         }
 
         private void InitializeCommands()

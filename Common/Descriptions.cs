@@ -2,7 +2,7 @@
 {
     public class Descriptions
     {
-        public object T2TRef { get; set; }
+        public string T2TRef { get; set; }
 
         public string Descriptio { get; set; }
 

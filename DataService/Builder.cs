@@ -12,13 +12,7 @@ namespace DataService
         public static string Category(this DataRow dr)
         {
             var category = "Default Category/Brands/" + dr["MasterSupplier"] + ",";
-            // Ladies bags
-            if (dr["MasterStocktype"].ToString() == "UNISEX")
-            {
-                category = category + "Default Category/UNISEX" + "/Shop By Brand/" +
-                       dr["MasterSupplier"];
-                return category;
-            }
+            
             if (dr["STYPE"].ToString() == "BAG" && dr["MasterStocktype"].ToString() == "LADIES")
             {
                 category = category + "Default Category/BAGS & ACCESSORIES" + "/Shop By Department" + "/" + "LADIES BAGS" + ",";
@@ -26,10 +20,21 @@ namespace DataService
                 return category;
             }
 
+            if (dr["MasterStocktype"].ToString() == "ACCESSORIES")
+            {
+                category = category + "Default Category/BAGS & ACCESSORIES" + "/Shop By Department" + "/" + "accessories" + ",";
+                category = category + "Default Category/BAGS & ACCESSORIES" + "/Shop By Brand" + "/" + dr["MasterSupplier"].ToString();
+                return category;
+            }            
+
             if (dr["STYPE"].ToString() == "BAG")
             {
                 category = category + "Default Category/BAGS & ACCESSORIES" + "/Shop By Department" + "/" + "BACKPACKS" + ",";
                 category = category + "Default Category/BAGS & ACCESSORIES" + "/Shop By Brand" + "/" + dr["MasterSupplier"].ToString();
+                if (dr["USER1"].ToString().Contains("B"))
+                {
+                    category += ",Default Category/BACK TO SCHOOL/" + dr["MasterStocktype"];
+                }
                 return category;
             }
 

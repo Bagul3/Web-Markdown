@@ -103,6 +103,37 @@ namespace DataService
             return skus;
         }
 
+        public List<string> OnlineSKUsAll()
+        {
+            var fileList = new SkuService().GetCSV("https://www.cordners.co.uk/exportcsv/");
+            string[] tempStr;
+            var splitted = new List<string>();
+            tempStr = fileList.Split('\t');
+            var skus = new List<string>();
+            foreach (var item in tempStr)
+            {
+                if (!string.IsNullOrEmpty(item))
+                {
+                    if (item.Contains('\n') && item.Split('\n')[0].Length > 11)
+                    {
+                        var sku = item.Split('\n')[0].Substring(0, 12);
+                        splitted.Add(sku);
+                        skus.Add(sku);
+                    }
+                    else if (item.Contains('\n') && item.Split('\n')[0].Length > 8)
+                    {
+                        var sku = item.Split('\n')[0].Substring(0, 9);
+                        if (!skus.Contains(sku))
+                        {
+                            splitted.Add(sku);
+                            skus.Add(sku);
+                        }
+                    }
+                }
+            }
+            return skus;
+        }
+
         public List<string> OnlineSKUWithColour()
         {
             var fileList = new SkuService().GetCSV("https://www.cordners.co.uk/exportcsv/");
@@ -171,6 +202,28 @@ namespace DataService
             
             return mongeto;
         }
+
+        public List<SpecailOrders> GetOnlineSKuValuesWithColourAndSizeNoConfigs(List<string> SKU)
+        {
+            var mongeto = new List<SpecailOrders>();
+            var processList = new List<String>();
+            var data = _skuRepository.RetrieveQueryAsync(SqlQueries.StockQueryALL).Result;
+            for ( var i = 0; i < SKU.Count; i++)
+            {
+                var rows = data.Tables[0].Select($"NEWSTYLE = {SKU[i].Substring(0,9)}");
+                foreach (DataRow reff in rows)
+                {
+                    if (!processList.Contains(SKU[i].Substring(0, 9)))
+                    {
+                        processList.Add(SKU[i].Substring(0, 9));
+                        this.GenerateSimples(ref mongeto, reff, SKU[i]);
+                    }
+                }
+            }
+
+            return mongeto;
+        }
+
 
         public DataSet GetAllCordnersStock()
         {
@@ -310,6 +363,50 @@ namespace DataService
                );
         }
 
+        private void BuildMongetoObjFullSKU(ref List<SpecailOrders> skuRecords, DataRow dr)
+        {
+            skuRecords.Add(
+                new SpecailOrders()
+                {
+                    SKU = dr["NEWSTYLE"].ToString(),
+                    Ref = dr["REF"].ToString(),
+                    Sell = dr["Sell"].ToString(),
+                    MasterSupplier = dr["MasterSupplier"].ToString(),
+                    Color = dr["MasterColour"].ToString(),
+                    Style = dr["STYPE"].ToString(),
+                    StockType = dr["MasterStocktype"].ToString(),
+                    Category = dr["MasterSubDept"].ToString(),
+                    Season = dr["User1"].ToString(),
+                    SupRef = dr["SUPPREF"].ToString(),
+                    Desc = dr["DESC"].ToString(),
+                    Name = dr["SHORT"].ToString(),
+                    Qty = TotalStock(dr).ToString()
+                }
+               );
+        }
+
+        private void BuildMongetoObjSimple(ref List<SpecailOrders> skuRecords, DataRow dr, string sku)
+        {
+            skuRecords.Add(
+                new SpecailOrders()
+                {
+                    SKU = sku,
+                    Ref = dr["REF"].ToString(),
+                    Sell = dr["Sell"].ToString(),
+                    MasterSupplier = dr["MasterSupplier"].ToString(),
+                    Color = dr["MasterColour"].ToString(),
+                    Style = dr["STYPE"].ToString(),
+                    StockType = dr["MasterStocktype"].ToString(),
+                    Category = dr["MasterSubDept"].ToString(),
+                    Season = dr["User1"].ToString(),
+                    SupRef = dr["SUPPREF"].ToString(),
+                    Desc = dr["DESC"].ToString(),
+                    Name = dr["SHORT"].ToString(),
+                    Qty = TotalStock(dr).ToString()
+                }
+               );
+        }
+
         private int TotalStock(DataRow dr)
         {
             try
@@ -349,5 +446,70 @@ namespace DataService
                 throw e;
             }
         }
+
+        public void GenerateSimples(ref List<SpecailOrders> skuRecords, DataRow dr, string sku)
+        {
+            try
+            {
+                var actualStock = "0";
+
+                for (var i = Convert.ToInt32(dr["MINSIZE"]); i <= Convert.ToInt32(dr["MAXSIZE"]); i++)
+                {
+                    if (!string.IsNullOrEmpty(dr["QTY" + i].ToString()))
+                    {
+                        if (dr["QTY" + i].ToString() != "")
+                        {
+                            if (Convert.ToInt32(dr["QTY" + i]) > 0)
+                            {
+                                if (dr["LY" + i].ToString() == "0" ||
+                                    string.IsNullOrEmpty(dr["LY" + i].ToString()))
+                                {
+                                    actualStock = dr["QTY" + i].ToString();
+                                }
+                                else
+                                {
+                                    actualStock =
+                                        (Convert.ToInt32(dr["QTY" + i]) - Convert.ToInt32(dr["LY" + i]))
+                                        .ToString();
+                                }
+                            }
+
+                            skuRecords.Add(
+                                new SpecailOrders()
+                                {
+                                    SKU = dr["NEWSTYLE"] + size(i),
+                                    Ref = dr["REF"].ToString(),
+                                    Sell = dr["Sell"].ToString(),
+                                    MasterSupplier = dr["MasterSupplier"].ToString(),
+                                    Color = dr["MasterColour"].ToString(),
+                                    Style = dr["STYPE"].ToString(),
+                                    StockType = dr["MasterStocktype"].ToString(),
+                                    Category = dr["MasterSubDept"].ToString(),
+                                    Season = dr["User1"].ToString(),
+                                    SupRef = dr["SUPPREF"].ToString(),
+                                    Desc = dr["DESC"].ToString(),
+                                    Name = dr["SHORT"].ToString(),
+                                    Qty = actualStock
+                                }
+                               );
+                            actualStock = "0";
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
+
+        private string size(int i)
+        {
+            if (i < 10)
+                return "00" + i;
+            return "0" + i;
+        }
+
     }
 }
