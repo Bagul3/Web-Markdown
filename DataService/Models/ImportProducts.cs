@@ -41,7 +41,6 @@ namespace ImportProducts.Model
         private string store;
         private string subCategory;
         private string taxClass;
-        private String code;
         private string thumbnail;
         private string type;
         private string url_key;
@@ -201,15 +200,14 @@ namespace ImportProducts.Model
             return this;
         }
 
-        public ImportProducts SettaxClass(string taxClass)
+        public ImportProducts SettaxClass(string code)
         {
+            string taxClass = "";
+            if (code.Contains("2"))
+                taxClass = "Taxable Goods";
+            else if (code.Contains("0"))
+                taxClass = "Non VAT";
             this.taxClass = "\"" + taxClass + "\"";
-            return this;
-        }
-
-        public ImportProducts SettaxCode(string code)
-        {
-            this.code = "\"" + code + "\"";
             return this;
         }
 
@@ -485,7 +483,7 @@ namespace ImportProducts.Model
             return $"{sku},{store}," +
                           $"{websites},{attribut_set},{type},{hasOption},{name.TrimEnd()},{pageLayout},{optionsContainer},{price},{weight},{status},{visibility}," +
                           $"{shortDescription},{gty},{productName},{color}," +
-                          $"{sizeRange},{taxClass},{code},{configurableAttribute},{manufactor}," +
+                          $"{sizeRange},{taxClass},{configurableAttribute},{manufactor}," +
                           $"{category},{subCategory},{season},{stockType},{image},{smallImage},{thumbnail},{gallery},{condition},{ean}," +
                           $"{description},{model},{infocare},{sizeguide},{rrp},{url_key},{url_path},{rem1},{rem2},{suSKU},{parentSku},{udef2},{stype},{euro_special_price},{usd_special_price},{aud_special_price},{new_from_date},{new_to_date},{creation_date}";
         }
