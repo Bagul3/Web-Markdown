@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 using Common;
 using DataRepo;
 using DataService;
+using static Common.CsvMapper;
 
 namespace ImportProducts.Services
 {
@@ -26,70 +27,109 @@ namespace ImportProducts.Services
         private static decimal usd_conversion_rate;
         private static decimal aud_conversion_rate;
         private DataSet eanCodes;
+        private CsvMapper csvMapper;
+        private String csvPath;
 
         public ImportCsvJob(string excelConnection)
         {
             this._logger = new LogWriter();
             this._mapper = new ExcelMapper();
-            descriptions = _mapper.MapToDescriptions(excelConnection);
+            //descriptions = _mapper.MapToDescriptions(excelConnection);
+            csvPath = excelConnection;
             REMTable = new SkuRepository().RetrieveQuery(SqlQuery.FetchREM);
             data = Query(SqlQuery.ImportProductsAllQuery);
             conversion_rate = new SalesService().GetEuroPrice();
             usd_conversion_rate = new SalesService().GetUSDPrice();
             aud_conversion_rate = new SalesService().GetAUDPrice();
             eanCodes = Query(SqlQuery.GetAllEanCodes);
+            csvMapper = new CsvMapper();
         }
         public StringBuilder DoJob(string refff, IEnumerable<string> t2TreFs, ref ObservableCollection<Error> errors)
         {
             try
             {
-                var csvLines = new StringBuilder();
-                _logger.LogWrite("Generating stock.csv: This will take a few minutes, please wait....");
-                var reff = refff.Substring(0, 6);
-                reffCode = reff;
-                var actualStock = "0";
-                var parentSKU = "";
-                sizes = new List<string>();
-                var skudata = data.Tables[0].Select($"REF = {reff}");
-                foreach (DataRow dr in skudata)
+                var csvProducts = csvMapper.MapProductsFromCsv(csvPath);
+                // Grab first product as an example
+                var firstSku = csvProducts[0].Sku;
+
+                // Assume your Excel data is already loaded into a DataTable
+                //var matches = GetRowsBySkuPrefix(firstSku, data.Tables[0]);
+                foreach (var product in csvProducts)
                 {
-                    if (t2TreFs.Any(x => x.Contains(dr["NewStyle"].ToString())))
+                    var matches = GetRowsBySkuPrefix(product.Sku, data.Tables[0]);
+
+                    foreach (DataRow dr in matches)
                     {
-                        var descriptionObject = FetchDescription(descriptions, reff);
-                        if (descriptionObject == null)
-                        {
-                            errors.Add(new Error()
-                            {
-                                RefNumber = dr["NewStyle"].ToString(),
-                                ErrorMessage = "No description found!"
-                            });
-                            break;
-                        }
-                        var groupSkus2 = sizeSkuValue(dr["NewStyle"].ToString(), dr["MINSIZE"].ToString());
-                        parentSKU = dr["NewStyle"].ToString();
+                        product.DType = string.IsNullOrEmpty(dr["MasterDept"]?.ToString())
+                            ? ""
+                            : dr["MasterDept"].ToString();
 
-                        if (!string.IsNullOrEmpty(dr["NewStyle"].ToString()))
-                        {
-                            var newLine = ParentImportProduct(parentSKU, reff, dr, t2TreFs, descriptionObject, groupSkus2);
-                            csvLines.AppendLine(newLine);
-                        }
-                        for (var i = Convert.ToInt16(dr["MINSIZE"]); i <= Convert.ToInt16(dr["MAXSIZE"]); i++)
-                        {
-                            groupSkus2 = sizeSkuValue(dr["NewStyle"].ToString(), i);
-                            actualStock = calculateStock(dr, i);
-                            string size = calculateSize(dr, i);
-                            string eanCode = calculateEANCode(groupSkus2);
-                            string newLine = null;
-                            sizes.Add(dr["SIZERANGE"].ToString() + size);
-                            newLine = BuildChildImportProduct(groupSkus2, dr, reff, actualStock, size, t2TreFs, eanCode, parentSKU, descriptionObject);
-                            csvLines.AppendLine(newLine);
-                            actualStock = "0";
-                        }
+                        product.UDef2 = string.IsNullOrEmpty(dr["MasterSubDept"]?.ToString())
+                            ? ""
+                            : dr["MasterSubDept"].ToString();
 
+                        var code = dr["VATFACT"]?.ToString() ?? string.Empty;
+                        string taxClass = "";
+
+                        if (code.Contains("2"))
+                            taxClass = "Taxable Goods";
+                        else if (code.Contains("0"))
+                            taxClass = "Non VAT";
+
+                        product.TaxClassName = taxClass; // <- no manual quotes here
                     }
-                    _logger.LogWrite("Finished for: " + refff);
                 }
-                return csvLines;
+                // 3. Export back to CSV
+                var outputPath = Path.Combine(Path.GetDirectoryName(csvPath), "updated_products.csv");
+                WriteProductsToCsv(outputPath, csvProducts);
+
+                //var csvLines = new StringBuilder();
+                //_logger.LogWrite("Generating stock.csv: This will take a few minutes, please wait....");
+                //var reff = refff.Substring(0, 6);
+                //reffCode = reff;
+                //var actualStock = "0";
+                //var parentSKU = "";
+                //sizes = new List<string>();
+                //var skudata = data.Tables[0].Select($"REF = {reff}");
+                //foreach (DataRow dr in skudata)
+                //{
+                //    if (t2TreFs.Any(x => x.Contains(dr["NewStyle"].ToString())))
+                //    {
+                //        var descriptionObject = FetchDescription(descriptions, reff);
+                //        if (descriptionObject == null)
+                //        {
+                //            errors.Add(new Error()
+                //            {
+                //                RefNumber = dr["NewStyle"].ToString(),
+                //                ErrorMessage = "No description found!"
+                //            });
+                //            break;
+                //        }
+                //        var groupSkus2 = sizeSkuValue(dr["NewStyle"].ToString(), dr["MINSIZE"].ToString());
+                //        parentSKU = dr["NewStyle"].ToString();
+
+                //        if (!string.IsNullOrEmpty(dr["NewStyle"].ToString()))
+                //        {
+                //            var newLine = ParentImportProduct(parentSKU, reff, dr, t2TreFs, descriptionObject, groupSkus2);
+                //            csvLines.AppendLine(newLine);
+                //        }
+                //        for (var i = Convert.ToInt16(dr["MINSIZE"]); i <= Convert.ToInt16(dr["MAXSIZE"]); i++)
+                //        {
+                //            groupSkus2 = sizeSkuValue(dr["NewStyle"].ToString(), i);
+                //            actualStock = calculateStock(dr, i);
+                //            string size = calculateSize(dr, i);
+                //            string eanCode = calculateEANCode(groupSkus2);
+                //            string newLine = null;
+                //            sizes.Add(dr["SIZERANGE"].ToString() + size);
+                //            newLine = BuildChildImportProduct(groupSkus2, dr, reff, actualStock, size, t2TreFs, eanCode, parentSKU, descriptionObject);
+                //            csvLines.AppendLine(newLine);
+                //            actualStock = "0";
+                //        }
+
+                //    }
+                //    _logger.LogWrite("Finished for: " + refff);
+                //}
+                //return csvLines;
             }
             catch (Exception ex)
             {
@@ -104,6 +144,72 @@ namespace ImportProducts.Services
                 new LogWriter().LogWrite(ex.StackTrace);
             }
             return new StringBuilder();
+        }
+
+        public void WriteProductsToCsv(string csvPath, List<CsvProduct> products)
+        {
+            using (var writer = new StreamWriter(csvPath))
+            {
+                // Header row
+                writer.WriteLine("sku,product_websites,name,tax_class_name,uDef2,d_type,gender");
+
+                foreach (var p in products)
+                {
+                    string Escape(string val)
+                    {
+                        if (string.IsNullOrEmpty(val)) return "";
+                        val = val.Replace("\"", "\"\""); // double quotes inside
+                        return $"\"{val}\"";            // always wrap in quotes
+                    }
+
+                    string EscapeGeneral(string val)
+                    {
+                        if (string.IsNullOrEmpty(val)) return "";
+                        if (val.Contains(",") || val.Contains("\""))
+                        {
+                            val = val.Replace("\"", "\"\"");
+                            return $"\"{val}\"";
+                        }
+                        return val;
+                    }
+
+                    writer.WriteLine(string.Join(",",
+                        EscapeGeneral(p.Sku),
+                        "\"" + "base,ireland" + "\"",  // <-- always quoted
+                        EscapeGeneral(p.Name),
+                        Escape(p.TaxClassName),     // always quoted
+                        Escape(p.UDef2),            // always quoted
+                        Escape(p.DType),            // always quoted
+                        EscapeGeneral(p.Gender)
+                    ));
+                }
+            }
+
+            _logger.LogWrite($"CSV export complete: {csvPath}");
+        }
+
+        private DataRow[] GetRowsBySkuPrefix(string sku, DataTable dataTable)
+        {
+            if (string.IsNullOrEmpty(sku))
+                throw new ArgumentException("SKU is null or empty", nameof(sku));
+
+            // Ensure SKU has at least 6 characters
+            if (sku.Length < 6)
+                throw new ArgumentException($"SKU '{sku}' is too short to substring(0,6).");
+
+            // Substring first 6 characters
+            var reff = sku.Substring(0, 6);
+
+            // Build filter expression safely
+            // If REF column is numeric, remove the quotes
+            var filter = $"REF = '{reff}'";
+
+            // Query the DataTable
+            var rows = dataTable.Select(filter);
+
+            _logger.LogWrite($"Queried DataTable with REF = {reff}, rows found: {rows.Length}");
+
+            return rows;
         }
 
         private List<string> commonSKUs(IEnumerable<string> t2TreFs, string sku)

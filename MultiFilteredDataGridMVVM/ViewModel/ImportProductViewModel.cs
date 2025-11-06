@@ -300,32 +300,33 @@ namespace MultiFilteredDataGridMVVM.ViewModel
             {
                 TxtStatus = "Removing exisiting import product file...";
                 job = new ImportCsvJob(_descriptionsPath);
-                job.DoCleanup(ImagePath);
+                //job.DoCleanup(ImagePath);
                 TxtStatus = "Generating import product csv file, please wait this can take several minutes....";
-                var t2tRefs = new ImageService().ReadImageDetails(ImagePath);
+                //var t2tRefs = new ImageService().ReadImageDetails(ImagePath);
                 worker.ReportProgress(1);
-                var dateFromFolder = ImagePath.Split('\\');
-                buildHeader(batchInc, dateFromFolder);
-                foreach (var refff in t2tRefs.Distinct())
-                {
-                    if (string.IsNullOrEmpty(_descriptionsPath))
-                    {
-                        MessageBox.Show("Please select a descriptions file");
-                        return;
-                    }
+                //var dateFromFolder = ImagePath.Split('\\');
+                //buildHeader(batchInc, dateFromFolder);
+                job.DoJob(null, null, ref _errors);
+                //foreach (var refff in t2tRefs.Distinct())
+                //{
+                //    if (string.IsNullOrEmpty(_descriptionsPath))
+                //    {
+                //        MessageBox.Show("Please select a descriptions file");
+                //        return;
+                //    }
 
-                    if (!usedSkuNums.Contains(refff.Substring(0, 6)))
-                    {
-                        usedSkuNums.Add(refff.Substring(0, 6));
-                        buildBody(bodyContent, batchInc, t2tRefs, dateFromFolder, refff);
-                        _csv = new StringBuilder();
+                //    if (!usedSkuNums.Contains(refff.Substring(0, 6)))
+                //    {
+                //        usedSkuNums.Add(refff.Substring(0, 6));
+                //        buildBody(bodyContent, batchInc, t2tRefs, dateFromFolder, refff);
+                //        _csv = new StringBuilder();
 
-                        bodyContent = new StringBuilder();
-                        worker.ReportProgress(recCount++);
-                    }
-                }
-                worker.ReportProgress(100);
-                LogErrors();
+                //        bodyContent = new StringBuilder();
+                //        worker.ReportProgress(recCount++);
+                //    }
+                //}
+                //worker.ReportProgress(100);
+                //LogErrors();
                 MessageBox.Show("Import Product File Generated");
             }
             catch (OperationCanceledException ex)

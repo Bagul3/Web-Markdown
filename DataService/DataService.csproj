@@ -57,6 +57,7 @@
   <ItemGroup>
     <Compile Include="API\MagentoSpecialPrice.cs" />
     <Compile Include="Builder.cs" />
+    <Compile Include="CsvMapper.cs" />
     <Compile Include="DummyService.cs" />
     <Compile Include="Helper\LoggingHandler.cs" />
     <Compile Include="ImageService.cs" />
